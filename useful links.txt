@@ -1,0 +1,21 @@
+PARTYKIT
+https://cran.r-project.org/web/packages/partykit/vignettes/partykit.pdf
+https://cran.r-project.org/web/packages/partykit/partykit.pdf
+
+MODEL4YOU
+https://cran.r-project.org/web/packages/model4you/model4you.pdf
+
+GGTREE
+https://www.ggplot2-exts.org/ggtree.html
+
+GGGRAPH
+https://www.ggplot2-exts.org/ggraph.html
+
+MULTIPLE PLOTS
+https://cran.r-project.org/web/packages/egg/vignettes/Ecosystem.html
+
+DEVTOOLS CHEATSHEET
+https://rawgit.com/rstudio/cheatsheets/master/package-development.pdf
+
+STYLEGUIDE
+http://r-pkgs.had.co.nz/style.html
