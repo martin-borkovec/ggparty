@@ -1,8 +1,9 @@
 library(partykit)
+
+source("R/get_plot_data.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
-str(WeatherPlay)
 
 
 ### splits ###
@@ -31,82 +32,27 @@ pn
 ### tree ###
 ## party: associate recursive partynode structure with data
 py <- party(pn, WeatherPlay)
+
+plot(party)
 partynode <- py$node
 party <- py
 
-debugonce(plot.party)
-debugonce(.plot_node)
-plot.party(py)
+plot_data <- get_plot_data(party)
+plot_data <- add_layout(plot_data)
 
-py$data
+library(ggplot2)
 
-py$`1`
+varnames <- names(party[[1]]$data)
 
-str(py$node)
-
-py$node$kids[3]
-
-py$node$kids
-py$node$kids
+plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
+plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
 
 
-py$node$surrogates
+ggplot(plot_data, aes(x = x, y = y)) +
+  geom_segment(aes(x = x, y = y, xend = x_parent, yend= y_parent)) +
+  geom_label(aes(label = varnames[splitvar])) +
+  geom_label(aes(label = terminal)) +
+  #geom_label(aes(label = varnames[]))+
+  theme_void()
 
-kidids_node()
 
-partynode
-
-str(py$node$kids[[1]])
-
-py$node$kids[[1]]$split
-
-split
-
-py$node$split
-
-length(py$node$kids)
-
-summary()
-
-summary(py)
-
-depth(py, root = )
-width(py)
-
-length(py)
-
-py$data
-py$fitted
-
-py$terms
-py$names
-py$info
-
-### variations ###
-## tree stump
-n1 <- partynode(id = 1L, split = sp_o, kids = lapply(2L:4L, partynode))
-print(n1, data = WeatherPlay)
-
-## query fitted nodes and kids ids
-fitted_node(n1, data = WeatherPlay)
-kidids_node(n1, data = WeatherPlay)
-
-## tree with full data sets
-t1 <- party(n1, data = WeatherPlay)
-plot(t1)
-
-## tree with empty data set
-party(n1, data = WeatherPlay[0, ])
-
-## constant-fit tree
-t2 <- party(n1,
-            data = WeatherPlay,
-            fitted = data.frame(
-              "(fitted)" = fitted_node(n1, data = WeatherPlay),
-              "(response)" = WeatherPlay$play,
-              check.names = FALSE),
-            terms = terms(play ~ ., data = WeatherPlay),
-)
-t2 <- as.constparty(t2)
-t2
-plot(t2)

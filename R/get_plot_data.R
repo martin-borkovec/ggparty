@@ -1,3 +1,4 @@
+
 # transforms recursive structure of object of type "party" to dataframe
 
 get_plot_data <- function(party, i = 1, level = 0, plot_data = NULL){
@@ -39,19 +40,20 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL){
     plot_data[i, "right"] <- ifelse(is.null(partysplit$right),
                                     NA,
                                     partysplit$right)
-        plot_data[i, "kids"] <- length(kids_node(partynode))
-    plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, TRUE, FALSE)
+    plot_data[i, "kids"] <- length(kids_node(partynode))
+    # plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, TRUE, FALSE)
+    plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, formatinfo_node(party[[i]]$node), NA)
     plot_data[i, "parent"] <- max(plot_data$id[plot_data$level == (level - 1)], 0, na.rm = T)
   }
 
   # if node is terminal, go back one step
-  if (plot_data[i, "terminal"] == TRUE){
+  if (!is.na(plot_data[i, "terminal"])) {
     plot_data <- recursive_helper(party, i - 1, level = level, plot_data)
   }
 
   # if not all kids done, go to next kid
   done_kids <- done_kids(i, plot_data)
-  if (done_kids != plot_data[i, "kids"]){
+  if (done_kids != plot_data[i, "kids"]) {
     plot_data <- recursive_helper(party,
                                   i = max(plot_data$id) + 1,
                                   level = plot_data[i, "level"] + 1,
@@ -79,6 +81,4 @@ add_layout <- function(plot_data){
   plot_data[1,"x"] <- 0.5
   return(plot_data)
 }
-
-plot_data <- add_layout(plot_data)
 
