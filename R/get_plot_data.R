@@ -10,7 +10,7 @@ get_plot_data <- function(party, i = 1, level = 0, plot_data = NULL) {
                           #operator = NA,
                           right = NA,
                           splitvar = NA,
-                          level = NA,
+                          level = 0,
                           kids = NA,
                           terminal = NA,
                           parent = NA)
@@ -25,6 +25,9 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
   if (i <= 0) return(plot_data)
   partynode <- party[[i]]$node
   partysplit <- partynode$split
+  parent_id <- max(plot_data$id[plot_data$level == (level - 1)], 0, na.rm = T)
+  current_kid <- get_done_kids(parent_id, plot_data) + 1
+
   # first time hitting the node
   if (plot_data$id[i] == 0) {
     plot_data[i, "id"] <- i
@@ -36,32 +39,42 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
     # plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, TRUE, FALSE)
     plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, formatinfo_node(party[[i]]$node), NA)
 
-    parent_id <- max(plot_data$id[plot_data$level == (level - 1)], 0, na.rm = T)
+
     plot_data[i, "parent"] <- parent_id
+
+
     if (parent_id > 0) {
     partysplit_parent <- party[[parent_id]]$node$split
-    plot_data[i, "breaks"] <- if (is.null(partysplit_parent$breaks)) {
-      NA
+    if (is.null(partysplit_parent$breaks)) {
+      plot_data[i, "breaks"] <- NA
       } else {
-        if (partysplit_parent$right == T & done_kids(parent_id, plot_data[-i, ]) == 0) {
-          operator <- "<="
+        if (partysplit_parent$right == T &
+            current_kid == 1) {
+          plot_data[i, "breaks"] <- paste0("(-inf, ", partysplit_parent$breaks[current_kid], "]")
         }
-        if (partysplit_parent$right == T & done_kids(parent_id, plot_data[-i, ]) == 1) {
-          operator <- ">"
+        if (partysplit_parent$right == T &
+            current_kid == plot_data[parent_id, "kids"]) {
+          plot_data[i, "breaks"] <- paste0("(", partysplit_parent$breaks[current_kid - 1], ", inf)")
         }
-        if (partysplit_parent$right == F & done_kids(parent_id, plot_data[-i, ]) == 0) {
-          operator <- "<"
+        if (partysplit_parent$right == T &
+            current_kid != 1 &
+            current_kid !=  plot_data[parent_id, "kids"]) {
+          plot_data[i, "breaks"] <- paste0("(",partysplit_parent$breaks[current_kid - 1],", ",
+                 partysplit_parent$breaks[current_kid], "]")
         }
-        if (partysplit_parent$right == F & done_kids(parent_id, plot_data[-i, ]) == 1) {
-          operator <- ">="
-        }
-        paste(operator, partysplit_parent$breaks)
+        # if (partysplit_parent$right == F & current_kid(parent_id, plot_data[-i, ]) == 0) {
+        #   operator <- "<"
+        # }
+        # if (partysplit_parent$right == F & current_kid(parent_id, plot_data[-i, ]) == 1) {
+        #   operator <- ">="
+        # }
       }
-    if(is.null(partysplit_parent$index)) {
+
+    if (is.null(partysplit_parent$index)) {
       plot_data[i, "index"] <- NA
     } else {
       levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))
-      plot_data[i, "index"] <- levels[partysplit_parent$index[done_kids(parent_id, plot_data[-i, ]) + 1]]
+      plot_data[i, "index"] <- levels[partysplit_parent$index[current_kid]]
     }
 
     }
@@ -77,7 +90,7 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
   }
 
   # if not all kids done, go to next kid
-  done_kids <- done_kids(i, plot_data)
+  done_kids <- get_done_kids(i, plot_data)
   if (done_kids != plot_data[i, "kids"]) {
     plot_data <- recursive_helper(party,
                                   i = max(plot_data$id) + 1,
@@ -93,7 +106,7 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
 }
 
 # how man kids of node already done
-done_kids <- function(i, plot_data = NULL){
+get_done_kids <- function(i, plot_data = NULL){
  sum(plot_data$parent == i, na.rm = TRUE)
 }
 
