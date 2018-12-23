@@ -15,9 +15,7 @@ get_plot_data <- function(party, i = 1, level = 0, plot_data = NULL) {
                           terminal = NA,
                           parent = NA)
 
-
 recursive_helper(party, plot_data = plot_data)
-
 }
 
 recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
@@ -36,15 +34,14 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
                                        NA,
                                        names(party[[1]]$data)[partysplit$varid])
     plot_data[i, "kids"] <- length(kids_node(partynode))
-    # plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, TRUE, FALSE)
     plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, formatinfo_node(party[[i]]$node), NA)
-
-
     plot_data[i, "parent"] <- parent_id
 
-
+    # if not root determine parent and it's split info
     if (parent_id > 0) {
     partysplit_parent <- party[[parent_id]]$node$split
+
+    # store breaks of continous parent split variable
     if (is.null(partysplit_parent$breaks)) {
       plot_data[i, "breaks"] <- NA
       } else {
@@ -62,27 +59,19 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
           plot_data[i, "breaks"] <- paste0("(",partysplit_parent$breaks[current_kid - 1],", ",
                  partysplit_parent$breaks[current_kid], "]")
         }
-        # if (partysplit_parent$right == F & current_kid(parent_id, plot_data[-i, ]) == 0) {
-        #   operator <- "<"
-        # }
-        # if (partysplit_parent$right == F & current_kid(parent_id, plot_data[-i, ]) == 1) {
-        #   operator <- ">="
-        # }
       }
+    }
 
+    # store breaks of categorical parent split variable
     if (is.null(partysplit_parent$index)) {
       plot_data[i, "index"] <- NA
     } else {
       levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))
       plot_data[i, "index"] <- levels[partysplit_parent$index[current_kid]]
     }
-
-    }
-    # plot_data[i, "right"] <- ifelse(is.null(partysplit_parent$right),
-    #                                 NA,
-    #                                 partysplit_parent$right)
-    #
   }
+
+# determine if and how to recursively call again --------------------------
 
   # if node is terminal, go back one step
   if (!is.na(plot_data[i, "terminal"])) {
@@ -105,10 +94,16 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
   return(plot_data)
 }
 
-# how man kids of node already done
+
+# get_done_kids() ---------------------------------------------------------
+
+# check how man kids of node already done
 get_done_kids <- function(i, plot_data = NULL){
  sum(plot_data$parent == i, na.rm = TRUE)
 }
+
+
+# add_layout() ------------------------------------------------------------
 
 add_layout <- function(plot_data){
   for (i in 1:nrow(plot_data)) {
