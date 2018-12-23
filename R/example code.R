@@ -32,27 +32,19 @@ pn
 ### tree ###
 ## party: associate recursive partynode structure with data
 py <- party(pn, WeatherPlay)
-
+str(party)
 plot(party)
 partynode <- py$node
 party <- py
 
 plot_data <- get_plot_data(party)
-plot_data <- add_layout(plot_data)
 
 library(ggplot2)
 
-varnames <- names(party[[1]]$data)
-
-plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
-plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
-
-
 ggplot(plot_data, aes(x = x, y = y)) +
-  geom_segment(aes(x = x, y = y, xend = x_parent, yend= y_parent)) +
-  geom_label(aes(label = varnames[splitvar])) +
+  geom_segment(aes(x = x, y = y, xend = x_parent, yend = y_parent)) +
+  geom_label(aes(label = splitvar)) +
   geom_label(aes(label = terminal)) +
-  #geom_label(aes(label = varnames[]))+
+  geom_label(aes(label = breaks, x = x_edge, y = y_edge)) +
+  geom_label(aes(label = index, x = x_edge, y = y_edge)) +
   theme_void()
-
-

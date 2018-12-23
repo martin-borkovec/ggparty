@@ -1,12 +1,13 @@
 
-# transforms recursive structure of object of type "party" to dataframe
+  # transforms recursive structure of object of type "party" to dataframe
 
-get_plot_data <- function(party, i = 1, level = 0, plot_data = NULL){
+get_plot_data <- function(party, i = 1, level = 0, plot_data = NULL) {
   plot_data <- data.frame(id = numeric(length(party)),
                           x = NA,
                           y = NA,
                           breaks = NA,
                           index = NA,
+                          #operator = NA,
                           right = NA,
                           splitvar = NA,
                           level = NA,
@@ -19,7 +20,7 @@ recursive_helper(party, plot_data = plot_data)
 
 }
 
-recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL){
+recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
 
   if (i <= 0) return(plot_data)
   partynode <- party[[i]]$node
@@ -30,20 +31,44 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL){
     plot_data[i, "level"] <- level
     plot_data[i, "splitvar"] <- ifelse(is.null(partysplit$varid),
                                        NA,
-                                       partysplit$varid)
-    plot_data[i, "breaks"] <- ifelse(is.null(partysplit$breaks),
-                                       NA,
-                                       partysplit$breaks)
-    plot_data[i, "index"] <- ifelse(is.null(partysplit$index),
-                                     NA,
-                                     partysplit$index)
-    plot_data[i, "right"] <- ifelse(is.null(partysplit$right),
-                                    NA,
-                                    partysplit$right)
+                                       names(party[[1]]$data)[partysplit$varid])
     plot_data[i, "kids"] <- length(kids_node(partynode))
     # plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, TRUE, FALSE)
     plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, formatinfo_node(party[[i]]$node), NA)
-    plot_data[i, "parent"] <- max(plot_data$id[plot_data$level == (level - 1)], 0, na.rm = T)
+
+    parent_id <- max(plot_data$id[plot_data$level == (level - 1)], 0, na.rm = T)
+    plot_data[i, "parent"] <- parent_id
+    if (parent_id > 0) {
+    partysplit_parent <- party[[parent_id]]$node$split
+    plot_data[i, "breaks"] <- if (is.null(partysplit_parent$breaks)) {
+      NA
+      } else {
+        if (partysplit_parent$right == T & done_kids(parent_id, plot_data[-i, ]) == 0) {
+          operator <- "<="
+        }
+        if (partysplit_parent$right == T & done_kids(parent_id, plot_data[-i, ]) == 1) {
+          operator <- ">"
+        }
+        if (partysplit_parent$right == F & done_kids(parent_id, plot_data[-i, ]) == 0) {
+          operator <- "<"
+        }
+        if (partysplit_parent$right == F & done_kids(parent_id, plot_data[-i, ]) == 1) {
+          operator <- ">="
+        }
+        paste(operator, partysplit_parent$breaks)
+      }
+    if(is.null(partysplit_parent$index)) {
+      plot_data[i, "index"] <- NA
+    } else {
+      levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))
+      plot_data[i, "index"] <- levels[partysplit_parent$index[done_kids(parent_id, plot_data[-i, ]) + 1]]
+    }
+
+    }
+    # plot_data[i, "right"] <- ifelse(is.null(partysplit_parent$right),
+    #                                 NA,
+    #                                 partysplit_parent$right)
+    #
   }
 
   # if node is terminal, go back one step
@@ -63,9 +88,11 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL){
     plot_data <- recursive_helper(party, i - 1, level = level, plot_data)
   }
 
+  plot_data <- add_layout(plot_data)
   return(plot_data)
 }
 
+# how man kids of node already done
 done_kids <- function(i, plot_data = NULL){
  sum(plot_data$parent == i, na.rm = TRUE)
 }
@@ -79,6 +106,11 @@ add_layout <- function(plot_data){
     plot_data[i, "x"] <- x_position  / (width + 1)
   }
   plot_data[1,"x"] <- 0.5
+  plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
+  plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
+  plot_data$x_edge <- (plot_data$x + plot_data$x_parent) / 2
+  plot_data$y_edge <- (plot_data$y + plot_data$y_parent) / 2
+
   return(plot_data)
 }
 
