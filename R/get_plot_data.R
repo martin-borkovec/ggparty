@@ -61,7 +61,6 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
         }
       }
 
-
     # store breaks of categorical parent split variable
     if (is.null(partysplit_parent$index)) {
       plot_data[i, "index"] <- NA
@@ -89,7 +88,7 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
     # if all kids of node done, go back another step
     plot_data <- recursive_helper(party, i - 1, level = level, plot_data)
   }
-
+  plot_data <- level_endnodes(plot_data)
   plot_data <- add_layout(plot_data)
   return(plot_data)
 }
@@ -98,14 +97,14 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
 # get_done_kids() ---------------------------------------------------------
 
 # check how man kids of node already done
-get_done_kids <- function(i, plot_data = NULL){
+get_done_kids <- function(i, plot_data = NULL) {
  sum(plot_data$parent == i, na.rm = TRUE)
 }
 
 
 # add_layout() ------------------------------------------------------------
 
-add_layout <- function(plot_data){
+add_layout <- function(plot_data) {
   for (i in 1:nrow(plot_data)) {
     i_level <- plot_data$level[i]
     plot_data[i, "y"] <- 1 - i_level / max(plot_data$level)
@@ -113,7 +112,7 @@ add_layout <- function(plot_data){
     x_position <- which(i == which(plot_data$level == i_level))
     plot_data[i, "x"] <- x_position  / (width + 1)
   }
-  plot_data[1,"x"] <- 0.5
+  plot_data[1, "x"] <- 0.5
   plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
   plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
   plot_data$x_edge <- (plot_data$x + plot_data$x_parent) / 2
@@ -122,3 +121,9 @@ add_layout <- function(plot_data){
   return(plot_data)
 }
 
+# level_endnodes() ------------------------------------------------------------
+level_endnodes <- function(plot_data) {
+  bottom_level <- max(plot_data$level)
+  plot_data$level[!is.na(plot_data$terminal)] <- bottom_level
+  return(plot_data)
+}

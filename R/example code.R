@@ -3,6 +3,7 @@ library(ggplot2)
 
 source("R/get_plot_data.R")
 source("R/ggparty.R")
+source("R/get_terminal_plot.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -40,7 +41,6 @@ str(py)
 plot(py)
 pynode <- py$node
 
-
 ggparty(py) +
   geom_edge() +
   geom_node_inner(fontface = "bold") +
@@ -48,3 +48,19 @@ ggparty(py) +
   geom_edge_label_continuous(colour = "grey") +
   geom_node_terminal(colour = "red", fontface = "bold") +
   theme_void()
+
+
+data("PimaIndiansDiabetes", package = "mlbench")
+ct <- glmtree(diabetes ~ glucose | pregnant +
+                pressure + triceps + insulin + mass + pedigree + age,
+              data = PimaIndiansDiabetes, family = binomial)
+
+ggparty(ct) +
+  geom_edge() +
+  geom_node_inner(fontface = "bold") +
+  geom_edge_label_discrete(colour = "grey") +
+  geom_edge_label_continuous(colour = "grey") +
+  theme_void() +
+  xlim(c(0, 1)) +
+
+

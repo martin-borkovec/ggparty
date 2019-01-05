@@ -1,8 +1,32 @@
 library(ggplot2)
+library(gridExtra)
 
 ggparty <- function(party) {
-  ggplot(data = get_plot_data(party),
+  plot_data <- get_plot_data(party)
+
+  if (is(party, "modelparty")) {
+
+    tree <-
+      ggplot(data = plot_data, mapping = aes(x = x, y = y))
+
+
+    plot_list <- list(tree)
+    terminal <- plot_data[!is.na(plot_data$terminal), ]
+
+    for (i in 1:nrow(terminal)) {
+      plot_list <- c(plot_list, get_terminal_plot(party[[1]], party[[terminal$id[i]]]))
+    }
+
+    grid.arrange(
+    grobs = plot_list,
+    widths = c(1, 1, 1),
+    layout_matrix = rbind(c(1,1,1),
+                          c(2, 3, 4))
+    )
+  } else {
+  ggplot(data = plot_data,
          mapping = aes(x = x, y = y))
+  }
 }
 
 geom_edge_label_continuous <- function(mapping = aes(label = breaks,
