@@ -60,7 +60,7 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
                  partysplit_parent$breaks[current_kid], "]")
         }
       }
-    }
+
 
     # store breaks of categorical parent split variable
     if (is.null(partysplit_parent$index)) {
@@ -69,8 +69,8 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
       levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))
       plot_data[i, "index"] <- levels[partysplit_parent$index[current_kid]]
     }
+    }
   }
-
 # determine if and how to recursively call again --------------------------
 
   # if node is terminal, go back one step
