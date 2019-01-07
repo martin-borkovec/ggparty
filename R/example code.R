@@ -47,8 +47,7 @@ ggparty(py) +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
   geom_node_terminal(colour = "red", fontface = "bold") +
-  theme_void() +
-  annotation_custom(g, xmin = 0, xmax = 0.25, ymin = 0, ymax = 0.25)
+  theme_void()
 
 
 data("PimaIndiansDiabetes", package = "mlbench")
@@ -59,13 +58,13 @@ ct <- glmtree(diabetes ~ glucose | pregnant +
 plot(ct)
 
 ggparty(ct) +
-  geom_edge() +
+  geom_edge(size = 2) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  endnode_spineplot(ct, show.legend = FALSE, gglist = list(xlab("lol"),
-                                                           ylab("roflcopter"),
-                                                           scale_fill_brewer()))
+  endnode_spineplot(ct, gglist = list(xlab("lol"),
+                                      ylab("roflcopter"),
+                                      scale_fill_brewer()))
 
 
 #   annotation_custom(g1, xmin = 0, xmax = 0.33, ymin = 0, ymax = 0.25) +

@@ -34,7 +34,7 @@ ggparty <- function(party) {
 
 geom_edge_label_continuous <- function(mapping = aes(label = breaks,
                                                      x = x_edge,
-                                                     y = y_edge)
+                                                     y = y_edge),
                             ...) {
   do.call("geom_label", list(mapping, ...))
 }
