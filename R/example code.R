@@ -4,6 +4,7 @@ library(ggplot2)
 source("R/get_plot_data.R")
 source("R/ggparty.R")
 source("R/get_terminal_plot.R")
+source("R/endnode_spineplot.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -32,7 +33,6 @@ pn <- partynode(1L, split = sp_o, kids = list(
     partynode(8L, info = "no")))))
 pn
 
-pn[5]
 ### tree ###
 ## party: associate recursive partynode structure with data
 py <- party(pn, WeatherPlay)
@@ -47,7 +47,8 @@ ggparty(py) +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
   geom_node_terminal(colour = "red", fontface = "bold") +
-  theme_void()
+  theme_void() +
+  annotation_custom(g, xmin = 0, xmax = 0.25, ymin = 0, ymax = 0.25)
 
 
 data("PimaIndiansDiabetes", package = "mlbench")
@@ -55,12 +56,25 @@ ct <- glmtree(diabetes ~ glucose | pregnant +
                 pressure + triceps + insulin + mass + pedigree + age,
               data = PimaIndiansDiabetes, family = binomial)
 
+plot(ct)
+
 ggparty(ct) +
   geom_edge() +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  theme_void() +
-  xlim(c(0, 1)) +
+  endnode_spineplot(ct, show.legend = FALSE, gglist = list(xlab("lol"),
+                                                           ylab("roflcopter"),
+                                                           scale_fill_brewer()))
 
 
+#   annotation_custom(g1, xmin = 0, xmax = 0.33, ymin = 0, ymax = 0.25) +
+# annotation_custom(g2, xmin = 0.33, xmax = 0.66, ymin = 0, ymax = 0.25) +
+#   annotation_custom(g3, xmin = 0.66, xmax = 1, ymin = 0, ymax = 0.25)
+
+
+# TO DO
+# modify get_plot/add_layout so that edges work properly
+# write endnode proto, which creates nice default end plots
+# figure out best way to pass style arguments
+#
