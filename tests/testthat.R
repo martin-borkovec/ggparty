@@ -11,7 +11,5 @@ test_that("valid types in data frame", {
 
 test_that("data types correct", {
   expect_is(plot_data,"data.frame")
-  expect_is(plot_data$numbers, "numeric")
-  #expect_is(testing_data$letters, 'character') #this one fails; they're factors
 })
 
