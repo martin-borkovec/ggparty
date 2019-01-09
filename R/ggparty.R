@@ -46,7 +46,7 @@ geom_edge_label_discrete <- function(mapping = aes(label = index,
   do.call("geom_label", list(mapping, ...))
 }
 
-geom_node_terminal <- function(mapping = aes(label = terminal),
+geom_node_terminal_label <- function(mapping = aes(label = terminal),
                                  ...) {
   do.call("geom_label", list(mapping, ...))
 }

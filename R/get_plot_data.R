@@ -62,7 +62,7 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
       }
 
     # store breaks of categorical parent split variable
-    if (is.null(partysplit_parent$index)) {
+    if (is.na(partysplit_parent$index)) {
       plot_data[i, "index"] <- NA
     } else {
       levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))
@@ -104,15 +104,48 @@ get_done_kids <- function(i, plot_data = NULL) {
 
 # add_layout() ------------------------------------------------------------
 
+# add_layout <- function(plot_data) {
+#   for (i in 1:nrow(plot_data)) {
+#     i_level <- plot_data$level[i]
+#     plot_data[i, "y"] <- 1 - i_level / max(plot_data$level)
+#     width <- sum(plot_data$level == i_level)
+#     x_position <- which(i == which(plot_data$level == i_level))
+#     plot_data[i, "x"] <- x_position  / (width + 1)
+#   }
+#   plot_data[1, "x"] <- 0.5
+#   plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
+#   plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
+#   plot_data$x_edge <- (plot_data$x + plot_data$x_parent) / 2
+#   plot_data$y_edge <- (plot_data$y + plot_data$y_parent) / 2
+#
+#   return(plot_data)
+# }
+#
+
+
 add_layout <- function(plot_data) {
-  for (i in 1:nrow(plot_data)) {
-    i_level <- plot_data$level[i]
-    plot_data[i, "y"] <- 1 - i_level / max(plot_data$level)
-    width <- sum(plot_data$level == i_level)
-    x_position <- which(i == which(plot_data$level == i_level))
-    plot_data[i, "x"] <- x_position  / (width + 1)
+  terminal_level <- max(plot_data$level)
+  terminal_data <- plot_data[plot_data$level == terminal_level, ]
+  inner_data <- plot_data[plot_data$level != terminal_level, ]
+
+  for (i in 1:nrow(terminal_data)) {
+    i_id <- terminal_data$id[i]
+    plot_data[i_id, "y"] <- 0
+    plot_data[i_id, "x"] <- (i * 2 - 1)  / (nrow(terminal_data) * 2)
   }
-  plot_data[1, "x"] <- 0.5
+
+  for (i in 1:nrow(inner_data)) {
+    i_level <- inner_data$level[i]
+    i_id <- inner_data$id[i]
+    plot_data[i_id, "y"] <- 1 - i_level / max(plot_data$level)
+    parents <- i_id
+    if (i_level != max(inner_data$level)) {
+      for (j in (i_level + 1):(terminal_level - 1)) {
+        parents <- c(parents, plot_data[plot_data$level  == j & plot_data$parent %in% parents, "id"])
+      }
+    }
+    plot_data[i_id, "x"] <- mean(plot_data$x[plot_data$parent %in% parents & !is.na(plot_data$terminal)])
+  }
   plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
   plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
   plot_data$x_edge <- (plot_data$x + plot_data$x_parent) / 2
@@ -120,6 +153,8 @@ add_layout <- function(plot_data) {
 
   return(plot_data)
 }
+
+
 
 # level_endnodes() ------------------------------------------------------------
 level_endnodes <- function(plot_data) {
