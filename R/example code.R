@@ -4,7 +4,6 @@ library(ggplot2)
 source("R/get_plot_data.R")
 source("R/ggparty.R")
 source("R/geom_node_terminal_plot.R")
-
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -33,6 +32,7 @@ pn <- partynode(1L, split = sp_o, kids = list(
     partynode(8L, info = "no")))))
 pn
 
+pn[5]
 ### tree ###
 ## party: associate recursive partynode structure with data
 py <- party(pn, WeatherPlay)
@@ -46,9 +46,9 @@ ggparty(py) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_label(colour = "red", fontface = "bold") +
-  theme_void()
-
+  geom_node_terminal(colour = "red", fontface = "bold") +
+  theme_void() +
+  ggtitle("Test")
 
 
 # constparty --------------------------------------------------------------
@@ -114,8 +114,6 @@ data("PimaIndiansDiabetes", package = "mlbench")
 ct <- glmtree(diabetes ~ glucose | pregnant +
                 pressure + triceps + insulin + mass + pedigree + age,
               data = PimaIndiansDiabetes, family = binomial)
-
-plot(ct)
 
 ggparty(ct) +
   geom_edge(size = 1) +
