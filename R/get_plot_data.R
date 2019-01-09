@@ -62,7 +62,7 @@ recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
       }
 
     # store breaks of categorical parent split variable
-    if (is.na(partysplit_parent$index)) {
+    if (is.null(partysplit_parent$index)) {
       plot_data[i, "index"] <- NA
     } else {
       levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))

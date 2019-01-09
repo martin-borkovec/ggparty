@@ -18,7 +18,6 @@ sp_w <- partysplit(4L, index = 1:2)
 ## query labels
 character_split(sp_o)
 
-
 ### nodes ###
 ## set up partynode structure
 pn <- partynode(1L, split = sp_o, kids = list(
@@ -34,6 +33,11 @@ pn
 ### tree ###
 ## party: associate recursive partynode structure with data
 py <- party(pn, WeatherPlay)
+
+
+# Party -------------------------------------------------------------------
+
+
 py
 
 str(py)
@@ -95,7 +99,7 @@ ggparty(t2) +
                                         ggtitle("Barplot"),
                                         scale_fill_brewer()))
 
-# Titanic -----------------------------------------------------------------
+# Titanic
 
 data("Titanic", package = "datasets")
 ttnc <- as.data.frame(Titanic)
@@ -132,45 +136,14 @@ ggparty(ct) +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
   geom_node_terminal_plot(ct, gglist = list(xlab("lol"),
-                                      ylab("roflcopter"),
-                                      scale_fill_brewer()))
-
-
-
-# Conditional Inference Trees ---------------------------------------------
-
-
-ls <- data.frame(y = gl(3, 50, labels = c("A", "B", "C")),
-                 x1 = rnorm(150) + rep(c(1, 0, 0), c(50, 50, 50)),
-                 x2 = runif(150))
-
-ct2 <- ctree(y ~ x1 + x2, data = ls)
-
-class(ct2)
-
-plot(ct2)
-
-ggparty(tptree) +
-  geom_edge(size = 1) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_plot(ct2, gglist = list(xlab("lol"),
                                             ylab("roflcopter"),
                                             scale_fill_brewer()))
 
 
-data("treepipit", package = "coin")
-tptree <- ctree(counts ~ ., data = treepipit)
-
-
-
-
-
 # TO DO -------------------------------------------------------------------
 
-# rewrite get_plot_data to be more efficient and using extractor functions to be
-# robust against changes in partykit
+# rewrite get_plot_data to be more efficient
+# suggestions for arguments in geoms
 # implement support for index + breaks
 # horizontal layout
 # user definied terminal plot

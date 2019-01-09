@@ -91,8 +91,3 @@ terminal_barplot <- function(terminal_node, gglist, ...) {
 
   )
 }
-
-# str(t2)
-# t2[[1]]$node$split
-# t2
-
