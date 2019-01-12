@@ -163,23 +163,24 @@ ggparty(tptree) +
 data("treepipit", package = "coin")
 tptree <- ctree(counts ~ ., data = treepipit)
 
+class(tptree)
 
-
+plot(tptree)
 
 
 # TO DO -------------------------------------------------------------------
 
-# rewrite get_plot_data to be more efficient and using extractor functions to be
-# robust against changes in partykit
-# implement support for index + breaks
+# fix shared legend
+# implement support for index + breaks (nedds to be tested)
 # horizontal layout
 # user definied terminal plot
 # shared scales etc.
 # individually customizable plots?
 # R package, manuals, documentation, etc...
 
+# DONE --------------------------------------------------------------------
 
+# rewrite get_plot_data to be more efficient and using extractor functions to be
+# robust against changes in partykit
 
-# Questions for project partner -------------------------------------------
-# how can you tell fit from ct terminal plots?
 

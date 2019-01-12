@@ -1,8 +1,8 @@
 
 geom_node_terminal_plot <- function(party, gglist = NULL, shared_legend = T, ...) {
   plot_data <- get_plot_data(party)
-  endnodes_n <- sum(!is.na(plot_data$terminal))
-  endnodes_ids <- plot_data$id[!is.na(plot_data$terminal)]
+  endnodes_n <- sum(plot_data$kids == 0)
+  endnodes_ids <- plot_data$id[plot_data$kids == 0]
   plot_list <- vector("list", endnodes_n)
 
   for (i in 1:endnodes_n) {
