@@ -4,6 +4,7 @@ library(ggplot2)
 source("R/get_plot_data.R")
 source("R/ggparty.R")
 source("R/geom_node_terminal_plot.R")
+source("R/geom_label2.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -46,10 +47,7 @@ ggparty(py) +
   geom_node_inner() +
   geom_edge_label_discrete() +
   geom_edge_label_continuous() +
-  geom_node_terminal_label() +
-  theme_void() +
-  ylim(c(0, 1))
-
+  geom_node_terminal_label()
 
 ggparty(py) +
   geom_edge(size = 1.5) +
@@ -131,9 +129,7 @@ ggparty(ct) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_plot(ct, gglist = list(xlab("lol"),
-                                      ylab("roflcopter"),
-                                      scale_fill_brewer()))
+  geom_node_terminal_plot(ct, gglist = scale_fill_brewer()))
 
 
 
