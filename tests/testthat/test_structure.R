@@ -1,12 +1,14 @@
+library(testthat)
+library(roxygen2)
 source("R/get_plot_data.R")
 source("R/ggparty.R")
-source("R/get_terminal_plot.R")
+source("R/geom_node_terminal_plot.R")
 
 test_that("valid types in data frame", {
   expect_is(get_plot_data(party(pn, WeatherPlay)), "data.frame")
-  expect_is(get_plot_data(py)$x, "numeric")
+  expect_is(get_plot_data(party(pn, WeatherPlay))$x, "numeric")
   expect_is(get_plot_data(py)$y, "numeric")
-  expect_is(get_plot_data(py)$parent, "numeric")
+  expect_is(get_plot_data(py)$parent, "integer")
 
 })
 
@@ -30,7 +32,7 @@ test_that("valid structure", {
   py <- party(pn, WeatherPlay)
 
   plot <- ggparty(py)
-  #vdiffr::expect_doppelganger("ggplot2", plot)
+  #vdiffr::expect_doppelganger("ggplot", plot)
   expect_is(plot,"ggplot")
   expect_is(py,"party")
 })
