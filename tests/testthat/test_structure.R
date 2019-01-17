@@ -7,8 +7,8 @@ source("R/geom_node_terminal_plot.R")
 test_that("valid types in data frame", {
   expect_is(get_plot_data(party(pn, WeatherPlay)), "data.frame")
   expect_is(get_plot_data(party(pn, WeatherPlay))$x, "numeric")
-  expect_is(get_plot_data(py)$y, "numeric")
-  expect_is(get_plot_data(py)$parent, "integer")
+  expect_is(get_plot_data(party(pn, WeatherPlay))$y, "numeric")
+  expect_is(get_plot_data(party(pn, WeatherPlay))$parent, "integer")
 
 })
 
@@ -29,10 +29,10 @@ test_that("valid structure", {
     partynode(6L, split = sp_w, kids = list(
       partynode(7L, info = "yes"),
       partynode(8L, info = "no")))))
-  py <- party(pn, WeatherPlay)
 
-  plot <- ggparty(py)
+
+  plot <- ggparty(party(pn, WeatherPlay))
   #vdiffr::expect_doppelganger("ggplot", plot)
   expect_is(plot,"ggplot")
-  expect_is(py,"party")
+  expect_is(party(pn, WeatherPlay),"party")
 })
