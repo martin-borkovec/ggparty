@@ -203,9 +203,10 @@ add_data <- function(party_object, plot_data) {
          node_data <- do.call(rbind,
                               lapply(plot_data$id,
                                      function(i) {
-                                       cbind(party_object[[i]]$data, id = i)
+                                       cbind(id = i, party_object[[i]]$data)
                                        }))
-         plot_data <- inner_join(plot_data, node_data)
+         names(node_data)[-1] <- paste0("data_", names(node_data))[-1]
+         plot_data <- inner_join(plot_data, node_data, by = "id")
 
   return(plot_data)
 }

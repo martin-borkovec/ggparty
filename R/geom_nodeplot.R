@@ -13,6 +13,7 @@ geom_nodeplot <- function(mapping = NULL,
                           na.rm = FALSE,
                           show.legend = NA,
                           inherit.aes = FALSE,
+                          gglist = NULL,
                           ...) {
   layer(
     data = data,
@@ -22,7 +23,9 @@ geom_nodeplot <- function(mapping = NULL,
     position = position,
     show.legend = show.legend,
     inherit.aes = TRUE,
-    params = list(na.rm = na.rm,
+    params = list(
+      na.rm = na.rm,
+      gglist = gglist,
       ...
     )
   )
@@ -37,17 +40,18 @@ GeomNodeplot <- ggproto(
                         panel_params,
                         coord,
                         parse = FALSE,
-                        na.rm = FALSE) {
+                        na.rm = FALSE,
+                        gglist) {
 
     data <- coord$transform(data, panel_params)
 
     grobs <- lapply(1:max(data$id), function(i) {
-      node <- data[data$id == i, , drop = FALSE]
+      node_data <- data[data$id == i, , drop = FALSE]
       nodeplotGrob(
-        x = node$x,
-        y = node$y,
-        xdat = node$xdat,
-        ydat = node$ydat
+        x = node_data$x[1],
+        y = node_data$y[1],
+        node_data = node_data,
+        gglist = gglist
       )
     })
     class(grobs) <- "gList"
@@ -55,19 +59,21 @@ GeomNodeplot <- ggproto(
   }
 )
 
-nodeplotGrob <- function(x, y, xdat, ydat) {
+nodeplotGrob <- function(x, y, node_data, gglist) {
   gTree(x = x,
         y = y,
-        xdat = xdat,
-        ydat = ydat,
+        node_data = node_data,
+        gglist = gglist,
         cl = "nodeplotgrob")
 }
 
 
 makeContent.nodeplotgrob <- function(x) {
-
-  r <- ggplotGrob(ggplot() + geom_point(aes(x$xdat,x$ydat)))
-  r$vp <- viewport(x = x$x[1], y = x$y[1], width = 0.1, height = 0.1)
+  r <- ggplotGrob(
+    ggplot(data=x$node_data) +
+      x$gglist
+  )
+  r$vp <- viewport(x = x$x, y = x$y, width = 0.1, height = 0.1)
   setChildren(x, gList(r))
 }
 

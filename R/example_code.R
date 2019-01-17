@@ -42,15 +42,24 @@ str(py)
 plot(py)
 pynode <- py$node
 
-gg <- ggparty(py) +
+ggparty(py) +
   geom_edge() +
   geom_node_inner() +
   geom_edge_label_discrete() +
   geom_edge_label_continuous() +
   geom_node_terminal_label() +
-  geom_nodeplot(aes(x, y, xdat = temperature, ydat=humidity, id = id))# +
-  ylim(0,1) +
-  xlim(0,1)
+  geom_nodeplot(gglist = list(xlab(""),
+                              geom_point(aes(temperature, humidity), col="red"),
+                              ylim(65,100),
+                              xlim(60,90),
+                              theme(axis.title.x=element_blank(),
+                                    axis.title.y=element_blank()))) +
+  theme_void()+
+  ylim(-0.25,1.25) +
+  xlim(-0.25,1.25)
+
+max(WeatherPlay$temperature)
+max(WeatherPlay$humidity)
 
 
 g <- ggplotGrob(ggplot()+geom_point(aes(1,1)))
