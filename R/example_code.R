@@ -42,13 +42,13 @@ str(py)
 plot(py)
 pynode <- py$node
 
-ggparty(py) +
+gg <- ggparty(py) +
   geom_edge() +
   geom_node_inner() +
   geom_edge_label_discrete() +
   geom_edge_label_continuous() +
   geom_node_terminal_label() +
-  geom_nodeplot(aes(temperature, humidity, xcord = x, ycord = y, id = id))# +
+  geom_nodeplot(aes(x, y, xdat = temperature, ydat=humidity, id = id))# +
   ylim(0,1) +
   xlim(0,1)
 

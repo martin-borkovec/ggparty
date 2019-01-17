@@ -14,7 +14,6 @@ geom_nodeplot <- function(mapping = NULL,
                           show.legend = NA,
                           inherit.aes = FALSE,
                           ...) {
-
   layer(
     data = data,
     mapping = mapping,
@@ -29,68 +28,47 @@ geom_nodeplot <- function(mapping = NULL,
   )
 }
 
+GeomNodeplot <- ggproto(
+  "GeomNodeplot",
+  Geom,
+  required_aes = c("x", "y", "id"),
+  draw_panel = function(self,
+                        data,
+                        panel_params,
+                        coord,
+                        parse = FALSE,
+                        na.rm = FALSE) {
 
-# StatNodeplot <- ggproto("StatNodeplot", Stat,
-#                     compute_group = function(data, scales = scales) {
-#                       print(data$x)
-#                       print(str(data))
-#
-#                       lengths <- sapply(data$x, function(x) length(unlist(x)))
-#
-#                       data.frame("x" = unname(unlist(data$x)),
-#                                  "y" = unname(unlist(data$y)),
-#                                  "xcord" = rep(data$xcord, lengths),
-#                                  "ycord" = rep(data$ycord, lengths),
-#                                  id = rep(1:nrow(data), times = lengths))
-#
-#
-#                     },
-#                     required_aes = c("x", "y", "xcord", "ycord", "id")
-# )
+    data <- coord$transform(data, panel_params)
 
-GeomNodeplot <- ggproto("GeomNodeplot", Geom,
-                      required_aes = c("x", "y", "id"),
-                      draw_panel = function(self,
-                                            data,
-                                            panel_params,
-                                            coord,
-                                            parse = FALSE,
-                                            na.rm = FALSE) {
-
-                        print(panel_params)
-                        print(coord)
-                        panel_params$x.range <- c(0,1)
-                        panel_params$y.range <- c(0,1)
-                        print(panel_params)
-                        data <- coord$transform(data, panel_params)
-
-
-                        grobs <- lapply(1:max(data$id), function(i) {
-                          node <- data[data$id == i, , drop = FALSE]
-                          nodeplotGrob(
-                                     x = node$x,
-                                     xcord = node$xcord,
-                                     y = node$y,
-                                     ycord = node$ycord
-                          )
-                        })
-                        class(grobs) <- "gList"
-
-                        ggname("geom_nodeplot", grobTree(children = grobs))
-                      }
+    grobs <- lapply(1:max(data$id), function(i) {
+      node <- data[data$id == i, , drop = FALSE]
+      nodeplotGrob(
+        x = node$x,
+        y = node$y,
+        xdat = node$xdat,
+        ydat = node$ydat
+      )
+    })
+    class(grobs) <- "gList"
+    ggname("geom_nodeplot", grobTree(children = grobs))
+  }
 )
 
-nodeplotGrob <- function(x ,
-                         y ,
-                         xcord,
-                         ycord) {
-
-
-  r <- ggplotGrob(ggplot() + geom_point(aes(x,y)))
-  r$vp <- viewport(x = 0.5, y = 0.5, width = 0.1, height = 0.1)
-  return(r)
+nodeplotGrob <- function(x, y, xdat, ydat) {
+  gTree(x = x,
+        y = y,
+        xdat = xdat,
+        ydat = ydat,
+        cl = "nodeplotgrob")
 }
 
 
+makeContent.nodeplotgrob <- function(x) {
+
+  r <- ggplotGrob(ggplot() + geom_point(aes(x$xdat,x$ydat)))
+  r$vp <- viewport(x = x$x[1], y = x$y[1], width = 0.1, height = 0.1)
+  setChildren(x, gList(r))
+}
 
 
