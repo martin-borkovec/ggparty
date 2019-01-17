@@ -4,7 +4,7 @@ library(ggplot2)
 source("R/get_plot_data.R")
 source("R/ggparty.R")
 source("R/geom_node_terminal_plot.R")
-source("R/geom_label2.R")
+source("R/geom_nodeplot.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -47,7 +47,16 @@ ggparty(py) +
   geom_node_inner() +
   geom_edge_label_discrete() +
   geom_edge_label_continuous() +
-  geom_node_terminal_label()
+  geom_node_terminal_label() +
+  geom_nodeplot(aes(temperature, humidity, xcord = x, ycord = y, id = id))# +
+  ylim(0,1) +
+  xlim(0,1)
+
+
+g <- ggplotGrob(ggplot()+geom_point(aes(1,1)))
+g$vp <- viewport(x = 0.25, y = 0.25, width=0.25, height = 0.25)
+grid.draw(g)
+
 
 ggparty(py) +
   geom_edge(size = 1.5) +

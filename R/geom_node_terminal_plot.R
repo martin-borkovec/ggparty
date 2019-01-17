@@ -35,7 +35,12 @@ geom_node_terminal_plot <- function(party, gglist = NULL, shared_legend = T, ...
                         nrow = 1)
   }
 
-  annotation_custom(grob = grob, xmin = 0, xmax = 1, ymin = -0.5, ymax = 0)
+  list(annotation_custom(grob = grob,
+                    xmin = 0,
+                    xmax = 1,
+                    ymin = - 1 / max(plot_data$level),
+                    ymax = 0),
+    ylim(c(- 1 / max(plot_data$level), 1)))
 }
 
 
