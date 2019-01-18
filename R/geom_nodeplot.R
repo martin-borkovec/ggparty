@@ -14,6 +14,8 @@ geom_nodeplot <- function(mapping = NULL,
                           show.legend = NA,
                           inherit.aes = FALSE,
                           gglist = NULL,
+                          plot_call = NULL,
+                          same_axes_limits = TRUE,
                           ...) {
   layer(
     data = data,
@@ -26,6 +28,8 @@ geom_nodeplot <- function(mapping = NULL,
     params = list(
       na.rm = na.rm,
       gglist = gglist,
+      plot_call = enquote(plot_call),
+      same_axes_limits = same_axes_limits,
       ...
     )
   )
@@ -39,19 +43,33 @@ GeomNodeplot <- ggproto(
                         data,
                         panel_params,
                         coord,
-                        parse = FALSE,
                         na.rm = FALSE,
-                        gglist) {
+                        gglist,
+                        plot_call,
+                        same_axes_limits) {
 
     data <- coord$transform(data, panel_params)
+    if (same_axes_limits) {
+      x <- list()
+      x$node_data <- data[data$id == 1, , drop = FALSE]
+      g <- eval(plot_call) +
+        gglist
+      xlim <- ggplot_build(g)$layout$panel_params[[1]]$x.range
+      ylim <- ggplot_build(g)$layout$panel_params[[1]]$y.range
+      gglist <- c(gglist,
+                  list(xlim(xlim),
+                       ylim(ylim)))
+    }
 
     grobs <- lapply(1:max(data$id), function(i) {
       node_data <- data[data$id == i, , drop = FALSE]
+
       nodeplotGrob(
         x = node_data$x[1],
         y = node_data$y[1],
         node_data = node_data,
-        gglist = gglist
+        gglist = gglist,
+        plot_call = plot_call
       )
     })
     class(grobs) <- "gList"
@@ -59,10 +77,11 @@ GeomNodeplot <- ggproto(
   }
 )
 
-nodeplotGrob <- function(x, y, node_data, gglist) {
+nodeplotGrob <- function(x, y, node_data, gglist, plot_call) {
   gTree(x = x,
         y = y,
         node_data = node_data,
+        plot_call = plot_call,
         gglist = gglist,
         cl = "nodeplotgrob")
 }
@@ -70,9 +89,10 @@ nodeplotGrob <- function(x, y, node_data, gglist) {
 
 makeContent.nodeplotgrob <- function(x) {
   r <- ggplotGrob(
-    ggplot(data=x$node_data) +
+      eval(x$plot_call) +
       x$gglist
   )
+
   r$vp <- viewport(x = x$x, y = x$y, width = 0.1, height = 0.1)
   setChildren(x, gList(r))
 }

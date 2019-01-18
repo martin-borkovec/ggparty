@@ -120,7 +120,8 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
 
 add_info <- function(party_object, plot_data) {
   for (i in plot_data$id) {
-    plot_data[i, "info"] <- formatinfo_node(py[[i]]$node)
+    print(formatinfo_node(party_object[[i]]$node))
+    plot_data[i, "info"] <- formatinfo_node(party_object[[i]]$node)
   }
   return(plot_data)
 }
