@@ -51,8 +51,7 @@ geom_edge <- function(mapping = NULL, ...){
   default_mapping <- aes(x = x,
                          y = y,
                          xend = x_parent,
-                         yend = y_parent,
-                         id = id)
+                         yend = y_parent)
 
   mapping <- adjust_mapping(default_mapping, mapping)
 

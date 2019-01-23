@@ -30,8 +30,6 @@ geom_nodeplot <- function(mapping = NULL,
       na.rm = na.rm,
       gglist = gglist,
       plot_call = enquote(plot_call),
-      same_axes_limits = same_axes_limits,
-      shared_legend = shared_legend,
       ...
     )
   )
@@ -48,91 +46,81 @@ GeomNodeplot <- ggproto(
                         na.rm = FALSE,
                         gglist,
                         plot_call,
-                        same_axes_limits,
+                        same_axes_limit,
                         shared_legend) {
 
     data <- coord$transform(data, panel_params)
 
     # same axes limits --------------------------------------------------------
     # generate ggplot object
-    x <- list()
-    x$node_data <- data[data$id == 1, , drop = FALSE]
-    base_plot <- eval(plot_call) + gglist
 
-    if (same_axes_limits) {
-      xlim <- ggplot_build(base_plot)$layout$panel_params[[1]]$x.range
-      ylim <- ggplot_build(base_plot)$layout$panel_params[[1]]$y.range
-      gglist <- c(gglist,
-                  list(xlim(xlim),
-                       ylim(ylim)))
-    }
+    # generate faceted base_plot
+    base_plot <- eval(plot_call) + gglist + facet_grid( ~ id)
+    # get its base_gtable
+    base_gtable <- ggplotGrob(base_plot)
+    # get base_gtable's base_layout
+    base_layout <- base_gtable$layout
+    # extract gtable containing legend
+    legend_gtable <- base_gtable[, base_layout$l[base_layout$name == "guide-box"]]
+    # get layout of xlab from base_layout
+    xlab_layout <- base_layout[base_layout$name == "xlab-b", ]
+    # extract individual grobs from base_gtable
+    base_grobs <- base_gtable$grobs
+    # determine index of grob of xlab
+    f <- function(x) substring(x$name, first = 1, last = 12) == "axis.title.x"
+    xlab_index <- which(sapply(base_grobs, f))
+    # extract grob of xlab
+    xlab_grob <- base_grobs[[xlab_index]]
 
-    if (shared_legend) {
-      base_grob <- ggplotGrob(base_plot)$grobs
+    # call nodeplotGrob on legend_gtable
+    legend_gtable <- nodeplotGrob(
+      x = min(data$x),
+      y = data$y[1],
+      node_gtable = legend_gtable
+    )
 
-      legend <- base_grob[[which(sapply(base_grob, function(x) x$name) == "guide-box")]]
-      legend$vp <- viewport(x = 0.1, y = 0.9, width = 1, height = 1)
-
-
-      base_data  <- layer_data(base_plot)
-      cols <- base_data[["colour"]]
-      names(cols) <- rownames(base_data)
-
-      gglist <- c(gglist,
-                  list(theme(legend.position="none"),
-                       quote(scale_color_manual(values = unique(x$cols[names(x$cols) %in%
-                                                                         rownames(x$node_data)])))
-                  )
-      )
-
-      # lheight <- sum(legend$height)
-      # lwidth <- sum(legend$width)
-    }
-
+    # iterate through all ids to get all nodeplots
     grobs <- lapply(1:max(data$id), function(i) {
-
-      node_data <- data[data$id == i, ]
+      # generate vector of all panel names except the ith
+      panels <- paste0("panel-", unique(data$id)[-i],"-1")
+      # drop all panels except the ith
+      node_gtable <- base_gtable[, -base_gtable$layout$l[base_gtable$layout$name %in% panels]]
+      # drop legend
+      node_gtable <- node_gtable[, -node_gtable$layout$l[node_gtable$layout$name == "guide-box"]]
+      # add xlab
+      node_gtable <- gtable_add_grob(node_gtable,
+                                   xlab_grob,
+                                   t = xlab_layout$t,
+                                   l= xlab_layout$l,
+                                   r = max(node_gtable$layout$r),
+                                   name = "xlab-b")
+      # get x and y coordinates of node
+      x <- unique(data[data$id == i, "x"])
+      y <- unique(data[data$id == i, "y"])
       nodeplotGrob(
-        x = node_data$x[1],
-        y = node_data$y[1],
-        node_data = node_data,
-        gglist = gglist,
-        plot_call = plot_call,
-        cols = cols
+        x = x,
+        y = y,
+        node_gtable = node_gtable
       )
     })
-
-    grobs <- c(grobs, list(legend))
+    #combine nodeplots and legend
+    grobs <- c(grobs, list(legend_gtable))
     class(grobs) <- "gList"
-    ggname("geom_nodeplot", grobTree(children = grobs))
+    ggname("geom_nodeplots", grobTree(children = grobs))
   }
 )
 
-nodeplotGrob <- function(x, y, node_data, gglist, plot_call, cols) {
+nodeplotGrob <- function(x, y, node_gtable) {
 
   gTree(x = x,
         y = y,
-        node_data = node_data,
-        plot_call = plot_call,
-        gglist = gglist,
-        cols = cols,
+        node_gtable = node_gtable,
         cl = "nodeplotgrob")
 }
 
 
 makeContent.nodeplotgrob <- function(x) {
-  browser()
-  r <- ggplotGrob(
-      eval(x$plot_call) +
-      x$gglist[1:4] + eval(x$gglist[[5]])
-  )
-
+  r <- x$node_gtable
   r$vp <- viewport(x = x$x, y = x$y, width = 0.1, height = 0.1)
   setChildren(x, gList(r))
 }
-
-# eval(x$plot_call) +
-#   geom_point(aes(colour = play, size = temperature)) +
-#   scale_color_manual(values = unique(x$cols[names(x$cols) %in%
-#                                               rownames(x$node_data)]))
-#   scale_color_manual(values = c("red", "blue"))
