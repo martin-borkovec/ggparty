@@ -7,6 +7,10 @@ ggname <- function (prefix, grob) {
   grob
 }
 
+
+# geom_nodeplot () --------------------------------------------------------
+
+
 geom_nodeplot <- function(mapping = NULL,
                           data = NULL,
                           position = "identity",
@@ -19,6 +23,8 @@ geom_nodeplot <- function(mapping = NULL,
                           height = 0.1,
                           ids = NA,
                           scales = "fixed",
+                          xnudge = 0,
+                          ynudge = 0,
                           ...) {
   layer(
     data = data,
@@ -36,10 +42,16 @@ geom_nodeplot <- function(mapping = NULL,
       height = height,
       ids = ids,
       scales = scales,
+      xnudge = xnudge,
+      ynudge = ynudge,
       ...
     )
   )
 }
+
+
+# GeomNodeplot ------------------------------------------------------------
+
 
 GeomNodeplot <- ggproto(
   "GeomNodeplot",
@@ -52,10 +64,12 @@ GeomNodeplot <- ggproto(
                         na.rm = FALSE,
                         gglist,
                         plot_call,
-                        width = width,
-                        height = height,
-                        ids = ids,
-                        scales = scales) {
+                        width,
+                        height,
+                        ids,
+                        xnudge,
+                        ynudge,
+                        scales) {
 
     data <- coord$transform(data, panel_params)
     grob_list <- list()
@@ -68,26 +82,36 @@ GeomNodeplot <- ggproto(
     # generate faceted base_plot
     facet_gtable <- ggplotGrob(ggplot(facet_data) +
                                  gglist +
+                                 theme(legend.position = "bottom") +
                                  facet_wrap( ~ id, scales = scales, nrow = 1))
-    base_gtable <- ggplotGrob(ggplot(base_data) + gglist) # + facet_grid( ~ id))
+
+    base_gtable <- ggplotGrob(ggplot(base_data) +
+                                gglist +
+                                theme(legend.position = "none"))
 
     # get base_gtable's base_layout
     base_layout <- base_gtable$layout
 
-    if (any(base_layout$name == "guide-box")) {
+    # legend ------------------------------------------------------------------
+
+    if (any(facet_gtable$layout$name == "guide-box")) {
       # extract gtable containing legend
-      legend_gtable <- base_gtable[, base_layout$l[base_layout$name == "guide-box"]]
-      base_gtable <- base_gtable[, -base_layout$l[base_layout$name == "guide-box"]]
+
+      legend_gtable <- reduce_gtable(facet_gtable, "guide-box")
+
       #call nodeplotGrob on legend_gtable
       legend_gtable <- nodeplotGrob(
-        x = min(data$x),
-        y = data$y[1],
+        x = 0.5,
+        y = min(data$y) - 0.1,
         width = width,
         height = height,
         node_gtable = legend_gtable
       )
       grob_list <- c(grob_list, list(legend_gtable))
     }
+
+
+# nodeplots ---------------------------------------------------------------
 
 
     # iterate through all ids to get all nodeplots
@@ -122,8 +146,8 @@ GeomNodeplot <- ggproto(
       x <- unique(data[data$id == ids[i], "x"])
       y <- unique(data[data$id == ids[i], "y"])
       nodeplotGrob(
-        x = x,
-        y = y,
+        x = x + xnudge,
+        y = y + ynudge,
         width = width,
         height = height,
         node_gtable = node_gtable
@@ -156,4 +180,19 @@ makeContent.nodeplotgrob <- function(x) {
 find_grob <- function(x, name) {
   which(sapply(x, function(x)
     substring(x$name, first = 1, last = nchar(name)) == name))
+}
+
+# function to remove selected elements from gtables, keeping widths
+remove_grob <- function (g, what = "guide-box") {
+  matches <- c(grepl(pattern = what, g$layout$name))
+  g$layout <- g$layout[!matches, , drop = FALSE]
+  g$grobs <- g$grobs[!matches]
+  return(g)
+}
+
+reduce_gtable <- function (g, what = "guide-box") {
+  matches <- c(grepl(pattern = what, g$layout$name))
+  g$layout <- g$layout[matches, , drop = FALSE]
+  g$grobs <- g$grobs[matches]
+  return(g)
 }
