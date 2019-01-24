@@ -17,6 +17,8 @@ geom_nodeplot <- function(mapping = NULL,
                           plot_call = call("ggplot", data = quote(data)),
                           width = 0.1,
                           height = 0.1,
+                          ids = NA,
+                          scales = "fixed",
                           ...) {
   layer(
     data = data,
@@ -32,6 +34,8 @@ geom_nodeplot <- function(mapping = NULL,
       plot_call = enquote(plot_call),
       width = width,
       height = height,
+      ids = ids,
+      scales = scales,
       ...
     )
   )
@@ -49,16 +53,23 @@ GeomNodeplot <- ggproto(
                         gglist,
                         plot_call,
                         width = width,
-                        height = height) {
+                        height = height,
+                        ids = ids,
+                        scales = scales) {
 
     data <- coord$transform(data, panel_params)
     grob_list <- list()
-
+    if (any(is.na(ids))) ids <- unique(data$id)
+    if (ids == "terminal") ids <- unique(data$id[data$kids == 0])
     # base data (root node data)
     base_data <- data[data$id == 1, ]
+    facet_data <- data[data$id %in% ids, ]
+
     # generate faceted base_plot
-    facet_gtable <- ggplotGrob(eval(plot_call) + gglist + facet_grid( ~ id))
-    base_gtable <- ggplotGrob(ggplot(base_data)+ gglist) # + facet_grid( ~ id))
+    facet_gtable <- ggplotGrob(ggplot(facet_data) +
+                                 gglist +
+                                 facet_wrap( ~ id, scales = scales, nrow = 1))
+    base_gtable <- ggplotGrob(ggplot(base_data) + gglist) # + facet_grid( ~ id))
 
     # get base_gtable's base_layout
     base_layout <- base_gtable$layout
@@ -80,19 +91,36 @@ GeomNodeplot <- ggproto(
 
 
     # iterate through all ids to get all nodeplots
-    nodeplot_gtable <- lapply(1:max(data$id), function(i) {
+    nodeplot_gtable <- lapply(seq_along(ids), function(i) {
+      #browser()
       # create node_gtable as copyo of base_gtable
       node_gtable <- base_gtable
+
       # get index of panel grob in base_gtable
       base_panel_index <- find_grob(base_gtable$grobs, "panel")
       # get index of ith panel in facet_gtable
-      panel_i <- paste0("panel-", unique(data$id)[i],".")
+      panel_i <- paste0("panel-", i,".")
       facet_panel_index <- find_grob(facet_gtable$grobs, panel_i)
       # replace panel grob in node_gtable with ith panel grob of facet_gtable
       node_gtable$grobs[[base_panel_index]] <- facet_gtable$grobs[[facet_panel_index]]
+
+      # get index of panel grob in base_gtable
+      base_axis_index <-  which(base_gtable$layout$name == "axis-l")
+      # get index of ith panel in facet_gtable
+      if (scales == "fixed") {
+      facet_axis_index <-  which(facet_gtable$layout$name == "axis-l-1-1")
+      } else {
+        axis_i <- paste0("axis-l-1-", i)
+        facet_axis_index <-  which(facet_gtable$layout$name == axis_i)
+      }
+
+      # facet_panel_index <- find_grob(facet_gtable$grobs, panel_i)
+      # replace panel grob in node_gtable with ith panel grob of facet_gtable
+      node_gtable$grobs[[base_axis_index]] <- facet_gtable$grobs[[facet_axis_index]]
+
       # get x any y coords of nodeplot
-      x <- unique(data[data$id == i, "x"])
-      y <- unique(data[data$id == i, "y"])
+      x <- unique(data[data$id == ids[i], "x"])
+      y <- unique(data[data$id == ids[i], "y"])
       nodeplotGrob(
         x = x,
         y = y,

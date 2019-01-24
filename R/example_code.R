@@ -52,7 +52,12 @@ ggparty(py, horizontal = F) +
                                              humidity,
                                              shape = play,
                                              col = humidity)),
-                              theme_bw()))+
+                              theme_bw()),
+                ids = "terminal",
+                scales = "free"
+                #ids = c(1, 2, 4,7)
+                ) +
+
   theme_void() +
   ylim(-0.1,1.1) +
   xlim(-0.1,1.1)
@@ -81,7 +86,8 @@ ggparty(t2) +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
   geom_nodeplot(gglist = list(geom_bar(aes(x = play)),
-                              theme_bw())) +
+                              theme_bw()),
+                ids = "terminal") +
   theme_void()+
   xlim(-0.1,1.1)+
   ylim(-0.1,1.1)
@@ -106,7 +112,13 @@ ggparty(party_j48) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  geom_nodeplot(gglist = list(geom_bar(aes(x = "", fill = Survived))))
+  geom_nodeplot(gglist = list(geom_bar(aes(x = "",
+                                           fill = table(Survived)[1] / nrow(data),
+                                           group = id))))
+
+pd <- get_plot_data(party_j48)
+
+ggplot(pd) +
 
 
 

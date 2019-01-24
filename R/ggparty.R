@@ -29,7 +29,7 @@ adjust_mapping <- function(default_mapping, mapping) {
 ggparty <- function(party, horizontal = FALSE) {
   plot_data <- get_plot_data(party, horizontal = horizontal)
   node_data <- select(plot_data, starts_with("data_"))
-  mapping <- aes(x = x, y = y, id = id)
+  mapping <- aes(x = x, y = y, id = id, kids = kids)
   #browser()
   for (column_i in names(node_data)) {
     mapping <- adjust_mapping(mapping, aes_string(var = paste(column_i)))
