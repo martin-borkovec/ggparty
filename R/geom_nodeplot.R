@@ -1,6 +1,6 @@
 library(ggplot2)
 library(grid)
-library(stringi)
+library(gtable)
 
 ggname <- function (prefix, grob) {
   grob$name <- grobName(grob, prefix)
@@ -14,9 +14,9 @@ geom_nodeplot <- function(mapping = NULL,
                           show.legend = NA,
                           inherit.aes = FALSE,
                           gglist = NULL,
-                          plot_call = NULL,
-                          same_axes_limits = TRUE,
-                          shared_legend = FALSE,
+                          plot_call = call("ggplot", data = quote(data)),
+                          width = 0.1,
+                          height = 0.1,
                           ...) {
   layer(
     data = data,
@@ -30,6 +30,8 @@ geom_nodeplot <- function(mapping = NULL,
       na.rm = na.rm,
       gglist = gglist,
       plot_call = enquote(plot_call),
+      width = width,
+      height = height,
       ...
     )
   )
@@ -46,81 +48,84 @@ GeomNodeplot <- ggproto(
                         na.rm = FALSE,
                         gglist,
                         plot_call,
-                        same_axes_limit,
-                        shared_legend) {
+                        width = width,
+                        height = height) {
 
     data <- coord$transform(data, panel_params)
+    grob_list <- list()
 
-    # same axes limits --------------------------------------------------------
-    # generate ggplot object
-
+    # base data (root node data)
+    base_data <- data[data$id == 1, ]
     # generate faceted base_plot
-    base_plot <- eval(plot_call) + gglist + facet_grid( ~ id)
-    # get its base_gtable
-    base_gtable <- ggplotGrob(base_plot)
+    facet_gtable <- ggplotGrob(eval(plot_call) + gglist + facet_grid( ~ id))
+    base_gtable <- ggplotGrob(ggplot(base_data)+ gglist) # + facet_grid( ~ id))
+
     # get base_gtable's base_layout
     base_layout <- base_gtable$layout
-    # extract gtable containing legend
-    legend_gtable <- base_gtable[, base_layout$l[base_layout$name == "guide-box"]]
-    # get layout of xlab from base_layout
-    xlab_layout <- base_layout[base_layout$name == "xlab-b", ]
-    # extract individual grobs from base_gtable
-    base_grobs <- base_gtable$grobs
-    # determine index of grob of xlab
-    f <- function(x) substring(x$name, first = 1, last = 12) == "axis.title.x"
-    xlab_index <- which(sapply(base_grobs, f))
-    # extract grob of xlab
-    xlab_grob <- base_grobs[[xlab_index]]
 
-    # call nodeplotGrob on legend_gtable
-    legend_gtable <- nodeplotGrob(
-      x = min(data$x),
-      y = data$y[1],
-      node_gtable = legend_gtable
-    )
+    if (any(base_layout$name == "guide-box")) {
+      # extract gtable containing legend
+      legend_gtable <- base_gtable[, base_layout$l[base_layout$name == "guide-box"]]
+      base_gtable <- base_gtable[, -base_layout$l[base_layout$name == "guide-box"]]
+      #call nodeplotGrob on legend_gtable
+      legend_gtable <- nodeplotGrob(
+        x = min(data$x),
+        y = data$y[1],
+        width = width,
+        height = height,
+        node_gtable = legend_gtable
+      )
+      grob_list <- c(grob_list, list(legend_gtable))
+    }
+
 
     # iterate through all ids to get all nodeplots
-    grobs <- lapply(1:max(data$id), function(i) {
-      # generate vector of all panel names except the ith
-      panels <- paste0("panel-", unique(data$id)[-i],"-1")
-      # drop all panels except the ith
-      node_gtable <- base_gtable[, -base_gtable$layout$l[base_gtable$layout$name %in% panels]]
-      # drop legend
-      node_gtable <- node_gtable[, -node_gtable$layout$l[node_gtable$layout$name == "guide-box"]]
-      # add xlab
-      node_gtable <- gtable_add_grob(node_gtable,
-                                   xlab_grob,
-                                   t = xlab_layout$t,
-                                   l= xlab_layout$l,
-                                   r = max(node_gtable$layout$r),
-                                   name = "xlab-b")
-      # get x and y coordinates of node
+    nodeplot_gtable <- lapply(1:max(data$id), function(i) {
+      # create node_gtable as copyo of base_gtable
+      node_gtable <- base_gtable
+      # get index of panel grob in base_gtable
+      base_panel_index <- find_grob(base_gtable$grobs, "panel")
+      # get index of ith panel in facet_gtable
+      panel_i <- paste0("panel-", unique(data$id)[i],".")
+      facet_panel_index <- find_grob(facet_gtable$grobs, panel_i)
+      # replace panel grob in node_gtable with ith panel grob of facet_gtable
+      node_gtable$grobs[[base_panel_index]] <- facet_gtable$grobs[[facet_panel_index]]
+      # get x any y coords of nodeplot
       x <- unique(data[data$id == i, "x"])
       y <- unique(data[data$id == i, "y"])
       nodeplotGrob(
         x = x,
         y = y,
+        width = width,
+        height = height,
         node_gtable = node_gtable
       )
     })
     #combine nodeplots and legend
-    grobs <- c(grobs, list(legend_gtable))
-    class(grobs) <- "gList"
-    ggname("geom_nodeplots", grobTree(children = grobs))
+    grob_list <- c(grob_list, nodeplot_gtable)
+    class(grob_list) <- "gList"
+    ggname("geom_nodeplots", grobTree(children = grob_list))
   }
 )
 
-nodeplotGrob <- function(x, y, node_gtable) {
+nodeplotGrob <- function(x, y, node_gtable, width, height) {
 
   gTree(x = x,
         y = y,
         node_gtable = node_gtable,
+        width = width,
+        height = height,
         cl = "nodeplotgrob")
 }
 
 
 makeContent.nodeplotgrob <- function(x) {
   r <- x$node_gtable
-  r$vp <- viewport(x = x$x, y = x$y, width = 0.1, height = 0.1)
+  r$vp <- viewport(x = x$x, y = x$y, width = x$width, height = x$height)
   setChildren(x, gList(r))
+}
+
+find_grob <- function(x, name) {
+  which(sapply(x, function(x)
+    substring(x$name, first = 1, last = nchar(name)) == name))
 }
