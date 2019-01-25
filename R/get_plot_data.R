@@ -6,7 +6,7 @@ get_plot_data <- function(party_object, horizontal = FALSE) {
                           parent = NA,
                           breaks = NA,
                           index = I(rep(list(NA), length(party_object))),
-                          info = NA,
+                          info = I(rep(list(NA), length(party_object))),
                           splitvar = NA,
                           level = NA,
                           kids = NA,
@@ -120,7 +120,7 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
 
 add_info <- function(party_object, plot_data) {
   for (i in plot_data$id) {
-    plot_data[i, "info"] <- formatinfo_node(party_object[[i]]$node)
+    plot_data[i, "info"][[1]] <- list(party_object[[i]]$node$info)
   }
   return(plot_data)
 }

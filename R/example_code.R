@@ -51,16 +51,20 @@ ggparty(py, horizontal = F) +
   geom_nodeplot(gglist = list(geom_point(aes(temperature,
                                              humidity,
                                              shape = play,
-                                             col = humidity)),
-                              theme_bw()),
+                                             col = humidity,
+                                             size = temperature))
+                              ),
                 ids = "terminal",
-                scales = "free"
+                scales = "fixed",
+                width = 0.15,
+                height = 0.15,
+                ynudge = 0
                 #ids = c(1, 2, 4,7)
                 ) +
 
   theme_void() +
-  ylim(-0.1,1.1) +
-  xlim(-0.1,1.1)
+  ylim(-0.25,1.1) +
+   xlim(-0.1,1.1)
 
 
 
@@ -174,8 +178,7 @@ plot(tptree)
 
 # TO DO -------------------------------------------------------------------
 
-# select nodes for plot
-# fix xlab position etc.
+
 # R package, manuals, documentation, etc...
 
 # DONE --------------------------------------------------------------------
@@ -184,7 +187,8 @@ plot(tptree)
 # horizontal layout
 # user definied terminal plot
 # shared scales etc.
-
+# select nodes for plot
+# fix xlab position etc.
 # rewrite get_plot_data to be more efficient and using extractor functions to be
 # robust against changes in partykit
 
