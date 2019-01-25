@@ -1,3 +1,8 @@
+Untitled
+================
+Martin Borkovec
+2019 M01 25
+
 ggparty
 =======
 
@@ -30,6 +35,7 @@ ggparty(tr_tree) +
   ylim(-0.25, 1)
 ```
 
-![](README_files/figure-markdown_github/tr_tree.pdf)
+
+![](README_files/figure-markdown_github/tr_tree.png)
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
