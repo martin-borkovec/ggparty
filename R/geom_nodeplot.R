@@ -75,10 +75,31 @@ GeomNodeplot <- ggproto(
     grob_list <- list()
     if (any(is.na(ids))) ids <- unique(data$id)
     if (ids == "terminal") ids <- unique(data$id[data$kids == 0])
-    # base data (root node data)
-    base_data <- data[data$id == 1, ]
-    facet_data <- data[data$id %in% ids, ]
 
+
+#  transform data_ columns from lists to full dataframe -------------------
+
+    nodeplot_data_lists <-  dplyr::select(data, dplyr::starts_with("data_"))
+    names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
+    lengths <- sapply(nodeplot_data_lists[[1]], function(x) length(unlist(x)))
+    nodeplot_data <- data.frame(id = rep(1:nrow(data), times = lengths))
+
+
+    for (column in names(nodeplot_data_lists)) {
+      content <- numeric(0)
+      for (id in data$id) {
+        rows <- nodeplot_data_lists[[column]][[id]]
+        content <- rbind(content, rows)
+      }
+      nodeplot_data[column] <- content
+    }
+
+
+# draw plots --------------------------------------------------------------
+
+
+    base_data <- nodeplot_data[nodeplot_data$id == 1, ]
+    facet_data <- nodeplot_data[nodeplot_data$id %in% ids, ]
     # generate faceted base_plot
     facet_gtable <- ggplotGrob(ggplot(facet_data) +
                                  gglist +

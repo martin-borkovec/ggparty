@@ -199,14 +199,32 @@ add_layout <- function(plot_data, horizontal) {
 
 # add_data() --------------------------------------------------------------
 
-add_data <- function(party_object, plot_data) {
-         node_data <- do.call(rbind,
-                              lapply(plot_data$id,
-                                     function(i) {
-                                       cbind(id = i, party_object[[i]]$data)
-                                       }))
-         names(node_data)[-1] <- paste0("data_", names(node_data))[-1]
-         plot_data <- inner_join(plot_data, node_data, by = "id")
+# add_data <- function(party_object, plot_data) {
+#          node_data <- do.call(rbind,
+#                               lapply(plot_data$id,
+#                                      function(i) {
+#                                        cbind(id = i, party_object[[i]]$data)
+#                                        }))
+#          names(node_data)[-1] <- paste0("data_", names(node_data))[-1]
+#          plot_data <- inner_join(plot_data, node_data, by = "id")
+#
+#   return(plot_data)
+# }
 
+add_data <- function(party_object, plot_data) {
+  data_columns <- names(party_object[[1]]$data)
+  for (column in data_columns) {
+    data_column <- paste0("data_", column)
+    plot_data[[data_column]] <- rep(list(NA), nrow(plot_data))
+    #plot_data[[column]] <- rep(list(NA), nrow(plot_data))
+  }
+
+  for (i in plot_data$id) {
+    for (column in data_columns) {
+      data_column <- paste0("data_", column)
+      plot_data[i, data_column][[1]] <- list(party_object[[i]]$data[column])
+      #plot_data[i,column][[1]] <- list(party_object[[i]]$data[column])
+    }
+  }
   return(plot_data)
 }

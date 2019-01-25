@@ -60,13 +60,10 @@ ggparty(py, horizontal = F) +
                 height = 0.15,
                 ynudge = 0
                 #ids = c(1, 2, 4,7)
-                ) +
+                )
 
-  theme_void() +
-  ylim(-0.25,1.1) +
-   xlim(-0.1,1.1)
-
-
+pd <- get_plot_data(py)
+pd$info
 
 # constparty --------------------------------------------------------------
 
@@ -174,6 +171,48 @@ tptree <- ctree(counts ~ ., data = treepipit)
 class(tptree)
 
 plot(tptree)
+
+# linear model tree
+data("BostonHousing", package = "mlbench")
+BostonHousing <- transform(BostonHousing,
+                           chas = factor(chas, levels = 0:1, labels = c("no", "yes")),
+                           rad = factor(rad, ordered = TRUE))
+
+bh_tree <- lmtree(medv ~ log(lstat) + I(rm^2) | zn + indus +
+                    chas + nox +
+                    +    age + dis + rad + tax + crim + b + ptratio, data = BostonHousing)
+
+
+plot(bh_tree)
+
+get_plot_data(bh_tree)
+
+##########
+data("TeachingRatings", package = "AER")
+tr <- subset(TeachingRatings, credits == "more")
+
+tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+                     tenure, data = tr, weights = students, caseweights = FALSE)
+
+ggparty(tr_tree) +
+  geom_edge(size = 1) +
+  geom_node_inner(fontface = "bold") +
+  geom_edge_label_discrete(colour = "grey") +
+  geom_edge_label_continuous(colour = "grey") +
+  geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
+                                             y = eval,
+                                             col = tenure,
+                                             shape = minority),
+                                         alpha = 0.8),
+                              geom_smooth(aes(x = beauty, y = eval),
+                                          method = "lm"),
+                              theme_bw()),
+                id = "terminal",
+                width = 0.15,
+                height = 0.25,
+                ynudge = - 0.05) +
+  ylim(-0.25, 1)
+
 
 
 # TO DO -------------------------------------------------------------------

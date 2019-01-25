@@ -27,15 +27,13 @@ adjust_mapping <- function(default_mapping, mapping) {
 
 
 ggparty <- function(party, horizontal = FALSE) {
- # browser()
   plot_data <- get_plot_data(party, horizontal = horizontal)
   node_data <- select(plot_data, starts_with("data_"))
-  mapping <- aes(x = x, y = y, id = id, kids = kids)
+  mapping <- aes(x = x, y = y, id = id, kids = kids, info = info)
 
   for (column_i in names(node_data)) {
-    #browser()
     mapping <- adjust_mapping(mapping, aes_string(var = paste0("`", column_i, "`")))
-    names(mapping)[length(mapping)] <- substring(column_i, 6)
+    names(mapping)[length(mapping)] <- column_i
     }
 
   ggplot(data = plot_data,
