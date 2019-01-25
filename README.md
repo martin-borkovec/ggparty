@@ -1,10 +1,6 @@
-Untitled
-================
-Martin Borkovec
-2019 M01 25
-
 ggparty
-=======
+================
+
 
 ggplot2 visualizations for the partykit package.
 
@@ -16,10 +12,10 @@ tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
                      tenure, data = tr, weights = students, caseweights = FALSE)
 
 ggparty(tr_tree) +
-  geom_edge(size = 1) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
+  geom_edge(size = 1.5) +
+  geom_node_inner(fontface = "bold", size = 8) +
+  geom_edge_label_discrete(colour = "grey", size = 6) +
+  geom_edge_label_continuous(colour = "grey", size = 6) +
   geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
                                              y = eval,
                                              col = tenure,
@@ -36,6 +32,6 @@ ggparty(tr_tree) +
 ```
 
 
-![](README_files/figure-markdown_github/tr_tree.png)
+![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
