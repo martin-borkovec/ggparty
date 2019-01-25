@@ -1,27 +1,10 @@
-library(ggplot2)
-library(gridExtra)
+#' ggplot an object of the party class
+#'
+#' @param party partyobjet to plot
+#' @param horizontal horizontal plot?
+#' @export
+#' @import ggplot2
 
-
-# StatParty ---------------------------------------------------------------
-
-
-StatParty <- ggproto("StatParty", Stat,
-                     compute_group = function(data, scales = scales) {
-                       data <- data[!duplicated(data$id), ]
-                     }
-)
-
-
-# adjust_mapping () -------------------------------------------------------
-
-
-adjust_mapping <- function(default_mapping, mapping) {
-  if(!is.null(mapping)){
-    mapping <- `class<-`(modifyList(default_mapping, mapping), "uneval")
-  } else {
-    mapping <- default_mapping
-  }
-}
 
 # ggparty() ---------------------------------------------------------------
 
@@ -41,15 +24,16 @@ ggparty <- function(party, horizontal = FALSE) {
     theme_void() +
     xlim(-0.1,1.1) +
     ylim(-0.1,1.1)
-
-
-
-  #theme_void()
 }
 
 
 # geom_edge() -------------------------------------------------------------
-
+#' generate geom of edges
+#'
+#' @param mapping not recommended to change
+#' @export
+#' @md
+#'
 geom_edge <- function(mapping = NULL, ...){
 
   default_mapping <- aes(x = x,
@@ -75,7 +59,12 @@ geom_edge <- function(mapping = NULL, ...){
 
 
 # geom_edge_label() -------------------------------------------------------
-
+#' generate geom of continuous splitvars
+#'
+#' @param mapping not recommended to change
+#' @export
+#' @md
+#'
 
 geom_edge_label_continuous <- function(mapping = NULL, ...) {
 
@@ -97,6 +86,13 @@ geom_edge_label_continuous <- function(mapping = NULL, ...) {
   )
 }
 
+
+#' generate geom of discrete splitvars
+#'
+#' @param mapping not recommended to change
+#' @export
+#' @md
+#'
 geom_edge_label_discrete <- function(mapping = NULL, ...) {
 
   default_mapping <- aes(label = index,
@@ -120,7 +116,12 @@ geom_edge_label_discrete <- function(mapping = NULL, ...) {
 
 # geom_node ------------------------------------------------
 
-
+#' generate geom of terminal nodes
+#'
+#' @param mapping not recommended to change
+#' @export
+#' @md
+#'
 geom_node_terminal_label <- function(mapping = NULL, ...) {
   default_mapping <- aes(label = info)
   mapping <- adjust_mapping(default_mapping, mapping)
@@ -137,6 +138,12 @@ geom_node_terminal_label <- function(mapping = NULL, ...) {
   )
 }
 
+#' generate geom of inner nodes
+#'
+#' @param mapping not recommended to change
+#' @export
+#' @md
+#'
 geom_node_inner <- function(mapping = NULL, ...){
   default_mapping <- aes(label = splitvar)
   mapping <- adjust_mapping(default_mapping, mapping)
@@ -150,4 +157,25 @@ geom_node_inner <- function(mapping = NULL, ...){
     params = list(na.rm = T,
                   ...)
   )
+}
+
+# StatParty ---------------------------------------------------------------
+
+
+StatParty <- ggproto("StatParty", Stat,
+                     compute_group = function(data, scales = scales) {
+                       data <- data[!duplicated(data$id), ]
+                     }
+)
+
+
+# adjust_mapping () -------------------------------------------------------
+
+
+adjust_mapping <- function(default_mapping, mapping) {
+  if(!is.null(mapping)){
+    mapping <- `class<-`(modifyList(default_mapping, mapping), "uneval")
+  } else {
+    mapping <- default_mapping
+  }
 }

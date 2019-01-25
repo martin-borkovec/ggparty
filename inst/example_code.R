@@ -62,6 +62,7 @@ ggparty(py, horizontal = F) +
                 #ids = c(1, 2, 4,7)
                 )
 
+
 pd <- get_plot_data(py)
 pd$info
 
@@ -207,13 +208,14 @@ ggparty(tr_tree) +
                               geom_smooth(aes(x = beauty, y = eval),
                                           method = "lm"),
                               theme_bw()),
+                scales = "fixed",
                 id = "terminal",
                 width = 0.15,
                 height = 0.25,
                 ynudge = - 0.05) +
   ylim(-0.25, 1)
 
-
+class(g)
 
 # TO DO -------------------------------------------------------------------
 

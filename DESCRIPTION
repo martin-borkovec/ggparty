@@ -7,7 +7,10 @@ Depends: R (>= 3.5.0)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Imports: 
-    ggplot2,
+Imports:ggplot2,
     partykit,
-    gridExtra
+    gridExtra,
+    grid,
+    gtable
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1

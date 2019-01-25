@@ -1,9 +1,29 @@
-ggparty
-================
+---
+title: "ggparty"
+output: rmarkdown::github_document
+---
 
 ggplot2 visualizations for the partykit package.
 
-``` r
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, dpi=300)
+options(warn=-1)
+```
+
+```{r, include = FALSE}
+
+library(partykit)
+library(ggplot2)
+
+source("R/get_plot_data.R")
+source("R/ggparty.R")
+#source("R/geom_node_terminal_plot.R")
+source("R/geom_nodeplot.R")
+
+```
+
+
+```{r, warning = FALSE, fig.width=15, fig.height=10}
 data("TeachingRatings", package = "AER")
 tr <- subset(TeachingRatings, credits == "more")
 
@@ -29,9 +49,8 @@ ggparty(tr_tree) +
                 height = 0.25,
                 ynudge = - 0.05) + 
   ylim(-0.25, 1)
+
 ```
 
-
-![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
-
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+
