@@ -30,7 +30,10 @@ ggparty(tr_tree) +
   ylim(-0.25, 1)
 ```
 
+```{r}
+knitr::include_graphics("README_files/figure-markdown_github/tr_tree.pdf", dpi = 100)
+```
 
-![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
+![](README_files/figure-markdown_github/tr_tree.pdf){width=250px}
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
