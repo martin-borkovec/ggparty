@@ -40,7 +40,11 @@ ggparty(tr_tree) +
                 width = 0.15,
                 height = 0.25,
                 y_nudge = - 0.05) + 
+<<<<<<< HEAD
   ylim(-0.3, 1)
+=======
+  ylim(-0.25, 1)
+>>>>>>> c4d42e55713950fc24bac4040d26ed3ca5c29279
 ```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
