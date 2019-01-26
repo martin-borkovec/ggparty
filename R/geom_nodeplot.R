@@ -1,6 +1,7 @@
 #' generate geom of nodeplot
 #'
 #' @param mapping mapping of nodeplots
+#' @param mapping if NULL uses inherited data
 #' @param gglist list of additional ggplot components
 #' @param width,height size of the nodeplot's viewport
 #' @param ids which ids to plot. numeric or string "terminal"
@@ -15,37 +16,28 @@
 
 geom_nodeplot <- function(mapping = NULL,
                           data = NULL,
-                          position = "identity",
-                          na.rm = FALSE,
-                          show.legend = NA,
-                          inherit.aes = FALSE,
                           gglist = NULL,
                           plot_call = "ggplot",
                           width = 0.1,
                           height = 0.1,
                           ids = NA,
                           scales = "fixed",
-                          xnudge = 0,
-                          ynudge = 0,
+                          x_nudge = 0,
+                          y_nudge = 0,
                           ...) {
   ggplot2::layer(
     data = data,
     mapping = mapping,
     stat = "identity",
     geom = GeomNodeplot,
-    position = position,
-    show.legend = show.legend,
-    inherit.aes = TRUE,
+    position = position_nudge(x = x_nudge, y = y_nudge),
     params = list(
-      na.rm = na.rm,
       gglist = gglist,
       plot_call = enquote(plot_call),
       width = width,
       height = height,
       ids = ids,
       scales = scales,
-      xnudge = xnudge,
-      ynudge = ynudge,
       ...
     )
   )
@@ -64,15 +56,13 @@ GeomNodeplot <- ggproto(
                         data,
                         panel_params,
                         coord,
-                        na.rm = FALSE,
                         gglist,
                         plot_call,
                         width,
                         height,
                         ids,
-                        xnudge,
-                        ynudge,
                         scales) {
+    #browser()
     data <- coord$transform(data, panel_params)
     grob_list <- list()
     if (any(is.na(ids))) ids <- unique(data$id)
@@ -84,13 +74,14 @@ GeomNodeplot <- ggproto(
     nodeplot_data_lists <-  dplyr::select(data, dplyr::starts_with("data_"))
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
     lengths <- sapply(nodeplot_data_lists[[1]], function(x) length(unlist(x)))
-    nodeplot_data <- data.frame(id = rep(1:nrow(data), times = lengths))
+    nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
 
 
     for (column in names(nodeplot_data_lists)) {
       content <- numeric(0)
-      for (id in data$id) {
-        rows <- nodeplot_data_lists[[column]][[id]]
+      for (i in seq_along(data$id)) {
+        #browser()
+        rows <- nodeplot_data_lists[[column]][[i]]
         content <- rbind(content, rows)
       }
       nodeplot_data[column] <- content
@@ -99,7 +90,7 @@ GeomNodeplot <- ggproto(
     # draw plots --------------------------------------------------------------
 
 
-    base_data <- nodeplot_data[nodeplot_data$id == 1, ]
+    base_data <- nodeplot_data#[nodeplot_data$id == 1, ]
     facet_data <- nodeplot_data[nodeplot_data$id %in% ids, ]
     # generate faceted base_plot
 
@@ -180,8 +171,8 @@ GeomNodeplot <- ggproto(
       x <- unique(data[data$id == ids[i], "x"])
       y <- unique(data[data$id == ids[i], "y"])
       nodeplotGrob(
-        x = x + xnudge,
-        y = y + ynudge,
+        x = x,
+        y = y,
         width = width,
         height = height,
         node_gtable = node_gtable

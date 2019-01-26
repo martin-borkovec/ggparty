@@ -2,10 +2,9 @@
 
 S3method(makeContent,nodeplotgrob)
 export(geom_edge)
-export(geom_edge_label_continuous)
-export(geom_edge_label_discrete)
-export(geom_node_inner)
-export(geom_node_terminal_label)
+export(geom_edge_label)
+export(geom_node_info)
+export(geom_node_splitvar)
 export(geom_nodeplot)
 export(ggparty)
 import(dplyr)

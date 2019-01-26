@@ -4,10 +4,9 @@
 \alias{geom_nodeplot}
 \title{generate geom of nodeplot}
 \usage{
-geom_nodeplot(mapping = NULL, data = NULL, position = "identity",
-  na.rm = FALSE, show.legend = NA, inherit.aes = FALSE,
-  gglist = NULL, plot_call = "ggplot", width = 0.1, height = 0.1,
-  ids = NA, scales = "fixed", xnudge = 0, ynudge = 0, ...)
+geom_nodeplot(mapping = NULL, data = NULL, gglist = NULL,
+  plot_call = "ggplot", width = 0.1, height = 0.1, ids = NA,
+  scales = "fixed", x_nudge = 0, y_nudge = 0, ...)
 }
 \arguments{
 \item{mapping}{mapping of nodeplots}
@@ -19,6 +18,8 @@ geom_nodeplot(mapping = NULL, data = NULL, position = "identity",
 \item{ids}{which ids to plot. numeric or string "terminal"}
 
 \item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
+
+\item{mapping}{if NULL uses inherited data}
 
 \item{xnudge, ynudge}{nudge nodeplot}
 }
