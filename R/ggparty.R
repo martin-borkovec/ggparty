@@ -1,9 +1,13 @@
 #' ggplot an object of the party class
 #'
-#' @param party partyobjet to plot
+#' @param party partyobject to plot
 #' @param horizontal horizontal plot?
 #' @export
+#' @import partykit
 #' @import ggplot2
+#' @import dplyr
+#' @import gtable
+#' @import grid
 
 
 # ggparty() ---------------------------------------------------------------
@@ -11,7 +15,7 @@
 
 ggparty <- function(party, horizontal = FALSE) {
   plot_data <- get_plot_data(party, horizontal = horizontal)
-  node_data <- select(plot_data, starts_with("data_"))
+  node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
   mapping <- aes(x = x, y = y, id = id, kids = kids, info = info)
 
   for (column_i in names(node_data)) {

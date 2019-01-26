@@ -7,7 +7,7 @@
 ggparty(party, horizontal = FALSE)
 }
 \arguments{
-\item{party}{partyobjet to plot}
+\item{party}{partyobject to plot}
 
 \item{horizontal}{horizontal plot?}
 }

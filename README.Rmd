@@ -5,25 +5,23 @@ output: rmarkdown::github_document
 
 ggplot2 visualizations for the partykit package.
 
+## Install 
+```{r, eval=FALSE}
+devtools::install_github("mmostly-harmless/ggparty", 
+                          dependencies=TRUE)
+```
+
+## Example
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, dpi=300)
 options(warn=-1)
 ```
 
-```{r, include = FALSE}
-
-library(partykit)
-library(ggplot2)
-
-source("R/get_plot_data.R")
-source("R/ggparty.R")
-#source("R/geom_node_terminal_plot.R")
-source("R/geom_nodeplot.R")
-
-```
 
 
-```{r, warning = FALSE, fig.width=15, fig.height=10}
+```{r, warning = FALSE, message = FALSE, fig.width = 15, fig.height = 10}
+library(ggparty)
+
 data("TeachingRatings", package = "AER")
 tr <- subset(TeachingRatings, credits == "more")
 

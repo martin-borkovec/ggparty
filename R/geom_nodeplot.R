@@ -28,7 +28,7 @@ geom_nodeplot <- function(mapping = NULL,
                           xnudge = 0,
                           ynudge = 0,
                           ...) {
-  layer(
+  ggplot2::layer(
     data = data,
     mapping = mapping,
     stat = "identity",
@@ -49,6 +49,7 @@ geom_nodeplot <- function(mapping = NULL,
       ...
     )
   )
+
 }
 
 
@@ -72,7 +73,6 @@ GeomNodeplot <- ggproto(
                         xnudge,
                         ynudge,
                         scales) {
-
     data <- coord$transform(data, panel_params)
     grob_list <- list()
     if (any(is.na(ids))) ids <- unique(data$id)
@@ -95,7 +95,6 @@ GeomNodeplot <- ggproto(
       }
       nodeplot_data[column] <- content
     }
-
 
     # draw plots --------------------------------------------------------------
 
@@ -191,24 +190,28 @@ GeomNodeplot <- ggproto(
     #combine nodeplots and legend
     grob_list <- c(grob_list, nodeplot_gtable)
     class(grob_list) <- "gList"
-    ggname("geom_nodeplots", grobTree(children = grob_list))
+    ggname("geom_nodeplots", grid::grobTree(children = grob_list))
   }
 )
 
+
 nodeplotGrob <- function(x, y, node_gtable, width, height) {
-  gTree(x = x,
-        y = y,
-        node_gtable = node_gtable,
-        width = width,
-        height = height,
-        cl = "nodeplotgrob")
+  grid::gTree(x = x,
+              y = y,
+              node_gtable = node_gtable,
+              width = width,
+              height = height,
+              cl = "nodeplotgrob")
 }
 
-
+#' appearantly needs to be exported
+#'
+#' @export
+#' @md
 makeContent.nodeplotgrob <- function(x) {
   r <- x$node_gtable
-  r$vp <- viewport(x = x$x, y = x$y, width = x$width, height = x$height)
-  setChildren(x, gList(r))
+  r$vp <- grid::viewport(x = x$x, y = x$y, width = x$width, height = x$height)
+  grid::setChildren(x, grid::gList(r))
 }
 
 find_grob <- function(x, name) {
@@ -236,3 +239,4 @@ ggname <- function (prefix, grob) {
   grob$name <- grobName(grob, prefix)
   grob
 }
+

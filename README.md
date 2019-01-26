@@ -3,7 +3,20 @@ ggparty
 
 ggplot2 visualizations for the partykit package.
 
+Install
+-------
+
 ``` r
+devtools::install_github("mmostly-harmless/ggparty", 
+                          dependencies=TRUE)
+```
+
+Example
+-------
+
+``` r
+library(ggparty)
+
 data("TeachingRatings", package = "AER")
 tr <- subset(TeachingRatings, credits == "more")
 
@@ -30,7 +43,6 @@ ggparty(tr_tree) +
                 ynudge = - 0.05) + 
   ylim(-0.25, 1)
 ```
-
 
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
 

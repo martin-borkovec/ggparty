@@ -1,10 +1,9 @@
-library(partykit)
-library(ggplot2)
+library(ggparty)
 
-source("R/get_plot_data.R")
-source("R/ggparty.R")
-#source("R/geom_node_terminal_plot.R")
-source("R/geom_nodeplot.R")
+# source("R/get_plot_data.R")
+# source("R/ggparty.R")
+# #source("R/geom_node_terminal_plot.R")
+# source("R/geom_nodeplot.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -18,7 +17,6 @@ sp_w <- partysplit(4L, index = 1:2)
 
 ## query labels
 character_split(sp_o)
-
 
 ### nodes ###
 ## set up partynode structure
@@ -47,7 +45,7 @@ ggparty(py, horizontal = F) +
   geom_node_inner() +
   geom_edge_label_discrete() +
   geom_edge_label_continuous() +
-  #geom_node_terminal_label() +
+  geom_node_terminal_label() +
   geom_nodeplot(gglist = list(geom_point(aes(temperature,
                                              humidity,
                                              shape = play,
@@ -219,6 +217,8 @@ class(g)
 
 # TO DO -------------------------------------------------------------------
 
+# plot info
+# response in model trees
 
 # R package, manuals, documentation, etc...
 
