@@ -1,5 +1,4 @@
 # transforms recursive structure of object of type "party" to dataframe
-library(dplyr)
 get_plot_data <- function(party_object, horizontal = FALSE) {
   ids <- nodeids(party_object)
   plot_data <- data.frame(id = ids,
@@ -90,17 +89,17 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
           kid <- kids[split_index[j]]
           # for first interval use -inf as lower bound
           if (j == 1) {
-            plot_data[kid, "breaks"] <- paste(ifelse(party_split$right == T,
+            plot_data[kid, "index"] <- paste(ifelse(party_split$right == T,
                                                      "\u2264","<"),
                                               split_breaks[1])
             # for last interval use inf as upper bound
           } else if (j == length(split_index)) {
-            plot_data[kid, "breaks"] <- paste(ifelse(party_split$right == T,
+            plot_data[kid, "index"] <- paste(ifelse(party_split$right == T,
                                                      ">","<"),
                                               split_breaks[j - 1])
             # else use break[j-1] for lower interval bound
           } else {
-            plot_data[kid, "breaks"] <- paste0(ifelse(party_split$right == T,
+            plot_data[kid, "index"] <- paste0(ifelse(party_split$right == T,
                                                       "(","["),
                                                split_breaks[j - 1],", ",
                                                split_breaks[j],
@@ -190,8 +189,6 @@ add_layout <- function(plot_data, horizontal) {
   # assigna parent and edge coordinates
   plot_data$x_parent <- c(plot_data$x[plot_data$parent])
   plot_data$y_parent <- c(plot_data$y[plot_data$parent])
-  plot_data$x_edge <- (plot_data$x + plot_data$x_parent) / 2
-  plot_data$y_edge <- (plot_data$y + plot_data$y_parent) / 2
 
   return(plot_data)
 }

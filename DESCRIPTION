@@ -1,10 +1,11 @@
 Package: ggparty
-Title: What the Package Does (one line, title case)
+Title: ggplot2 visualizations for the partykit package.
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: person("Martin", "Borkovec", email = "martin.borkovec@skyforge.at", role = c("aut", "cre"))
+Description: ggplot2 visualizations for the partykit package.
 Depends: R (>= 3.5.0), ggplot2, partykit, gridExtra, grid, gtable
-License: What license is it under?
+Imports: dplyr
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

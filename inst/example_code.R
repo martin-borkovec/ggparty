@@ -42,10 +42,9 @@ pynode <- py$node
 
 ggparty(py, horizontal = F) +
   geom_edge() +
-  geom_node_inner() +
-  geom_edge_label_discrete() +
-  geom_edge_label_continuous() +
-  geom_node_terminal_label() +
+  geom_node_splitvar(ynudge = 0.0) +
+  geom_edge_label(shift = 0.5) +
+  geom_node_info() +
   geom_nodeplot(gglist = list(geom_point(aes(temperature,
                                              humidity,
                                              shape = play,
@@ -56,9 +55,10 @@ ggparty(py, horizontal = F) +
                 scales = "fixed",
                 width = 0.15,
                 height = 0.15,
-                ynudge = 0
-                #ids = c(1, 2, 4,7)
-                )
+                y_nudge = 0,
+                x_nudge = 0
+                ) +
+    ylim(-0.3, 1)
 
 
 pd <- get_plot_data(py)
