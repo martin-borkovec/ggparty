@@ -40,8 +40,8 @@ ggparty(tr_tree) +
                 width = 0.15,
                 height = 0.25,
                 y_nudge = - 0.05) + 
-                ylim(-0.3, 1)
-
+  ylim(-0.3, 1)
+```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
