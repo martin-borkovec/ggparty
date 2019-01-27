@@ -1,7 +1,7 @@
 #' generate geom of nodeplot
 #'
-#' @param mapping mapping of nodeplots
-#' @param mapping if NULL uses inherited data
+#' @param mapping mapping of nodeplots. if NULL uses inherited data. fitted
+#' values of modelparty objects can be mapped with "fitted_values".
 #' @param gglist list of additional ggplot components
 #' @param width,height size of the nodeplot's viewport
 #' @param ids which ids to plot. numeric or string "terminal"

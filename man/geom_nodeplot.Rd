@@ -9,7 +9,8 @@ geom_nodeplot(mapping = NULL, data = NULL, gglist = NULL,
   scales = "fixed", x_nudge = 0, y_nudge = 0, ...)
 }
 \arguments{
-\item{mapping}{mapping of nodeplots}
+\item{mapping}{mapping of nodeplots. if NULL uses inherited data. fitted
+values of modelparty objects can be mapped with "fitted_values".}
 
 \item{gglist}{list of additional ggplot components}
 
@@ -18,8 +19,6 @@ geom_nodeplot(mapping = NULL, data = NULL, gglist = NULL,
 \item{ids}{which ids to plot. numeric or string "terminal"}
 
 \item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
-
-\item{mapping}{if NULL uses inherited data}
 
 \item{xnudge, ynudge}{nudge nodeplot}
 }

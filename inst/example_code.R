@@ -187,19 +187,20 @@ plot(bh_tree)
 get_plot_data(bh_tree)
 
 ##########
+
+
 data("TeachingRatings", package = "AER")
 tr <- subset(TeachingRatings, credits == "more")
 
 tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
-                     tenure, data = tr, weights = students, caseweights = FALSE)
+                    tenure, data = tr, weights = students, caseweights = FALSE)
 
 ggparty(tr_tree) +
-  geom_edge(size = 1) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
-  geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
-                                             y = eval,
+  geom_edge(size = 1.5) +
+  geom_node_splitvar(fontface = "bold", size = 8) +
+  geom_edge_label(colour = "grey", size = 6) +
+  geom_nodeplot(gglist = list(geom_point(aes(x = fitted_values,
+                                             y = beauty,
                                              col = tenure,
                                              shape = minority),
                                          alpha = 0.8),
@@ -210,10 +211,8 @@ ggparty(tr_tree) +
                 id = "terminal",
                 width = 0.15,
                 height = 0.25,
-                ynudge = - 0.05) +
+                y_nudge = - 0.05) +
   ylim(-0.25, 1)
-
-class(g)
 
 # TO DO -------------------------------------------------------------------
 

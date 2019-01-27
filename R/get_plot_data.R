@@ -210,6 +210,11 @@ add_layout <- function(plot_data, horizontal) {
 
 add_data <- function(party_object, plot_data) {
   data_columns <- names(party_object[[1]]$data)
+  fitted_values <- !is.null(party_object$node$info$object$fitted.values)
+  if (fitted_values) {
+    data_columns <- c(data_columns, "fitted_values")
+  }
+
   for (column in data_columns) {
     data_column <- paste0("data_", column)
     plot_data[[data_column]] <- rep(list(NA), nrow(plot_data))
@@ -217,9 +222,14 @@ add_data <- function(party_object, plot_data) {
   }
 
   for (i in plot_data$id) {
+    node_data <- party_object[[i]]$data
+    if (fitted_values) {
+      node_data <- cbind(node_data,
+        "fitted_values" = party_object[[i]]$node$info$object$fitted.values)
+    }
     for (column in data_columns) {
       data_column <- paste0("data_", column)
-      plot_data[i, data_column][[1]] <- list(party_object[[i]]$data[column])
+      plot_data[i, data_column][[1]] <- list(node_data[column])
       #plot_data[i,column][[1]] <- list(party_object[[i]]$data[column])
     }
   }
