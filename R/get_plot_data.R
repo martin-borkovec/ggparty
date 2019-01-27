@@ -1,5 +1,5 @@
-# transforms recursive structure of object of type "party" to dataframe
-
+#' transforms recursive structure of object of type "party" to dataframe
+#' @export
 get_plot_data <- function(party_object) {
   ids <- nodeids(party_object)
   plot_data <- data.frame(id = ids,
@@ -20,9 +20,8 @@ get_plot_data <- function(party_object) {
   return(plot_data)
 }
 
-# add_kids_parents() --------------------------------------------------------
-
-
+#' add_kids_parents() --------------------------------------------------------
+#' @export
 add_kids_parents <- function(party_object, plot_data){
   for (i in plot_data$id) {
     party_split <- party_object[[i]]$node$split
@@ -40,9 +39,8 @@ add_kids_parents <- function(party_object, plot_data){
   return(plot_data)
 }
 
-# add_splitvar_breaks_index() ---------------------------------------------
-
-
+#' add_splitvar_breaks_index() ---------------------------------------------
+#' @export
 add_splitvar_breaks_index <- function(party_object, plot_data) {
   for (i in plot_data$id) {
     party_split <- party_object[[i]]$node$split
@@ -102,18 +100,16 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
 }
 
 
-# add_info() ----------------------------------------------------------------
-
-
+#' add_info() ----------------------------------------------------------------
+#' @export
 add_info <- function(part_object, plot_data) {
   for (i in plot_data$id[plot_data$kids == 0]) {
     plot_data[i, "info"] <- formatinfo_node(py[[i]]$node)
   }
   return(plot_data)
 }
-# add_layout() --------------------------------------------------------------
-
-
+#' add_layout() --------------------------------------------------------------
+#' @export
 add_layout <- function(plot_data) {
   terminal_level <- max(plot_data$level)
   terminal_data <- plot_data[plot_data$level == terminal_level, ]
@@ -147,9 +143,8 @@ add_layout <- function(plot_data) {
   return(plot_data)
 }
 
-# add_levels() ---------------------------------------------------------
-
-
+#' add_levels() ---------------------------------------------------------
+#' @export
 add_levels <- function(plot_data, endnode_level){
   #root level
   plot_data$level[1] <- 0

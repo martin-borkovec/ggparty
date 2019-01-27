@@ -1,4 +1,4 @@
-
+#' @export
 geom_node_terminal_plot <- function(party, gglist = NULL, shared_legend = T, ...) {
   plot_data <- get_plot_data(party)
   endnodes_n <- sum(plot_data$kids == 0)
@@ -38,7 +38,29 @@ geom_node_terminal_plot <- function(party, gglist = NULL, shared_legend = T, ...
   annotation_custom(grob = grob, xmin = 0, xmax = 1, ymin = -0.5, ymax = 0)
 }
 
+#' @export
+terminal_spineplot <- function(root, terminal_node, gglist, ...) {
+ stopifnot(require(ggmosaic))
+  mf <- model.frame(terminal_node)
+  y <- Formula::model.part(terminal_node$info$Formula, mf, lhs = 1L,
+                           rhs = 0L)
+  y <- y[[1L]]
+  x <- Formula::model.part(terminal_node$info$Formula, mf, lhs = 0L,
+                           rhs = 1L)
+  x <- x[[1L]]
+  x_cat <- cut(x, quantile(ct[[1]]$dat$glucose))
+  plot_data_terminal_node <- data.frame(x_cat, y)
+  list(ggplot(plot_data_terminal_node) +
+         ggmosaic::geom_mosaic(aes(x = product(x_cat),
+                         fill = y),
+                     na.rm = TRUE,
+                     ...) +
+         gglist
 
+  )
+}
+
+#' @export
 terminal_spineplot <- function(root, terminal_node, gglist, ...) {
   require(ggmosaic)
   mf <- model.frame(terminal_node)
@@ -60,27 +82,7 @@ terminal_spineplot <- function(root, terminal_node, gglist, ...) {
   )
 }
 
-terminal_spineplot <- function(root, terminal_node, gglist, ...) {
-  require(ggmosaic)
-  mf <- model.frame(terminal_node)
-  y <- Formula::model.part(terminal_node$info$Formula, mf, lhs = 1L,
-                           rhs = 0L)
-  y <- y[[1L]]
-  x <- Formula::model.part(terminal_node$info$Formula, mf, lhs = 0L,
-                           rhs = 1L)
-  x <- x[[1L]]
-  x_cat <- cut(x, quantile(ct[[1]]$dat$glucose))
-  plot_data_terminal_node <- data.frame(x_cat, y)
-  list(ggplot(plot_data_terminal_node) +
-         geom_mosaic(aes(x = product(x_cat),
-                         fill = y),
-                     na.rm = TRUE,
-                     ...) +
-         gglist
-
-  )
-}
-
+#' @export
 terminal_barplot <- function(terminal_node, gglist, ...) {
   list(ggplot(data = data.frame(response = terminal_node$fitted$`(response)`),
               aes("")) +
