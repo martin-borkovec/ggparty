@@ -36,7 +36,7 @@ pn
 py <- party(pn, WeatherPlay)
 py
 
-str(py)
+#str(py)
 
 plot(py)
 pynode <- py$node
