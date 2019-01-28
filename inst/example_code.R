@@ -1,9 +1,9 @@
-library(partykit)
-library(ggplot2)
+library(ggparty)
 
-source("R/get_plot_data.R")
-source("R/ggparty.R")
-source("R/geom_node_terminal_plot.R")
+# source("R/get_plot_data.R")
+# source("R/ggparty.R")
+# #source("R/geom_node_terminal_plot.R")
+# source("R/geom_nodeplot.R")
 ### data ###
 ## artificial WeatherPlay data
 data("WeatherPlay", package = "partykit")
@@ -17,7 +17,6 @@ sp_w <- partysplit(4L, index = 1:2)
 
 ## query labels
 character_split(sp_o)
-
 
 ### nodes ###
 ## set up partynode structure
@@ -41,24 +40,29 @@ py
 plot(py)
 pynode <- py$node
 
-ggparty(py) +
+ggparty(py, horizontal = F) +
   geom_edge() +
-  geom_node_inner() +
-  geom_edge_label_discrete() +
-  geom_edge_label_continuous() +
-  geom_node_terminal_label() +
-  theme_void() +
-  ylim(c(0, 1))
+  geom_node_splitvar(ynudge = 0.0) +
+  geom_edge_label(shift = 0.5) +
+  geom_node_info() +
+  geom_nodeplot(gglist = list(geom_point(aes(temperature,
+                                             humidity,
+                                             shape = play,
+                                             col = humidity,
+                                             size = temperature))
+                              ),
+                ids = "terminal",
+                scales = "fixed",
+                width = 0.15,
+                height = 0.15,
+                y_nudge = 0,
+                x_nudge = 0
+                ) +
+    ylim(-0.3, 1)
 
 
-ggparty(py) +
-  geom_edge(size = 1.5) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_label(colour = "red", fontface = "bold") +
-  theme_void() +
-  ylim(c(0, 1))
+pd <- get_plot_data(py)
+pd$info
 
 # constparty --------------------------------------------------------------
 
@@ -81,19 +85,14 @@ ggparty(t2) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_plot(t2, shared_legend = F)
+  geom_nodeplot(gglist = list(geom_bar(aes(x = play)),
+                              theme_bw()),
+                ids = "terminal") +
+  theme_void()+
+  xlim(-0.1,1.1)+
+  ylim(-0.1,1.1)
 
 
-ggparty(t2) +
-  geom_edge(size = 1) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_plot(t2,
-                          shared_legend = T,
-                          gglist = list(theme_bw(),
-                                        ggtitle("Barplot"),
-                                        scale_fill_brewer()))
 
 # Titanic -----------------------------------------------------------------
 
@@ -106,15 +105,20 @@ library(RWeka)
 j48 <- J48(Survived ~ ., data = ttnc)
 party_j48 <- as.party(j48)
 
+plot(party_j48)
+
 ggparty(party_j48) +
   geom_edge(size = 1) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_plot(party_j48,
-                          shared_legend = T,
-                          gglist = list(theme_bw(),
-                                        ylab("")))
+  geom_nodeplot(gglist = list(geom_bar(aes(x = "",
+                                           fill = table(Survived)[1] / nrow(data),
+                                           group = id))))
+
+pd <- get_plot_data(party_j48)
+
+ggplot(pd) +
 
 
 
@@ -126,14 +130,14 @@ ct <- glmtree(diabetes ~ glucose | pregnant +
                 pressure + triceps + insulin + mass + pedigree + age,
               data = PimaIndiansDiabetes, family = binomial)
 
+plot(ct)
+
 ggparty(ct) +
   geom_edge(size = 1) +
   geom_node_inner(fontface = "bold") +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
-  geom_node_terminal_plot(ct, gglist = list(xlab("lol"),
-                                      ylab("roflcopter"),
-                                      scale_fill_brewer()))
+  geom_node_terminal_plot(ct, gglist = scale_fill_brewer())
 
 
 
@@ -156,8 +160,8 @@ ggparty(tptree) +
   geom_edge_label_discrete(colour = "grey") +
   geom_edge_label_continuous(colour = "grey") +
   geom_node_terminal_plot(ct2, gglist = list(xlab("lol"),
-                                            ylab("roflcopter"),
-                                            scale_fill_brewer()))
+                                             ylab("roflcopter"),
+                                             scale_fill_brewer()))
 
 
 data("treepipit", package = "coin")
@@ -167,19 +171,64 @@ class(tptree)
 
 plot(tptree)
 
+# linear model tree
+data("BostonHousing", package = "mlbench")
+BostonHousing <- transform(BostonHousing,
+                           chas = factor(chas, levels = 0:1, labels = c("no", "yes")),
+                           rad = factor(rad, ordered = TRUE))
+
+bh_tree <- lmtree(medv ~ log(lstat) + I(rm^2) | zn + indus +
+                    chas + nox +
+                    +    age + dis + rad + tax + crim + b + ptratio, data = BostonHousing)
+
+
+plot(bh_tree)
+
+get_plot_data(bh_tree)
+
+##########
+
+
+data("TeachingRatings", package = "AER")
+tr <- subset(TeachingRatings, credits == "more")
+
+tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+                    tenure, data = tr, weights = students, caseweights = FALSE)
+
+ggparty(tr_tree) +
+  geom_edge(size = 1.5) +
+  geom_node_splitvar(fontface = "bold", size = 8) +
+  geom_edge_label(colour = "grey", size = 6) +
+  geom_nodeplot(gglist = list(geom_point(aes(x = fitted_values,
+                                             y = beauty,
+                                             col = tenure,
+                                             shape = minority),
+                                         alpha = 0.8),
+                              geom_smooth(aes(x = beauty, y = eval),
+                                          method = "lm"),
+                              theme_bw()),
+                scales = "fixed",
+                id = "terminal",
+                width = 0.15,
+                height = 0.25,
+                y_nudge = - 0.05) +
+  ylim(-0.25, 1)
 
 # TO DO -------------------------------------------------------------------
 
-# fix shared legend
-# implement support for index + breaks (nedds to be tested)
-# horizontal layout
-# user definied terminal plot
-# shared scales etc.
-# individually customizable plots?
+# plot info
+# response in model trees
+
 # R package, manuals, documentation, etc...
 
 # DONE --------------------------------------------------------------------
 
+# implement support for index + breaks (nedds to be tested)
+# horizontal layout
+# user definied terminal plot
+# shared scales etc.
+# select nodes for plot
+# fix xlab position etc.
 # rewrite get_plot_data to be more efficient and using extractor functions to be
 # robust against changes in partykit
 
