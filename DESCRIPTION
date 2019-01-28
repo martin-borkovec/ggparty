@@ -1,9 +1,8 @@
 Package: ggparty
-Title: ggplot2 visualizations for the partykit package.
+Title: ggplot2 visualizations for the partykit package
 Version: 0.0.0.9000
-Authors@R: c(
-    person("Martin", "Borkovec", email = "martin.borkovec@skyforge.at", role = c("aut", "cre")),
-    person("Niyaz", "Madin", email = "niaskmadin@googlemail.com", role = c("aut", "cre")))
+Authors@R: c(person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
+  person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"))
 Description: ggplot2 visualizations for the partykit package.
 Depends: 
   R (>= 3.5.0),
@@ -22,3 +21,4 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
+
