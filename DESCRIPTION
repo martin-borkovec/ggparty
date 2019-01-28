@@ -1,10 +1,22 @@
 Package: ggparty
 Title: ggplot2 visualizations for the partykit package.
 Version: 0.0.0.9000
-Authors@R: person("Martin", "Borkovec", email = "martin.borkovec@skyforge.at", role = c("aut", "cre"))
+Authors@R: c(
+    person("Martin", "Borkovec", email = "martin.borkovec@skyforge.at", role = c("aut", "cre")),
+    person("Niyaz", "Madin", email = "niaskmadin@googlemail.com", role = c("aut", "cre")))
 Description: ggplot2 visualizations for the partykit package.
-Depends: R (>= 3.5.0), ggplot2, partykit, gridExtra, grid, gtable
-Imports: dplyr
+Depends: 
+  R (>= 3.5.0),
+  ggplot2,
+  partykit,
+  gridExtra,
+  grid,
+  gtable
+Imports: 
+  dplyr,
+  testthat
+Suggests:
+  ggmosaic
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
