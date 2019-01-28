@@ -1,8 +1,8 @@
 #' generate geom of nodeplot
 #'
-#' @param mapping mapping of nodeplots. if NULL uses inherited data. fitted
-#' values of modelparty objects can be mapped with "fitted_values".
-#' @param gglist list of additional ggplot components
+#' @param plot_call any function that generates a ggplot2 object.
+#' @param gglist list of additional ggplot components. Data of nodes can be
+#'  mapped. Fitted values of modelparty objects can be mapped with "fitted_values".
 #' @param width,height size of the nodeplot's viewport
 #' @param ids which ids to plot. numeric or string "terminal"
 #' @param scales see [facet_wrap()]
@@ -14,20 +14,17 @@
 # geom_nodeplot () --------------------------------------------------------
 
 
-geom_nodeplot <- function(mapping = NULL,
-                          data = NULL,
+geom_nodeplot <- function(plot_call = "ggplot",
                           gglist = NULL,
-                          plot_call = "ggplot",
                           width = 0.1,
                           height = 0.1,
                           ids = NA,
                           scales = "fixed",
                           x_nudge = 0,
-                          y_nudge = 0,
-                          ...) {
+                          y_nudge = 0) {
   ggplot2::layer(
-    data = data,
-    mapping = mapping,
+    data = NULL,
+    mapping = NULL,
     stat = "identity",
     geom = GeomNodeplot,
     position = position_nudge(x = x_nudge, y = y_nudge),
@@ -37,8 +34,7 @@ geom_nodeplot <- function(mapping = NULL,
       width = width,
       height = height,
       ids = ids,
-      scales = scales,
-      ...
+      scales = scales
     )
   )
 
@@ -196,7 +192,7 @@ nodeplotGrob <- function(x, y, node_gtable, width, height) {
 }
 
 #' appearantly needs to be exported
-#'
+#' @param x nodeplotgrob
 #' @export
 #' @md
 makeContent.nodeplotgrob <- function(x) {

@@ -6,6 +6,9 @@
 \usage{
 \method{makeContent}{nodeplotgrob}(x)
 }
+\arguments{
+\item{x}{nodeplotgrob}
+}
 \description{
 appearantly needs to be exported
 }

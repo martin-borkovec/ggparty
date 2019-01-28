@@ -1,4 +1,4 @@
-#' @export
+
 geom_node_terminal_plot <- function(party, gglist = NULL, shared_legend = T, ...) {
   plot_data <- get_plot_data(party)
   endnodes_n <- sum(plot_data$kids == 0)
@@ -43,7 +43,6 @@ geom_node_terminal_plot <- function(party, gglist = NULL, shared_legend = T, ...
     ylim(c(- 1 / max(plot_data$level), 1)))
 }
 
-#' @export
 terminal_spineplot <- function(root, terminal_node, gglist, ...) {
  stopifnot(require(ggmosaic))
   mf <- model.frame(terminal_node)
@@ -65,7 +64,7 @@ terminal_spineplot <- function(root, terminal_node, gglist, ...) {
   )
 }
 
-#' @export
+
 terminal_spineplot <- function(root, terminal_node, gglist, ...) {
   require(ggmosaic)
   mf <- model.frame(terminal_node)
@@ -87,7 +86,6 @@ terminal_spineplot <- function(root, terminal_node, gglist, ...) {
   )
 }
 
-#' @export
 terminal_barplot <- function(terminal_node, gglist, ...) {
   list(ggplot(data = data.frame(response = terminal_node$fitted$`(response)`),
               aes("")) +

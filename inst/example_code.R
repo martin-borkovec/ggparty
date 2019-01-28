@@ -118,7 +118,7 @@ ggparty(party_j48) +
 
 pd <- get_plot_data(party_j48)
 
-ggplot(pd) +
+ggplot(pd)
 
 
 
@@ -134,9 +134,9 @@ plot(ct)
 
 ggparty(ct) +
   geom_edge(size = 1) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
+  #geom_node_inner(fontface = "bold") +
+  #geom_edge_label_discrete(colour = "grey") +
+  #geom_edge_label_continuous(colour = "grey") +
   geom_node_terminal_plot(ct, gglist = scale_fill_brewer())
 
 

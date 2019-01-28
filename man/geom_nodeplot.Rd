@@ -4,15 +4,15 @@
 \alias{geom_nodeplot}
 \title{generate geom of nodeplot}
 \usage{
-geom_nodeplot(mapping = NULL, data = NULL, gglist = NULL,
-  plot_call = "ggplot", width = 0.1, height = 0.1, ids = NA,
-  scales = "fixed", x_nudge = 0, y_nudge = 0, ...)
+geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 0.1,
+  height = 0.1, ids = NA, scales = "fixed", x_nudge = 0,
+  y_nudge = 0)
 }
 \arguments{
-\item{mapping}{mapping of nodeplots. if NULL uses inherited data. fitted
-values of modelparty objects can be mapped with "fitted_values".}
+\item{plot_call}{any function that generates a ggplot2 object.}
 
-\item{gglist}{list of additional ggplot components}
+\item{gglist}{list of additional ggplot components. Data of nodes can be
+mapped. Fitted values of modelparty objects can be mapped with "fitted_values".}
 
 \item{width, height}{size of the nodeplot's viewport}
 
@@ -20,7 +20,7 @@ values of modelparty objects can be mapped with "fitted_values".}
 
 \item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
 
-\item{xnudge, ynudge}{nudge nodeplot}
+\item{x_nudge, y_nudge}{nudge nodeplot}
 }
 \description{
 generate geom of nodeplot
