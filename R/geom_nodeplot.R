@@ -6,7 +6,7 @@
 #' @param width,height size of the nodeplot's viewport
 #' @param ids which ids to plot. numeric or string "terminal"
 #' @param scales see [facet_wrap()]
-#' @param xnudge,ynudge nudge nodeplot
+#' @param x_nudge,y_nudge nudge nodeplot
 #' @export
 #' @md
 
