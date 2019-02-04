@@ -80,6 +80,7 @@ test_that("valid breaks", {
     }
   }
   })
+
 test_that("add_info function", {
   for (i in get_plot_data(py)$id){
     expect_equal(get_plot_data(py)[i,"info"][[1]], list(py[[i]]$node$info)[[1]])
@@ -87,8 +88,16 @@ test_that("add_info function", {
   })
 
 test_that("add_levels function", {
-
+for (i in 1:get_plot_data(py)$id){
+  if (i == 1){
+    expect_equal(get_plot_data(py)$level[1], 0)
+    }
+  else(
+    expect_equal(get_plot_data(py)$level[i], (get_plot_data(py)$level[get_plot_data(py)$parent == i]) +1)
+    )
+  }
 })
+
 test_that("add_layout function", {
 
 })
