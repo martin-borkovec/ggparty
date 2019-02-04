@@ -93,7 +93,7 @@ for (i in 1:get_plot_data(py)$id){
     expect_equal(get_plot_data(py)$level[1], 0)
     }
   else(
-    expect_equal(get_plot_data(py)$level[i], (get_plot_data(py)$level[get_plot_data(py)$parent == i]) +1)
+    expect_equal(get_plot_data(py)$level[i], (get_plot_data(py)$level[get_plot_data(py)$parent == i])+1)
     )
   }
 })
