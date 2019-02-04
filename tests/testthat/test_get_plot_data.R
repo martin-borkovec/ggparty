@@ -16,12 +16,11 @@ test_that("valid id of parent", {
 })
 
 test_that("valid split variable", {
-  expect_success(expect_output(get_plot_data(party(pn, WeatherPlay))[1,]$splitvar, NA))
   for (i in 2:length(get_plot_data(py)$id)){
     if(!is.na(get_plot_data(py)[i, "splitvar"])){
     expect_equal(get_plot_data(py)[i, "splitvar"] , names(py[[i]]$data)[ py[[i]]$node$split$varid])
       }
-    }
+  }
 })
 
 test_that("valid indexes", {
@@ -82,8 +81,11 @@ test_that("valid breaks", {
   }
   })
 test_that("add_info function", {
-  expect_success(expect_output(get_plot_data(party(pn, WeatherPlay))[1,]$splitvar, NA))
-})
+  for (i in get_plot_data(py)$id){
+    expect_equal(get_plot_data(py)[i,"info"][[1]], list(py[[i]]$node$info)[[1]])
+    }
+  })
+
 test_that("add_levels function", {
 
 })
