@@ -104,19 +104,13 @@ for (i in 1:length(get_plot_data(py)$id)){
 
 
 test_that("add_layout function", {
-  for (i in 1:length(get_plot_data(py)$id)){
-    if(get_plot_data(py)[i, "level"] == max(get_plot_data(py)$level)){
-      terminal_data <- get_plot_data(py)[get_plot_data(py)$level == max(get_plot_data(py)$level),]
-      expect_equal(get_plot_data(py)$y[i], 0)
-      for(j in 1:(nrow(terminal_data)){
-       # print(cbind(i, "i"))
-       # print(cbind(j, "j"))
-        value <- (((j * 2) - 1)/10)
-        print(value)
-        #nrow(get_plot_data(py)[get_plot_data(py)$level == max(get_plot_data(py)$level),])*2
-       # expect_equal(get_plot_data(py)$x[i], (((j * 2) - 1)  / nrow(get_plot_data(py)[get_plot_data(py)$level == max(get_plot_data(py)$level),])*2))
-      }
-    }
+  terminal_data <- get_plot_data(py)[get_plot_data(py)$level == max(get_plot_data(py)$level),]
+  for(j in 1:(nrow(terminal_data))){
+        expect_equal(get_plot_data(py)$y[i], 0)
+        numerator <-((j * 2) - 1)
+        denominator<- nrow(terminal_data)*2
+        i_id <- terminal_data$id[j]
+        expect_equal(get_plot_data(py)$x[i_id], (numerator  / denominator))
   }
 })
 
