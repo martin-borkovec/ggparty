@@ -88,15 +88,20 @@ test_that("add_info function", {
   })
 
 test_that("add_levels function", {
-for (i in 1:get_plot_data(py)$id){
+for (i in 1:length(get_plot_data(py)$id)){
+  parent <- get_plot_data(py)[i,"parent"]
   if (i == 1){
     expect_equal(get_plot_data(py)$level[1], 0)
     }
-  else(
-    expect_equal(get_plot_data(py)$level[i], (get_plot_data(py)$level[get_plot_data(py)$parent == i])+1)
+  else if (get_plot_data(py)[i, "kids"] == 0){
+    expect_equal(get_plot_data(py)$level[i], depth(py))
+  }
+  else (
+    expect_equal(get_plot_data(py)$level[i], get_plot_data(py)[parent, "level"] + 1)
     )
   }
 })
+
 
 test_that("add_layout function", {
 
