@@ -103,18 +103,37 @@ for (i in 1:length(get_plot_data(py)$id)){
 })
 
 
-test_that("add_layout function", {
+test_that("add_layout function terminals", {
   terminal_data <- get_plot_data(py)[get_plot_data(py)$level == max(get_plot_data(py)$level),]
   for(j in 1:(nrow(terminal_data))){
-        expect_equal(get_plot_data(py)$y[i], 0)
-        numerator <-((j * 2) - 1)
-        denominator<- nrow(terminal_data)*2
-        i_id <- terminal_data$id[j]
-        expect_equal(get_plot_data(py)$x[i_id], (numerator  / denominator))
+    j_id <- terminal_data$id[j]
+    expect_equal(get_plot_data(py)$y[j_id], 0)
+    numerator <-((j * 2) - 1)
+    denominator<- nrow(terminal_data)*2
+    expect_equal(get_plot_data(py)$x[j_id], (numerator  / denominator))
   }
 })
 
-
-test_that("add_data function", {
-
+test_that("add_layout function inner nodes", {
+  inner_data <- get_plot_data(py)[get_plot_data(py)$level != max(get_plot_data(py)$level),]
+  for(i in 1:(nrow(inner_data))){
+    i_level <- inner_data$level[i]
+    i_id <- inner_data$id[i]
+    expect_equal(get_plot_data(py)$y[i_id], 1 - i_level / max(get_plot_data(py)$level))
+    expect_equal(get_plot_data(py)$x[i_id], mean(get_plot_data(py)$x[get_plot_data(py)$parent %in% i_id & get_plot_data(py)$kids == 0]))
+  }
 })
+
+  test_that("add_data function", {
+    data_columns <- names(py[[1]]$data)
+    for (i in get_plot_data(py)$id) {
+      node_data <- py[[i]]$data
+      if (!is.null(py$node$info$object$fitted.values)) {
+        node_data <- cbind(node_data, "fitted_values" = py[[i]]$node$info$object$fitted.values)
+        }
+      for (column in data_columns) {
+        data_column <- paste0("data_", column)
+        expect_equal(get_plot_data(py)[i, data_column][[1]], node_data[column] )
+        }
+      }
+    })
