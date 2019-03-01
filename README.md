@@ -1,3 +1,5 @@
+[![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+
 ggparty
 ================
 
@@ -45,4 +47,4 @@ ggparty(tr_tree) +
 
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
-[![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+
