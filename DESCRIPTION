@@ -10,14 +10,16 @@ Depends:
   partykit
 Imports: 
   grid,
-  gridExtra,
-  gtable,
+  gtable
 Suggests:
-  dplyr,
-  testthat
+    dplyr,
+    testthat,
+    mlbench,
+    AER,
+    coin,
+    vdiffr
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
-

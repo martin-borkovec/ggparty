@@ -7,7 +7,6 @@
 #' @export
 #' @import partykit
 #' @import ggplot2
-#' @import dplyr
 #' @import gtable
 #' @import grid
 
