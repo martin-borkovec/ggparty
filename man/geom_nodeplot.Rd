@@ -5,7 +5,7 @@
 \title{generate geom of nodeplot}
 \usage{
 geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 1,
-  height = 1, ids = NA, scales = "fixed", x_nudge = 0,
+  height = 1, ids = "terminal", scales = "fixed", x_nudge = 0,
   y_nudge = 0)
 }
 \arguments{
@@ -18,7 +18,8 @@ mapped. Fitted values of modelparty objects can be mapped with "fitted_values".}
 
 \item{height}{expansion factor for viewport's height}
 
-\item{ids}{which ids to plot. numeric or string "terminal"}
+\item{ids}{which ids to plot. numeric, "terminal", "inner" ar "all". defaults
+to "terminal"}
 
 \item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
 

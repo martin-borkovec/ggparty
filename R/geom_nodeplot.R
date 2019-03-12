@@ -5,7 +5,8 @@
 #'  mapped. Fitted values of modelparty objects can be mapped with "fitted_values".
 #' @param width expansion factor for viewport's width
 #' @param height expansion factor for viewport's height
-#' @param ids which ids to plot. numeric or string "terminal"
+#' @param ids which ids to plot. numeric, "terminal", "inner" ar "all". defaults
+#' to "terminal"
 #' @param scales see [facet_wrap()]
 #' @param x_nudge,y_nudge nudge nodeplot
 #' @export
@@ -19,7 +20,7 @@ geom_nodeplot <- function(plot_call = "ggplot",
                           gglist = NULL,
                           width = 1,
                           height = 1,
-                          ids = NA,
+                          ids = "terminal",
                           scales = "fixed",
                           x_nudge = 0,
                           y_nudge = 0) {
@@ -63,7 +64,6 @@ GeomNodeplot <- ggproto(
                         scales) {
 
 
-
     data <- coord$transform(data, panel_params)
 
     y_0 <- scales::rescale(0, from = panel_params$y.range)
@@ -80,16 +80,20 @@ GeomNodeplot <- ggproto(
     h_height <- abs(diff(data$y[data$kids == 0]))[1] * height
 
     grob_list <- list()
-    if (any(is.na(ids))) ids <- unique(data$id)
-    if (ids == "terminal") ids <- unique(data$id[data$kids == 0])
+    #if (any(is.na(ids))) ids <- unique(data$id)
+    if (all(ids == "all")) ids <- unique(data$id)
+    if (all(ids == "terminal")) ids <- unique(data$id[data$kids == 0])
+    if (all(ids == "inner")) ids <- unique(data$id[data$kids != 0])
 
 
     #  transform data_* columns from lists to full dataframe -------------------
+
 
     nodeplot_data_lists <-  dplyr::select(data, dplyr::starts_with("data_"))
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
     lengths <- sapply(nodeplot_data_lists[[1]], function(x) length(unlist(x)))
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
+
 
 
     for (column in names(nodeplot_data_lists)) {

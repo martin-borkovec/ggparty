@@ -90,21 +90,21 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
           kid <- kids[split_index[j]]
           # for first interval use -inf as lower bound
           if (j == 1) {
-            plot_data[kid, "index"] <- paste(ifelse(party_split$right == T,
+            plot_data[kid, "index"] <- paste(ifelse(party_split$right == TRUE,
                                                     "\u2264","<"),
                                              split_breaks[1])
             # for last interval use inf as upper bound
           } else if (j == length(split_index)) {
-            plot_data[kid, "index"] <- paste(ifelse(party_split$right == T,
+            plot_data[kid, "index"] <- paste(ifelse(party_split$right == TRUE,
                                                     ">","<"),
                                              split_breaks[j - 1])
             # else use break[j-1] for lower interval bound
           } else {
-            plot_data[kid, "index"] <- paste0(ifelse(party_split$right == T,
+            plot_data[kid, "index"] <- paste0(ifelse(party_split$right == TRUE,
                                                      "(","["),
                                               split_breaks[j - 1],", ",
                                               split_breaks[j],
-                                              ifelse(party_split$right == T,
+                                              ifelse(party_split$right == TRUE,
                                                      "]",")"))
           }
         }

@@ -4,6 +4,8 @@
 #' @param horizontal horizontal plot?
 #' @param terminal_space proportion of the plot that should be reserved for
 #' the terminal nodeplots
+#' @param layout optional layout adjustment. Must be data.frame containing the
+#'  columns "id", "x" and "y".
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_splitvar()],
 #'  [geom_node_info()], [geom_nodeplot()]
 #' @export
@@ -16,9 +18,10 @@
 # ggparty() ---------------------------------------------------------------
 
 
-ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2) {
+ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NULL) {
   #browser()
   plot_data <- get_plot_data(party, horizontal = horizontal, terminal_space = terminal_space)
+  if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
   mapping <- aes(x = x, y = y, x_parent = x_parent,
                  y_parent = y_parent, id = id, kids = kids, info = info)
@@ -61,7 +64,7 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
     stat = StatParty,
     geom = "segment",
     position = position_nudge(x = x_nudge, y = y_nudge),
-    inherit.aes = T,
+    inherit.aes = TRUE,
     params = list(ids = ids,
                   na.rm = TRUE,
                   ...)
@@ -101,7 +104,7 @@ geom_edge_label <- function(mapping = NULL,
     stat = StatParty,
     geom = "label",
     position = position_nudge(x = x_nudge, y = y_nudge),
-    inherit.aes = T,
+    inherit.aes = TRUE,
     params = list(ids = ids,
                   shift = shift,
                   label.size = label.size,
@@ -133,7 +136,7 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
     stat = StatParty,
     geom = "label",
     position = position_nudge(x = x_nudge, y = y_nudge),
-    inherit.aes = T,
+    inherit.aes = TRUE,
     params = list(ids = ids,
                   label.padding = label.padding,
                   na.rm = TRUE,
@@ -161,7 +164,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     stat = StatParty,
     geom = "label",
     position = position_nudge(x = x_nudge, y = y_nudge),
-    inherit.aes = T,
+    inherit.aes = TRUE,
     params = list(ids = ids,
                   label.padding = label.padding,
                   na.rm = TRUE,
@@ -204,4 +207,16 @@ adjust_mapping <- function(default_mapping, mapping) {
   } else {
     mapping <- default_mapping
   }
+}
+
+# adjust_layout()
+
+adjust_layout <- function(plot_data, layout) {
+  for (id in layout$id) {
+    plot_data$y[plot_data$id == id] <- layout$y[layout$id == id]
+    plot_data$y_parent[plot_data$parent == id] <- layout$y[layout$id == id]
+    plot_data$x[plot_data$id == id] <- layout$x[layout$id == id]
+    plot_data$x_parent[plot_data$parent == id] <- layout$x[layout$id == id]
+  }
+  plot_data
 }
