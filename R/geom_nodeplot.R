@@ -3,7 +3,8 @@
 #' @param plot_call any function that generates a ggplot2 object.
 #' @param gglist list of additional ggplot components. Data of nodes can be
 #'  mapped. Fitted values of modelparty objects can be mapped with "fitted_values".
-#' @param width,height size of the nodeplot's viewport
+#' @param width expansion factor for viewport's width
+#' @param height expansion factor for viewport's height
 #' @param ids which ids to plot. numeric or string "terminal"
 #' @param scales see [facet_wrap()]
 #' @param x_nudge,y_nudge nudge nodeplot
@@ -16,12 +17,14 @@
 
 geom_nodeplot <- function(plot_call = "ggplot",
                           gglist = NULL,
-                          width = 0.1,
-                          height = 0.1,
+                          width = 1,
+                          height = 1,
                           ids = NA,
                           scales = "fixed",
                           x_nudge = 0,
                           y_nudge = 0) {
+
+
   ggplot2::layer(
     data = NULL,
     mapping = NULL,
@@ -58,8 +61,24 @@ GeomNodeplot <- ggproto(
                         height,
                         ids,
                         scales) {
-    #browser()
+
+
+
     data <- coord$transform(data, panel_params)
+
+    y_0 <- scales::rescale(0, from = panel_params$y.range)
+    x_1 <- scales::rescale(1, from = panel_params$x.range)
+    legend_x <- scales::rescale(0.5, from = panel_params$x.range)
+    legend_y <- scales::rescale(-0.05, from = panel_params$y.range)
+
+    # for vertical trees
+    v_width <- abs(diff(data$x[data$kids == 0]))[1] * width
+    v_height <- abs(diff(data$y[data$kids != 0]))[1] * height
+
+    # for horizontal trees
+    h_width <- abs(diff(data$x[data$kids != 0]))[1] * width
+    h_height <- abs(diff(data$y[data$kids == 0]))[1] * height
+
     grob_list <- list()
     if (any(is.na(ids))) ids <- unique(data$id)
     if (ids == "terminal") ids <- unique(data$id[data$kids == 0])
@@ -86,7 +105,7 @@ GeomNodeplot <- ggproto(
     # draw plots --------------------------------------------------------------
 
 
-    base_data <- nodeplot_data#[nodeplot_data$id == 1, ]
+    base_data <- nodeplot_data
     facet_data <- nodeplot_data[nodeplot_data$id %in% ids, ]
     # generate faceted base_plot
 
@@ -108,13 +127,17 @@ GeomNodeplot <- ggproto(
       # extract gtable containing legend
 
       legend_gtable <- reduce_gtable(facet_gtable, "guide-box")
+      legend_gtable$layout$t <- 1
+      legend_gtable$layout$b <- 1
+      legend_gtable$heights <- unit(1,"pt")
 
       #call nodeplotGrob on legend_gtable
       legend_gtable <- nodeplotGrob(
-        x = 0.5,
-        y = min(data$y) - 0.1,
-        width = width,
-        height = height,
+        x = legend_x,
+        y = y_0,
+        width = 1,
+        height = abs(legend_y - y_0),
+        just = "top",
         node_gtable = legend_gtable
       )
       grob_list <- c(grob_list, list(legend_gtable))
@@ -129,7 +152,7 @@ GeomNodeplot <- ggproto(
 
       # panel ------------------------------------------------------------------
 
-      # create node_gtable as copyo of base_gtable
+      # create node_gtable as copy of base_gtable
       node_gtable <- base_gtable
       # get index of panel grob in base_gtable
       base_panel_index <- find_grob(base_gtable$grobs, "panel")
@@ -142,7 +165,7 @@ GeomNodeplot <- ggproto(
       # y axis ------------------------------------------------------------------
 
       base_y_axis_index <-  which(base_gtable$layout$name == "axis-l")
-      #browser()
+
       if (scales == "fixed" | scales == "free_x" ) {
         facet_y_axis_index <- which(facet_gtable$layout$name == "axis-l-1-1")
       }
@@ -163,16 +186,38 @@ GeomNodeplot <- ggproto(
 
       # generate nodeplotGrob ---------------------------------------------------
 
-      # get x any y coords of nodeplot
+      # get x and y coords of nodeplot
       x <- unique(data[data$id == ids[i], "x"])
       y <- unique(data[data$id == ids[i], "y"])
-      nodeplotGrob(
-        x = x,
-        y = y,
-        width = width,
-        height = height,
-        node_gtable = node_gtable
-      )
+
+      #vertical tree
+      if(data$y[data$id == 1] == max(data$y)) {
+        nodeplotGrob(
+          x = x,
+          y = ifelse(data$kids[data$id == ids[i]] == 0,
+                     (y + y_0) * 0.5,
+                     y),
+          width = v_width,
+          height = ifelse(data$kids[data$id == ids[i]] == 0,
+                          abs(y - y_0),
+                          v_height),
+          just = "center",
+          node_gtable = node_gtable
+        )
+      } else { #horizontal tree
+        nodeplotGrob(
+          x = ifelse(data$kids[data$id == ids[i]] == 0,
+                     (x + x_1) * 0.5,
+                     x),
+          y = y,
+          width = ifelse(data$kids[data$id == ids[i]] == 0,
+                         abs(x - x_1),
+                         h_width),
+          height = h_height,
+          just = "center",
+          node_gtable = node_gtable
+        )
+      }
     })
     #combine nodeplots and legend
     grob_list <- c(grob_list, nodeplot_gtable)
@@ -182,13 +227,16 @@ GeomNodeplot <- ggproto(
 )
 
 
-nodeplotGrob <- function(x, y, node_gtable, width, height) {
+nodeplotGrob <- function(x, y, node_gtable, width, height, just) {
+
   grid::gTree(x = x,
               y = y,
               node_gtable = node_gtable,
               width = width,
               height = height,
+              just = just,
               cl = "nodeplotgrob")
+
 }
 
 #' appearantly needs to be exported
@@ -196,8 +244,14 @@ nodeplotGrob <- function(x, y, node_gtable, width, height) {
 #' @export
 #' @md
 makeContent.nodeplotgrob <- function(x) {
+
   r <- x$node_gtable
-  r$vp <- grid::viewport(x = x$x, y = x$y, width = x$width, height = x$height)
+  r$vp <- grid::viewport(x = x$x,
+                         y = x$y,
+                         width = x$width,
+                         height = x$height,
+                        just = x$just)
+
   grid::setChildren(x, grid::gList(r))
 }
 

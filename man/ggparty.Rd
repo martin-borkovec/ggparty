@@ -4,12 +4,15 @@
 \alias{ggparty}
 \title{ggplot an object of the party class}
 \usage{
-ggparty(party, horizontal = FALSE)
+ggparty(party, horizontal = FALSE, terminal_space = 0.2)
 }
 \arguments{
 \item{party}{partyobject to plot}
 
 \item{horizontal}{horizontal plot?}
+
+\item{terminal_space}{proportion of the plot that should be reserved for
+the terminal nodeplots}
 }
 \description{
 ggplot an object of the party class

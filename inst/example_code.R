@@ -108,12 +108,10 @@ party_j48 <- as.party(j48)
 plot(party_j48)
 
 ggparty(party_j48) +
-  geom_edge(size = 1) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_splitvar() +
   geom_nodeplot(gglist = list(geom_bar(aes(x = "",
-                                           fill = table(Survived)[1] / nrow(data),
                                            group = id))))
 
 pd <- get_plot_data(party_j48)

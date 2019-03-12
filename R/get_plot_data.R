@@ -1,5 +1,6 @@
 # transforms recursive structure of object of type "party" to dataframe
-get_plot_data <- function(party_object, horizontal = FALSE) {
+get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2) {
+  #browser()
   ids <- nodeids(party_object)
   plot_data <- data.frame(id = ids,
                           parent = NA,
@@ -15,7 +16,7 @@ get_plot_data <- function(party_object, horizontal = FALSE) {
   plot_data <- add_splitvar_breaks_index(party_object, plot_data)
   plot_data <- add_info(party_object, plot_data)
   plot_data <- add_levels(plot_data, endnode_level = depth(party_object))
-  plot_data <- add_layout(plot_data, horizontal)
+  plot_data <- add_layout(plot_data, horizontal, terminal_space)
   plot_data <- add_data(party_object, plot_data)
   return(plot_data)
 }
@@ -146,14 +147,14 @@ add_levels <- function(plot_data, endnode_level) {
 # adds coordinates for nodes, their parents and the joining edges' labels
 
 
-add_layout <- function(plot_data, horizontal) {
+add_layout <- function(plot_data, horizontal, terminal_space) {
   terminal_level <- max(plot_data$level)
 
   # assign coordinates to endnodes
   terminal_data <- plot_data[plot_data$level == terminal_level, ]
   for (i in 1:nrow(terminal_data)) {
     i_id <- terminal_data$id[i]
-    plot_data[i_id, "y"] <- 0
+    plot_data[i_id, "y"] <- terminal_space
     # divide x axis up between all terminal nodes
     plot_data[i_id, "x"] <- (i * 2 - 1)  / (nrow(terminal_data) * 2)
   }
@@ -164,7 +165,7 @@ add_layout <- function(plot_data, horizontal) {
     i_level <- inner_data$level[i]
     i_id <- inner_data$id[i]
     # assign y based on level of node
-    plot_data[i_id, "y"] <- 1 - i_level / max(plot_data$level)
+    plot_data[i_id, "y"] <- 1 - i_level / max(plot_data$level) * (1 - terminal_space)
     ## get all terminal nodes descended from node i
     # iteratively identify all descendents
     parents <- i_id
@@ -186,7 +187,7 @@ add_layout <- function(plot_data, horizontal) {
     plot_data$y <- tmp
   }
 
-  # assigna parent and edge coordinates
+  # assign parent and edge coordinates
   plot_data$x_parent <- c(plot_data$x[plot_data$parent])
   plot_data$y_parent <- c(plot_data$y[plot_data$parent])
 

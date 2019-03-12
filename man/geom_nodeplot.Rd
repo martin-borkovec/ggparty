@@ -4,8 +4,8 @@
 \alias{geom_nodeplot}
 \title{generate geom of nodeplot}
 \usage{
-geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 0.1,
-  height = 0.1, ids = NA, scales = "fixed", x_nudge = 0,
+geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 1,
+  height = 1, ids = NA, scales = "fixed", x_nudge = 0,
   y_nudge = 0)
 }
 \arguments{
@@ -14,7 +14,9 @@ geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 0.1,
 \item{gglist}{list of additional ggplot components. Data of nodes can be
 mapped. Fitted values of modelparty objects can be mapped with "fitted_values".}
 
-\item{width, height}{size of the nodeplot's viewport}
+\item{width}{expansion factor for viewport's width}
+
+\item{height}{expansion factor for viewport's height}
 
 \item{ids}{which ids to plot. numeric or string "terminal"}
 

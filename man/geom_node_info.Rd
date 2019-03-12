@@ -5,7 +5,7 @@
 \title{Draw labels containing node's info}
 \usage{
 geom_node_info(mapping = NULL, x_nudge = 0, y_nudge = 0,
-  ids = NULL, ...)
+  ids = NULL, label.padding = unit(0.5, "lines"), ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
@@ -13,6 +13,8 @@ geom_node_info(mapping = NULL, x_nudge = 0, y_nudge = 0,
 \item{x_nudge, y_nudge}{nudge label}
 
 \item{ids}{choose which nodes to label by their ids}
+
+\item{label.padding}{Amount of padding around label. Defaults to 0.5 lines.}
 
 \item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}}
 }

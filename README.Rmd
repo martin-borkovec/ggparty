@@ -28,7 +28,7 @@ tr <- subset(TeachingRatings, credits == "more")
 tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
                     tenure, data = tr, weights = students, caseweights = FALSE)
 
-ggparty(tr_tree) +
+ggparty(tr_tree, terminal_space = 0.5) +
   geom_edge(size = 1.5) +
   geom_node_splitvar(fontface = "bold", size = 8) +
   geom_edge_label(colour = "grey", size = 6) +
@@ -39,14 +39,9 @@ ggparty(tr_tree) +
                                          alpha = 0.8),
                               geom_smooth(aes(x = beauty, y = eval),
                                           method = "lm"),
-                              theme_bw()),
+                              theme_bw(base_size = 15)),
                 scales = "fixed",
-                id = "terminal",
-                width = 0.15,
-                height = 0.25,
-                y_nudge = - 0.05) + 
-  ylim(-0.3, 1)
-
+                id = "terminal")
 ```
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)

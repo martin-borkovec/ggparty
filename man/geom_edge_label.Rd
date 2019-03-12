@@ -5,7 +5,7 @@
 \title{Label edge with corresponding splitbreak}
 \usage{
 geom_edge_label(mapping = NULL, x_nudge = 0, y_nudge = 0,
-  ids = NULL, shift = 0.5, ...)
+  ids = NULL, shift = 0.5, label.size = 0, ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
