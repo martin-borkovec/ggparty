@@ -63,6 +63,7 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
     position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = T,
     params = list(ids = ids,
+                  na.rm = TRUE,
                   ...)
   )
 }
@@ -104,6 +105,7 @@ geom_edge_label <- function(mapping = NULL,
     params = list(ids = ids,
                   shift = shift,
                   label.size = label.size,
+                  na.rm = TRUE,
                   ...)
   )
 }
@@ -121,7 +123,7 @@ geom_edge_label <- function(mapping = NULL,
 #' @export
 #' @md
 #'
-geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids= NULL,
+geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
                            label.padding = unit(0.5, "lines"), ...) {
   default_mapping <- aes(label = info)
   mapping <- adjust_mapping(default_mapping, mapping)
@@ -131,10 +133,10 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids= NULL,
     stat = StatParty,
     geom = "label",
     position = position_nudge(x = x_nudge, y = y_nudge),
-    label.padding = label.padding,
     inherit.aes = T,
     params = list(ids = ids,
                   label.padding = label.padding,
+                  na.rm = TRUE,
                   ...)
   )
 }
@@ -162,6 +164,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     inherit.aes = T,
     params = list(ids = ids,
                   label.padding = label.padding,
+                  na.rm = TRUE,
                   ...)
   )
 }
@@ -181,6 +184,7 @@ StatParty <- ggproto(
   compute_group = function(data, ids, shift = NULL, scales = scales) {
     if (!is.null(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
+    # shift of edge_label
     if (!is.null(shift)){
       #browser()
       data$x <- (data$x * shift + data$x_parent * (1 - shift))
