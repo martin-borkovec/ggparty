@@ -1,20 +1,25 @@
-ggparty
-================
+---
+title: "ggparty"
+output: rmarkdown::github_document
+---
 
 ggplot2 visualizations for the partykit package.
 
-Install
--------
-
-``` r
+## Install 
+```{r, eval=FALSE}
 devtools::install_github("mmostly-harmless/ggparty", 
                           dependencies=TRUE)
 ```
 
-Example
--------
+## Example
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, dpi=300)
+options(warn=-1)
+```
 
-``` r
+
+
+```{r, warning = FALSE, message = FALSE, fig.width = 15, fig.height = 10}
 library(ggparty)
 
 data("TeachingRatings", package = "AER")
@@ -39,6 +44,5 @@ ggparty(tr_tree, terminal_space = 0.5) +
                 id = "terminal")
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
-
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+

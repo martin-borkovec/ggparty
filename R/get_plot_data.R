@@ -1,129 +1,238 @@
-
-  # transforms recursive structure of object of type "party" to dataframe
-
-get_plot_data <- function(party, i = 1, level = 0, plot_data = NULL) {
-  plot_data <- data.frame(id = numeric(length(party)),
-                          x = NA,
-                          y = NA,
+# transforms recursive structure of object of type "party" to dataframe
+get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2) {
+  #browser()
+  ids <- nodeids(party_object)
+  plot_data <- data.frame(id = ids,
+                          parent = NA,
                           breaks = NA,
-                          index = NA,
-                          #operator = NA,
-                          right = NA,
+                          index = I(rep(list(NA), length(party_object))),
+                          info = I(rep(list(NA), length(party_object))),
                           splitvar = NA,
-                          level = 0,
+                          level = NA,
                           kids = NA,
-                          terminal = NA,
-                          parent = NA)
-
-recursive_helper(party, plot_data = plot_data)
+                          x = NA,
+                          y = NA)
+  plot_data <- add_kids_parents(party_object, plot_data)
+  plot_data <- add_splitvar_breaks_index(party_object, plot_data)
+  plot_data <- add_info(party_object, plot_data)
+  plot_data <- add_levels(plot_data, endnode_level = depth(party_object))
+  plot_data <- add_layout(plot_data, horizontal, terminal_space)
+  plot_data <- add_data(party_object, plot_data)
+  return(plot_data)
 }
 
-recursive_helper <- function(party, i = 1, level = 0, plot_data = NULL) {
+# add_kids_parents() --------------------------------------------------------
 
-  if (i <= 0) return(plot_data)
-  partynode <- party[[i]]$node
-  partysplit <- partynode$split
-  parent_id <- max(plot_data$id[plot_data$level == (level - 1)], 0, na.rm = T)
-  current_kid <- get_done_kids(parent_id, plot_data) + 1
 
-  # first time hitting the node
-  if (plot_data$id[i] == 0) {
-    plot_data[i, "id"] <- i
-    plot_data[i, "level"] <- level
-    plot_data[i, "splitvar"] <- ifelse(is.null(partysplit$varid),
-                                       NA,
-                                       names(party[[1]]$data)[partysplit$varid])
-    plot_data[i, "kids"] <- length(kids_node(partynode))
-    plot_data[i, "terminal"] <- ifelse(plot_data[i, "kids"] == 0, formatinfo_node(party[[i]]$node), NA)
-    plot_data[i, "parent"] <- parent_id
+add_kids_parents <- function(party_object, plot_data){
 
-    # if not root determine parent and it's split info
-    if (parent_id > 0) {
-    partysplit_parent <- party[[parent_id]]$node$split
+  for (i in plot_data$id) {
+    party_split <- party_object[[i]]$node$split
+    party_node <- party_object[[i]]$node
 
-    # store breaks of continous parent split variable
-    if (is.null(partysplit_parent$breaks)) {
-      plot_data[i, "breaks"] <- NA
-      } else {
-        if (partysplit_parent$right == T &
-            current_kid == 1) {
-          plot_data[i, "breaks"] <- paste0("(-inf, ", partysplit_parent$breaks[current_kid], "]")
-        }
-        if (partysplit_parent$right == T &
-            current_kid == plot_data[parent_id, "kids"]) {
-          plot_data[i, "breaks"] <- paste0("(", partysplit_parent$breaks[current_kid - 1], ", inf)")
-        }
-        if (partysplit_parent$right == T &
-            current_kid != 1 &
-            current_kid !=  plot_data[parent_id, "kids"]) {
-          plot_data[i, "breaks"] <- paste0("(",partysplit_parent$breaks[current_kid - 1],", ",
-                 partysplit_parent$breaks[current_kid], "]")
+    plot_data[i, "kids"] <- length(kids_node(party_node))
+    # get done iterations
+    done_data <- plot_data[1:(i - 1), ]
+    # already assigned parents
+    done_data$parent <- factor(done_data$parent, levels = paste(1:(i - 1)))
+    # assign as parent Node with highest ID which has more kids than times it is
+    # assigned as parent
+    plot_data[i, "parent"] <- ifelse(i == 1,
+                                     NA,
+                                     max(which(done_data$kids >
+                                                 table(done_data$parent))))
+  }
+  return(plot_data)
+}
+
+# add_splitvar_breaks_index() ---------------------------------------------
+
+
+add_splitvar_breaks_index <- function(party_object, plot_data) {
+  for (i in plot_data$id) {
+    party_split <- party_object[[i]]$node$split
+    party_node <- party_object[[i]]$node
+    split_index <- party_split$index
+    split_breaks <- party_split$breaks
+    # check if node has a splitvar
+    if (!is.null(party_split$varid)) {
+      kids <- which(plot_data$parent == i)
+      split_var <- names(party_object[[i]]$data)[party_split$varid]
+      plot_data[i, "splitvar"] <- split_var
+
+      # index
+      # if only index provided, splitvar categorical. assign children according
+      # to factor levels
+      if (!is.null(split_index) & is.null(split_breaks)){
+        var_levels <- levels(party_object$data[,split_var])
+        # iterate through index
+        for (j in 1:length(split_index)) {
+          # get kid index is pointing to
+          kid <- kids[split_index[j]]
+          # if first index  for kid, just assign according factor level
+          if (is.na(plot_data$index[kid])) {
+            plot_data[kid, "index"] <- var_levels[j]
+            # else add factor level to present level(s)
+          } else {
+            plot_data[kid, "index"][[1]] <- list(c(plot_data[kid, "index"][[1]],
+                                                   var_levels[j]))
+          }
         }
       }
 
-    # store breaks of categorical parent split variable
-    if (is.null(partysplit_parent$index)) {
-      plot_data[i, "index"] <- NA
-    } else {
-      levels <- levels(unlist(party$data[plot_data[parent_id, "splitvar"]]))
-      plot_data[i, "index"] <- levels[partysplit_parent$index[current_kid]]
+      # check whether intervals of continuous variable defined by breaks
+      if (!is.null(split_breaks)) {
+        # if no index provided, intervals are supposed to be assigned
+        # consecutively to kids. assign index accordingly.
+        if(is.null(split_index)) split_index <- 1:(length(split_breaks) + 1)
+        # iterate through index
+        for (j in 1:length(split_index)) {
+          kid <- kids[split_index[j]]
+          # for first interval use -inf as lower bound
+          if (j == 1) {
+            plot_data[kid, "index"] <- paste(ifelse(party_split$right == TRUE,
+                                                    "\u2264","<"),
+                                             split_breaks[1])
+            # for last interval use inf as upper bound
+          } else if (j == length(split_index)) {
+            plot_data[kid, "index"] <- paste(ifelse(party_split$right == TRUE,
+                                                    ">","<"),
+                                             split_breaks[j - 1])
+            # else use break[j-1] for lower interval bound
+          } else {
+            plot_data[kid, "index"] <- paste0(ifelse(party_split$right == TRUE,
+                                                     "(","["),
+                                              split_breaks[j - 1],", ",
+                                              split_breaks[j],
+                                              ifelse(party_split$right == TRUE,
+                                                     "]",")"))
+          }
+        }
+      }
     }
-    }
   }
-# determine if and how to recursively call again --------------------------
-
-  # if node is terminal, go back one step
-  if (!is.na(plot_data[i, "terminal"])) {
-    plot_data <- recursive_helper(party, i - 1, level = level, plot_data)
-  }
-
-  # if not all kids done, go to next kid
-  done_kids <- get_done_kids(i, plot_data)
-  if (done_kids != plot_data[i, "kids"]) {
-    plot_data <- recursive_helper(party,
-                                  i = max(plot_data$id) + 1,
-                                  level = plot_data[i, "level"] + 1,
-                                  plot_data)
-  } else {
-    # if all kids of node done, go back another step
-    plot_data <- recursive_helper(party, i - 1, level = level, plot_data)
-  }
-  plot_data <- level_endnodes(plot_data)
-  plot_data <- add_layout(plot_data)
   return(plot_data)
 }
 
 
-# get_done_kids() ---------------------------------------------------------
+# add_info() ----------------------------------------------------------------
 
-# check how man kids of node already done
-get_done_kids <- function(i, plot_data = NULL) {
- sum(plot_data$parent == i, na.rm = TRUE)
+
+add_info <- function(party_object, plot_data) {
+  for (i in plot_data$id) {
+    plot_data[i, "info"][[1]] <- list(party_object[[i]]$node$info)
+  }
+  return(plot_data)
+}
+
+# add_levels() ---------------------------------------------------------
+
+
+add_levels <- function(plot_data, endnode_level) {
+  #root level
+  plot_data$level[1] <- 0
+  # inner levels
+  # assign levels as level of parent + 1
+  for (id in plot_data$id) {
+    plot_data[!is.na(plot_data$parent) & plot_data$parent == id, "level"] <-
+      plot_data[plot_data$id == id, "level"] + 1
+  }
+  # level endnodes
+  plot_data$level[plot_data$kids == 0] <- endnode_level
+  return(plot_data)
 }
 
 
-# add_layout() ------------------------------------------------------------
+# add_layout() --------------------------------------------------------------
+# adds coordinates for nodes, their parents and the joining edges' labels
 
-add_layout <- function(plot_data) {
-  for (i in 1:nrow(plot_data)) {
-    i_level <- plot_data$level[i]
-    plot_data[i, "y"] <- 1 - i_level / max(plot_data$level)
-    width <- sum(plot_data$level == i_level)
-    x_position <- which(i == which(plot_data$level == i_level))
-    plot_data[i, "x"] <- x_position  / (width + 1)
+
+add_layout <- function(plot_data, horizontal, terminal_space) {
+  terminal_level <- max(plot_data$level)
+
+  # assign coordinates to endnodes
+  terminal_data <- plot_data[plot_data$level == terminal_level, ]
+  for (i in 1:nrow(terminal_data)) {
+    i_id <- terminal_data$id[i]
+    plot_data[i_id, "y"] <- terminal_space
+    # divide x axis up between all terminal nodes
+    plot_data[i_id, "x"] <- (i * 2 - 1)  / (nrow(terminal_data) * 2)
   }
-  plot_data[1, "x"] <- 0.5
-  plot_data$x_parent <- c(NA, plot_data$x[plot_data$parent])
-  plot_data$y_parent <- c(NA, plot_data$y[plot_data$parent])
-  plot_data$x_edge <- (plot_data$x + plot_data$x_parent) / 2
-  plot_data$y_edge <- (plot_data$y + plot_data$y_parent) / 2
+
+  # assign coordinates to remaining nodes
+  inner_data <- plot_data[plot_data$level != terminal_level, ]
+  for (i in 1:nrow(inner_data)) {
+    i_level <- inner_data$level[i]
+    i_id <- inner_data$id[i]
+    # assign y based on level of node
+    plot_data[i_id, "y"] <- 1 - i_level / max(plot_data$level) * (1 - terminal_space)
+    ## get all terminal nodes descended from node i
+    # iteratively identify all descendents
+    parents <- i_id
+    if (i_level != max(inner_data$level)) {
+      for (j in (i_level + 1):(terminal_level - 1)) {
+        parents <- c(parents, plot_data[plot_data$level  == j &
+                                          plot_data$parent %in% parents, "id"])
+      }
+    }
+    # assign x coordinate based on mean x of terminal kids
+    plot_data[i_id, "x"] <- mean(plot_data$x[plot_data$parent %in%
+                                               parents & plot_data$kids == 0])
+  }
+
+  # flip coordinates if layout should be horizontal
+  if (horizontal == TRUE) {
+    tmp <- plot_data$x
+    plot_data$x <- 1 - plot_data$y
+    plot_data$y <- tmp
+  }
+
+  # assign parent and edge coordinates
+  plot_data$x_parent <- c(plot_data$x[plot_data$parent])
+  plot_data$y_parent <- c(plot_data$y[plot_data$parent])
 
   return(plot_data)
 }
 
-# level_endnodes() ------------------------------------------------------------
-level_endnodes <- function(plot_data) {
-  bottom_level <- max(plot_data$level)
-  plot_data$level[!is.na(plot_data$terminal)] <- bottom_level
+
+# add_data() --------------------------------------------------------------
+
+# add_data <- function(party_object, plot_data) {
+#          node_data <- do.call(rbind,
+#                               lapply(plot_data$id,
+#                                      function(i) {
+#                                        cbind(id = i, party_object[[i]]$data)
+#                                        }))
+#          names(node_data)[-1] <- paste0("data_", names(node_data))[-1]
+#          plot_data <- inner_join(plot_data, node_data, by = "id")
+#
+#   return(plot_data)
+# }
+
+add_data <- function(party_object, plot_data) {
+  data_columns <- names(party_object[[1]]$data)
+  fitted_values <- !is.null(party_object$node$info$object$fitted.values)
+  if (fitted_values) {
+    data_columns <- c(data_columns, "fitted_values")
+  }
+
+  for (column in data_columns) {
+    data_column <- paste0("data_", column)
+    plot_data[[data_column]] <- rep(list(NA), nrow(plot_data))
+    #plot_data[[column]] <- rep(list(NA), nrow(plot_data))
+  }
+
+  for (i in plot_data$id) {
+    node_data <- party_object[[i]]$data
+    if (fitted_values) {
+      node_data <- cbind(node_data,
+                         "fitted_values" = party_object[[i]]$node$info$object$fitted.values)
+    }
+    for (column in data_columns) {
+      data_column <- paste0("data_", column)
+      plot_data[i, data_column][[1]] <- list(node_data[column])
+      #plot_data[i,column][[1]] <- list(party_object[[i]]$data[column])
+    }
+  }
   return(plot_data)
 }
