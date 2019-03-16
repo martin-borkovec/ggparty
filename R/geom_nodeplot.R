@@ -14,6 +14,33 @@
 #' @export
 #' @seealso [ggparty()]
 #' @md
+#' @example
+#' ggparty(gbsg2_tree, terminal_space = 0.8) +
+#' geom_edge() +
+#'   geom_node_splitvar() +
+#'   geom_edge_label() +
+#'   geom_nodeplot(
+#'     gglist = list(geom_point(aes(y = `Surv(time, cens).time`, x = pnodes)),
+#'                   expression(
+#'                     geom_line(data = predict_data,
+#'                               aes(x = newdata.pnodes,
+#'                                   y = prediction,
+#'                                   col = newdata.horTh))
+#'                   )),
+#'     predict_arg = list(newdata = function(data){
+#'       z <- data.frame(horTh = factor(rep(c("yes", "no"),
+#'                                          each = length(data$pnodes)),
+#'                                      levels = c("no", "yes")),
+#'                       pnodes = rep(seq(from = min(data$pnodes),
+#'                                        to = max(data$pnodes),
+#'                                        length.out = length(data$pnodes)),
+#'                                    2))
+#'       z$x <- model.matrix(~ ., data = z)
+#'       z},
+#'       type = "quantile",
+#'       p = 0.5)
+#'   )
+
 
 
 # geom_nodeplot () --------------------------------------------------------
@@ -99,7 +126,6 @@ GeomNodeplot <- ggproto(
 
     #  transform data_* columns from lists to full dataframe -------------------
 
-    #browser()
     nodeplot_data_lists <-  dplyr::select(data, dplyr::starts_with("data_"))
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
     lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
@@ -107,15 +133,16 @@ GeomNodeplot <- ggproto(
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
 
 
-
     for (column in names(nodeplot_data_lists)) {
-      nodeplot_data[[column]] <- numeric(nrow(nodeplot_data))
+      content <- numeric(0)
       for (i in seq_along(data$id)) {
+        #browser()
         rows <- nodeplot_data_lists[[column]][[i]]
-        nodeplot_data[nodeplot_data$id == i, column] <- rows
-        #nodeplot_data[column] <- content
+        content <- rbind(content, rows)
       }
+      nodeplot_data[column] <- content
     }
+
 
     # add_fit -----------------------------------------------------------------
 
@@ -133,9 +160,8 @@ GeomNodeplot <- ggproto(
       predict_data <- predict_data(data$info, facet_data, predict_arg)
 
     # generate faceted base_plot
-    browser()
 
-
+    #browser()
     facet_gtable <- ggplotGrob(do.call(plot_call,
                                        args = list(data = facet_data)) +
                                  lapply(gglist, eval.parent, n = 1) +
@@ -144,7 +170,7 @@ GeomNodeplot <- ggproto(
 
 
     lab <- list()
-    if (shared_axes_labels & T) lab <- ylab(" ")
+    if (shared_axes_labels & T) lab <- list(ylab(" "), xlab(""))
 
     base_gtable <- ggplotGrob(do.call(plot_call,
                                       args = list(data = base_data)) +
@@ -364,7 +390,6 @@ reduce_gtable <- function (g, what = "guide-box") {
   return(g)
 }
 
-
 ggname <- function (prefix, grob) {
   grob$name <- grobName(grob, prefix)
   grob
@@ -374,7 +399,6 @@ predict_data <- function(info, data, predict_arg) {
   ids <- unique(data$id)
   newdata_function <- predict_arg$newdata
   for (i in 1:length(ids)) {
-    #browser()
     predict_arg$newdata <- do.call(newdata_function, list(data))
     predict_arg$object <- info[[ids[i]]]$object
     predict_data <- data.frame(newdata = predict_arg$newdata)
@@ -387,15 +411,4 @@ predict_data <- function(info, data, predict_arg) {
   }
   resulting_data
 }
-
-
-
-#   data$fit.v <- numeric(nrow(data))
-#   for (i in ids) {
-#     model <- info[[i]]$object
-#     data$fit.v[data$id == i] <- predict(model)
-#   }
-#   data
-# }
-
 
