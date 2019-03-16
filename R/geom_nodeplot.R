@@ -9,7 +9,10 @@
 #' to "terminal"
 #' @param scales see [facet_wrap()]
 #' @param x_nudge,y_nudge nudge nodeplot
+#' @param shared_axes_labels if TRUE only one pair of axes labels is plotted in
+#'  the terminal space. Only recommended if `ids`  "terminal" or "all".
 #' @export
+#' @seealso [ggparty()]
 #' @md
 
 
@@ -23,9 +26,11 @@ geom_nodeplot <- function(plot_call = "ggplot",
                           ids = "terminal",
                           scales = "fixed",
                           x_nudge = 0,
-                          y_nudge = 0) {
+                          y_nudge = 0,
+                          shared_axes_labels = FALSE,
+                          predict_arg = NULL) {
 
-
+NULL
   ggplot2::layer(
     data = NULL,
     mapping = NULL,
@@ -38,7 +43,9 @@ geom_nodeplot <- function(plot_call = "ggplot",
       width = width,
       height = height,
       ids = ids,
-      scales = scales
+      scales = scales,
+      shared_axes_labels = shared_axes_labels,
+      predict_arg = predict_arg
     )
   )
 
@@ -61,15 +68,19 @@ GeomNodeplot <- ggproto(
                         width,
                         height,
                         ids,
-                        scales) {
+                        shared_axes_labels,
+                        scales,
+                        predict_arg) {
 
 
     data <- coord$transform(data, panel_params)
 
     y_0 <- scales::rescale(0, from = panel_params$y.range)
     x_1 <- scales::rescale(1, from = panel_params$x.range)
+    x_0 <- scales::rescale(0, from = panel_params$x.range)
     legend_x <- scales::rescale(0.5, from = panel_params$x.range)
     legend_y <- scales::rescale(-0.05, from = panel_params$y.range)
+    lab_x <- scales::rescale(0.05, from = panel_params$x.range)
 
     # for vertical trees
     v_width <- abs(diff(data$x[data$kids == 0]))[1] * width
@@ -88,39 +99,65 @@ GeomNodeplot <- ggproto(
 
     #  transform data_* columns from lists to full dataframe -------------------
 
-
+    #browser()
     nodeplot_data_lists <-  dplyr::select(data, dplyr::starts_with("data_"))
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
-    lengths <- sapply(nodeplot_data_lists[[1]], function(x) length(unlist(x)))
+    lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
+
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
 
 
 
     for (column in names(nodeplot_data_lists)) {
-      content <- numeric(0)
+      nodeplot_data[[column]] <- numeric(nrow(nodeplot_data))
       for (i in seq_along(data$id)) {
-        #browser()
         rows <- nodeplot_data_lists[[column]][[i]]
-        content <- rbind(content, rows)
+        nodeplot_data[nodeplot_data$id == i, column] <- rows
+        #nodeplot_data[column] <- content
       }
-      nodeplot_data[column] <- content
     }
+
+    # add_fit -----------------------------------------------------------------
+
 
     # draw plots --------------------------------------------------------------
 
 
     base_data <- nodeplot_data
-    facet_data <- nodeplot_data[nodeplot_data$id %in% ids, ]
-    # generate faceted base_plot
+    #base_data <- add_prediction(info = data$info, data = base_data)
 
-    facet_gtable <- ggplotGrob(do.call(plot_call, args = list(data = facet_data))+
-                                 gglist +
+
+
+    facet_data <- base_data[nodeplot_data$id %in% ids, ]
+    if (!is.null(predict_arg))
+      predict_data <- predict_data(data$info, facet_data, predict_arg)
+
+    # generate faceted base_plot
+    browser()
+
+
+    facet_gtable <- ggplotGrob(do.call(plot_call,
+                                       args = list(data = facet_data)) +
+                                 lapply(gglist, eval.parent, n = 1) +
                                  theme(legend.position = "bottom") +
                                  facet_wrap( ~ id, scales = scales, nrow = 1))
 
-    base_gtable <- ggplotGrob(do.call(plot_call, args = list(data = base_data))+
-                                gglist +
-                                theme(legend.position = "none"))
+
+    lab <- list()
+    if (shared_axes_labels & T) lab <- ylab(" ")
+
+    base_gtable <- ggplotGrob(do.call(plot_call,
+                                      args = list(data = base_data)) +
+                                lapply(gglist, eval.parent, n = 1) +
+                                lab +
+                                theme(legend.position = "none"
+                                      # ,
+                                      # axis.title = eval(
+                                      #   ifelse(shared_axes_labels,
+                                      #          quote(element_blank()),
+                                      #          quote(element_text())))
+                                      #
+                                      ))
 
     # get base_gtable's base_layout
     base_layout <- base_gtable$layout
@@ -146,7 +183,54 @@ GeomNodeplot <- ggproto(
       )
       grob_list <- c(grob_list, list(legend_gtable))
     }
+    # shared axes labels
+    if (shared_axes_labels) {
 
+      # x axis label
+      if (any(facet_gtable$layout$name == "xlab-b")) {
+        # extract gtable containing bottom x_axis
+
+        xlab_gtable <- reduce_gtable(facet_gtable, "xlab-b")
+        xlab_gtable$layout$t <- 1
+        xlab_gtable$layout$b <- 1
+        xlab_gtable$heights <- unit(1,"pt")
+
+        #call nodeplotGrob on legend_gtable
+        xlab_gtable <- nodeplotGrob(
+          x = legend_x,
+          y = y_0,
+          width = 1,
+          height = abs(legend_y - y_0),
+          just = "bottom",
+          node_gtable = xlab_gtable
+        )
+        grob_list <- c(grob_list, list(xlab_gtable))
+      }
+
+      # y axis label
+      if (any(facet_gtable$layout$name == "ylab-l")) {
+        # extract gtable containing bottom x_axis
+        ylab_gtable <- reduce_gtable(facet_gtable, "ylab-l")
+        ylab_gtable$layout$l <- 1
+        ylab_gtable$layout$r <- 1
+        ylab_gtable$layout$t <- 1
+        ylab_gtable$layout$b <- 1
+        ylab_gtable$widths <- unit(0,"pt")
+        ylab_gtable$heights <- unit(0,"pt")
+
+        #call nodeplotGrob on ylab_gtable
+        ylab_gtable <- nodeplotGrob(
+          y = (min(data$y) + y_0) * 0.5 + abs(legend_y - y_0),
+          x = x_0,
+          width = abs(lab_x - x_0),
+          height = min(data$y),
+          just = "right",
+          node_gtable = ylab_gtable
+        )
+
+        grob_list <- c(grob_list, list(ylab_gtable))
+      }
+    }
 
     # nodeplots ---------------------------------------------------------------
 
@@ -188,6 +272,7 @@ GeomNodeplot <- ggproto(
       node_gtable$grobs[[base_x_axis_index]] <- facet_gtable$grobs[[facet_x_axis_index]]
 
 
+
       # generate nodeplotGrob ---------------------------------------------------
 
       # get x and y coords of nodeplot
@@ -199,7 +284,7 @@ GeomNodeplot <- ggproto(
         nodeplotGrob(
           x = x,
           y = ifelse(data$kids[data$id == ids[i]] == 0,
-                     (y + y_0) * 0.5,
+                     (y + y_0) * 0.5 + abs(legend_y - y_0),
                      y),
           width = v_width,
           height = ifelse(data$kids[data$id == ids[i]] == 0,
@@ -224,7 +309,7 @@ GeomNodeplot <- ggproto(
       }
     })
     #combine nodeplots and legend
-    grob_list <- c(grob_list, nodeplot_gtable)
+    grob_list <- c(nodeplot_gtable, grob_list)
     class(grob_list) <- "gList"
     ggname("geom_nodeplots", grid::grobTree(children = grob_list))
   }
@@ -284,4 +369,33 @@ ggname <- function (prefix, grob) {
   grob$name <- grobName(grob, prefix)
   grob
 }
+
+predict_data <- function(info, data, predict_arg) {
+  ids <- unique(data$id)
+  newdata_function <- predict_arg$newdata
+  for (i in 1:length(ids)) {
+    #browser()
+    predict_arg$newdata <- do.call(newdata_function, list(data))
+    predict_arg$object <- info[[ids[i]]]$object
+    predict_data <- data.frame(newdata = predict_arg$newdata)
+    predict_data$id <- ids[i]
+    predict_data$prediction <- do.call(predict,# list(info$object, type = "quantile"))#,
+            predict_arg)
+
+    if (i == 1) resulting_data <- predict_data
+    else resulting_data <- rbind(resulting_data, predict_data)
+  }
+  resulting_data
+}
+
+
+
+#   data$fit.v <- numeric(nrow(data))
+#   for (i in ids) {
+#     model <- info[[i]]$object
+#     data$fit.v[data$id == i] <- predict(model)
+#   }
+#   data
+# }
+
 

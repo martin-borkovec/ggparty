@@ -6,7 +6,7 @@
 \usage{
 geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 1,
   height = 1, ids = "terminal", scales = "fixed", x_nudge = 0,
-  y_nudge = 0)
+  y_nudge = 0, shared_axes_labels = FALSE)
 }
 \arguments{
 \item{plot_call}{any function that generates a ggplot2 object.}
@@ -24,7 +24,13 @@ to "terminal"}
 \item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
 
 \item{x_nudge, y_nudge}{nudge nodeplot}
+
+\item{shared_axes_labels}{if TRUE only one pair of axes labels is plotted in
+the terminal space. Only recommended if \code{ids}  "terminal" or "all".}
 }
 \description{
 generate geom of nodeplot
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}
 }

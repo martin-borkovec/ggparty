@@ -36,7 +36,8 @@ ggparty(tr_tree, terminal_space = 0.5) +
                                           method = "lm"),
                               theme_bw(base_size = 15)),
                 scales = "fixed",
-                id = "terminal")
+                id = "terminal",
+                shared_axes_labels = TRUE)
 ```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)

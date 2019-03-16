@@ -41,7 +41,8 @@ ggparty(tr_tree, terminal_space = 0.5) +
                                           method = "lm"),
                               theme_bw(base_size = 15)),
                 scales = "fixed",
-                id = "terminal")
+                id = "terminal",
+                shared_axes_labels = TRUE)
 ```
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
