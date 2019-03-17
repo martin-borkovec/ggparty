@@ -46,7 +46,7 @@ ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
                               theme_bw(base_size = 15)),
                 scales = "fixed",
                 id = "terminal",
-                shared_axes_labels = T,
+                shared_axis_labels = T,
                 predict_arg = list(newdata = function(x) {
                   data.frame(beauty = seq(min(x$beauty),
                                            max(x$beauty),

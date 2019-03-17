@@ -4,8 +4,7 @@
 \alias{ggparty}
 \title{ggplot an object of the party class}
 \usage{
-ggparty(party, horizontal = FALSE, terminal_space = 0.2,
-  layout = NULL)
+ggparty(party, horizontal = FALSE, terminal_space, layout = NULL)
 }
 \arguments{
 \item{party}{partyobject to plot}
