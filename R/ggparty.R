@@ -19,8 +19,9 @@
 # ggparty() ---------------------------------------------------------------
 
 
-ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NULL) {
+ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
 
+  if(missing(terminal_space)) terminal_space <- 2 / (depth(party) + 2)
   if (!is.null(layout)) {
     checkmate::assert_data_frame(layout, any.missing = FALSE)
     checkmate::assert_names(colnames(layout), permutation.of = c("id", "x", "y"))
@@ -42,8 +43,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NU
   ggplot(data = plot_data,
          mapping = mapping) +
     theme_void() +
-    xlim(0, 1) +
-    ylim(0, 1)
+    xlim(0, 1)
 }
 
 

@@ -55,10 +55,11 @@ geom_nodeplot <- function(plot_call = "ggplot",
                           x_nudge = 0,
                           y_nudge = 0,
                           shared_axes_labels = FALSE,
-                          predict_arg = NULL) {
+                          predict_arg = NULL,
+                          legend_seperator = TRUE) {
 
-NULL
-  ggplot2::layer(
+
+  nodeplot_layer <- ggplot2::layer(
     data = NULL,
     mapping = NULL,
     stat = "identity",
@@ -72,9 +73,18 @@ NULL
       ids = ids,
       scales = scales,
       shared_axes_labels = shared_axes_labels,
-      predict_arg = predict_arg
-    )
-  )
+      predict_arg = predict_arg))
+
+  if (shared_axes_labels) {
+    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.05, 1)))
+    if (legend_seperator) nodeplot_layer <- list(nodeplot_layer,
+                                                 geom_hline(yintercept = -0.05))
+  } else {
+    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(0, 1)))
+    if (legend_seperator) nodeplot_layer <- list(nodeplot_layer,
+                                                 geom_hline(yintercept = 0))
+  }
+ nodeplot_layer
 
 }
 
@@ -102,20 +112,39 @@ GeomNodeplot <- ggproto(
 
     data <- coord$transform(data, panel_params)
 
+
+
+    # vertical tree?
+    vertical <- ifelse(data$y[data$id == 1] == max(data$y), TRUE, FALSE)
+
     y_0 <- scales::rescale(0, from = panel_params$y.range)
+    y_1 <- scales::rescale(1, from = panel_params$y.range)
     x_1 <- scales::rescale(1, from = panel_params$x.range)
     x_0 <- scales::rescale(0, from = panel_params$x.range)
     legend_x <- scales::rescale(0.5, from = panel_params$x.range)
     legend_y <- scales::rescale(-0.05, from = panel_params$y.range)
-    lab_x <- scales::rescale(0.05, from = panel_params$x.range)
+    xlab_y <- scales::rescale(-0.025, from = panel_params$y.range)
+
+
+
 
     # for vertical trees
-    v_width <- abs(diff(data$x[data$kids == 0]))[1] * width
-    v_height <- abs(diff(data$y[data$kids != 0]))[1] * height
+    if (vertical) {
+      node_width <- abs(diff(data$x[data$kids == 0]))[1]
+      node_height <- abs(diff(data$y[data$kids != 0]))[1]
+      xlab_x <- legend_x
+      ylab_y <- (min(data$y) + y_0) * 0.5
+      ylab_x <- scales::rescale(-0.045, from = panel_params$x.range)
+      y_nudge <- data$y[data$id == 1] - y_1
+    } else {
+      # for horizontal trees
+      node_width <- abs(diff(data$x[data$kids != 0]))[1]
+      node_height <- abs(diff(data$y[data$kids == 0]))[1]
+      xlab_x <- (x_1 + max(data$x)) / 2
+      ylab_x <- max(data$x)
+      ylab_y <- scales::rescale(0.5, from = panel_params$y.range)
 
-    # for horizontal trees
-    h_width <- abs(diff(data$x[data$kids != 0]))[1] * width
-    h_height <- abs(diff(data$y[data$kids == 0]))[1] * height
+    }
 
     grob_list <- list()
     #if (any(is.na(ids))) ids <- unique(data$id)
@@ -154,14 +183,15 @@ GeomNodeplot <- ggproto(
     #base_data <- add_prediction(info = data$info, data = base_data)
 
 
-
+    browser()
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
     if (!is.null(predict_arg))
       predict_data <- predict_data(data$info, facet_data, predict_arg)
 
+
     # generate faceted base_plot
 
-    #browser()
+    browser()
     facet_gtable <- ggplotGrob(do.call(plot_call,
                                        args = list(data = facet_data)) +
                                  lapply(gglist, eval.parent, n = 1) +
@@ -169,21 +199,24 @@ GeomNodeplot <- ggproto(
                                  facet_wrap( ~ id, scales = scales, nrow = 1))
 
 
-    lab <- list()
-    if (shared_axes_labels & T) lab <- list(ylab(" "), xlab(""))
+
+    ggxlab <- ifelse(shared_axes_labels,
+                      list(theme(axis.title.x = element_blank())),
+                      list())
+
+
+    ggylab <- list()
+    if (shared_axes_labels & vertical) ggylab <- list(theme(axis.title.y = element_blank()))
+    if (shared_axes_labels & !vertical) ggylab <- list(ylab(" "))
+
 
     base_gtable <- ggplotGrob(do.call(plot_call,
                                       args = list(data = base_data)) +
                                 lapply(gglist, eval.parent, n = 1) +
-                                lab +
-                                theme(legend.position = "none"
-                                      # ,
-                                      # axis.title = eval(
-                                      #   ifelse(shared_axes_labels,
-                                      #          quote(element_blank()),
-                                      #          quote(element_text())))
-                                      #
-                                      ))
+                                ggxlab +
+                                ggylab +
+                                theme(legend.position = "none")
+                              )
 
     # get base_gtable's base_layout
     base_layout <- base_gtable$layout
@@ -201,10 +234,10 @@ GeomNodeplot <- ggproto(
       #call nodeplotGrob on legend_gtable
       legend_gtable <- nodeplotGrob(
         x = legend_x,
-        y = y_0,
+        y = legend_y,
         width = 1,
         height = abs(legend_y - y_0),
-        just = "top",
+        just = ifelse(shared_axes_labels, "top", "bottom"),
         node_gtable = legend_gtable
       )
       grob_list <- c(grob_list, list(legend_gtable))
@@ -221,13 +254,13 @@ GeomNodeplot <- ggproto(
         xlab_gtable$layout$b <- 1
         xlab_gtable$heights <- unit(1,"pt")
 
-        #call nodeplotGrob on legend_gtable
+        #call nodeplotGrob on xlab_gtable
         xlab_gtable <- nodeplotGrob(
-          x = legend_x,
+          x = xlab_x,
           y = y_0,
           width = 1,
-          height = abs(legend_y - y_0),
-          just = "bottom",
+          height = (y_0 - xlab_y),
+          just = "top",
           node_gtable = xlab_gtable
         )
         grob_list <- c(grob_list, list(xlab_gtable))
@@ -243,14 +276,18 @@ GeomNodeplot <- ggproto(
         ylab_gtable$layout$b <- 1
         ylab_gtable$widths <- unit(0,"pt")
         ylab_gtable$heights <- unit(0,"pt")
+        ylab_gtable$grobs[[1]]$vp <- NULL
+        ylab_gtable$grobs[[1]]$widths <- unit(0,"pt")
+        ylab_gtable$grobs[[1]]$heights <- unit(0,"pt")
+        ylab_gtable$grobs[[1]]$children$GRID.text.124$just <- "left"
 
         #call nodeplotGrob on ylab_gtable
         ylab_gtable <- nodeplotGrob(
-          y = (min(data$y) + y_0) * 0.5 + abs(legend_y - y_0),
-          x = x_0,
-          width = abs(lab_x - x_0),
-          height = min(data$y),
-          just = "right",
+          y = ylab_y,
+          x = ylab_x,
+          width = 0.5, #abs(legend_y - y_0),
+          height = 1, #min(data$y),
+          just = "center",#ifelse(vertical, "right", "left"),
           node_gtable = ylab_gtable
         )
 
@@ -309,32 +346,33 @@ GeomNodeplot <- ggproto(
       if(data$y[data$id == 1] == max(data$y)) {
         nodeplotGrob(
           x = x,
-          y = ifelse(data$kids[data$id == ids[i]] == 0,
-                     (y + y_0) * 0.5 + abs(legend_y - y_0),
-                     y),
-          width = v_width,
+          y = y,
+          width = node_width * width,
           height = ifelse(data$kids[data$id == ids[i]] == 0,
-                          abs(y - y_0),
-                          v_height),
-          just = "center",
+                          abs(y - y_nudge - y_0),
+                          node_height) * height,
+          just = ifelse(data$kids[data$id == ids[i]] == 0,
+                        "top",
+                        "center"),
           node_gtable = node_gtable
         )
       } else { #horizontal tree
         nodeplotGrob(
-          x = ifelse(data$kids[data$id == ids[i]] == 0,
-                     (x + x_1) * 0.5,
-                     x),
+          x = x,
           y = y,
           width = ifelse(data$kids[data$id == ids[i]] == 0,
                          abs(x - x_1),
-                         h_width),
-          height = h_height,
-          just = "center",
+                         node_width) * width,
+          height = node_height * height,
+          just = ifelse(data$kids[data$id == ids[i]] == 0,
+                        "left",
+                        "center"),
           node_gtable = node_gtable
         )
       }
     })
     #combine nodeplots and legend
+    #browser()
     grob_list <- c(nodeplot_gtable, grob_list)
     class(grob_list) <- "gList"
     ggname("geom_nodeplots", grid::grobTree(children = grob_list))
@@ -396,6 +434,7 @@ ggname <- function (prefix, grob) {
 }
 
 predict_data <- function(info, data, predict_arg) {
+  browser()
   ids <- unique(data$id)
   newdata_function <- predict_arg$newdata
   for (i in 1:length(ids)) {
@@ -403,7 +442,7 @@ predict_data <- function(info, data, predict_arg) {
     predict_arg$object <- info[[ids[i]]]$object
     predict_data <- data.frame(newdata = predict_arg$newdata)
     predict_data$id <- ids[i]
-    predict_data$prediction <- do.call(predict,# list(info$object, type = "quantile"))#,
+    predict_data$prediction <- do.call(predict,
             predict_arg)
 
     if (i == 1) resulting_data <- predict_data
