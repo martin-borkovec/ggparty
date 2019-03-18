@@ -6,7 +6,8 @@
 \usage{
 geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 1,
   height = 1, ids = "terminal", scales = "fixed", x_nudge = 0,
-  y_nudge = 0)
+  y_nudge = 0, shared_axis_labels = FALSE, predict_arg = NULL,
+  legend_separator = FALSE)
 }
 \arguments{
 \item{plot_call}{any function that generates a ggplot2 object.}
@@ -24,7 +25,176 @@ to "terminal"}
 \item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
 
 \item{x_nudge, y_nudge}{nudge nodeplot}
+
+\item{shared_axis_labels}{if TRUE only one pair of axes labels is plotted in
+the terminal space. Only recommended if \code{ids}  "terminal" or "all".}
+
+\item{predict_arg}{named list containing arguments to be passed to call of
+predict on node$info$object. Caution: newdata has to be a function with
+one argument, i.e. the ggplot data whose result will be used for the predict call as
+the newdata argument.
+Predictions and newdata will be stored in \code{predict_data} and
+can be accessed via geoms within gglist. These geoms need to be expressions to ensure
+correct evaluation. See examples.}
+
+\item{legend_separator}{if TRUE line between legend and tree is drawn}
 }
 \description{
 generate geom of nodeplot
+}
+\examples{
+
+library(ggparty)
+
+airq <- subset(airquality, !is.na(Ozone))
+airct <- ctree(Ozone ~ ., data = airq)
+
+ggparty(airct, horizontal = T, terminal_space = 0.6) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_splitvar() +
+  geom_nodeplot(gglist = list(
+    geom_density(aes(x = Ozone))),
+    shared_axis_labels = T)
+
+#############################################################
+
+## Demand for economics journals data
+data("Journals", package = "AER")
+Journals <- transform(Journals,
+                      age = 2000 - foundingyear,
+                      chars = charpp * pages)
+
+## linear regression tree (OLS)
+j_tree <- lmtree(log(subs) ~ log(price/citations) | price + citations +
+                   age + chars + society, data = Journals, minsize = 10, verbose = TRUE)
+
+## Plot with ggparty
+
+ggparty(j_tree, terminal_space = 0.8) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_splitvar() +
+  geom_nodeplot(gglist =
+                  list(aes(x = `log(price/citations)`, y = `log(subs)`),
+                       geom_point(),
+                       expression(geom_line(data = predict_data,
+                                            aes(x = log(price/citations),
+                                                y = prediction),
+                                            col = "red"))),
+                predict_arg = list(newdata = function(x) {
+                  data.frame(
+                    citations = 1,
+                    price = exp(seq(from = min(x$`log(price/citations)`),
+                                    to = max(x$`log(price/citations)`),
+                                    length.out = 100)))
+                })
+  )
+
+#########################################################################
+
+data("GBSG2", package = "TH.data")
+GBSG2$time <- GBSG2$time/365
+
+library("survival")
+wbreg <- function(y, x, start = NULL, weights = NULL, offset = NULL, ...) {
+  survreg(y ~ 0 + x, weights = weights, dist = "weibull", ...)
+}
+
+
+logLik.survreg <- function(object, ...)
+  structure(object$loglik[2], df = sum(object$df), class = "logLik")
+
+gbsg2_tree <- mob(Surv(time, cens) ~ horTh + pnodes | age + tsize +
+                    tgrade + progrec + estrec + menostat, data = GBSG2,
+                  fit = wbreg, control = mob_control(minsize = 80))
+
+# horizontal Tree with individual axis labes
+ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = T) +
+  geom_edge() +
+  geom_node_splitvar() +
+  geom_edge_label() +
+  geom_nodeplot(
+    gglist = list(geom_point(aes(y = `Surv(time, cens).time`,
+                                 x = pnodes,
+                                 col = horTh),
+                             alpha = 0.6),
+                  expression(
+                    geom_line(data = predict_data,
+                              aes(x = pnodes,
+                                  y = prediction,
+                                  col = horTh),
+                              size = 1.2)),
+                  theme_bw(),
+                  #theme(axis.title.y = element_text(size = 20)),
+                  ylab("Survival Time")
+    ),
+    predict_arg = list(newdata = function(data){
+      z <- data.frame(horTh = factor(rep(c("yes", "no"),
+                                         each = length(data$pnodes)),
+                                     levels = c("no", "yes")),
+                      pnodes = rep(seq(from = min(data$pnodes),
+                                       to = max(data$pnodes),
+                                       length.out = length(data$pnodes)),
+                                   2))
+      z$x <- model.matrix(~ ., data = z)
+      z},
+      type = "quantile",
+      p = 0.5),
+    shared_axis_labels = F
+  )
+
+########################################################################
+
+data("TeachingRatings", package = "AER")
+tr <- subset(TeachingRatings, credits == "more")
+
+tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+                    tenure, data = tr, weights = students, caseweights = FALSE)
+
+ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
+  geom_edge(size = 1.5) +
+  geom_node_splitvar(fontface = "bold", size = 8) +
+  geom_edge_label(colour = "grey", size = 6) +
+  geom_nodeplot(gglist = list(geom_point(aes(x = fitted_values,
+                                             y = residuals,
+                                             col = tenure,
+                                             shape = minority)),
+                              geom_hline(yintercept = 0),
+                              theme_bw(base_size = 15)),
+                scales = "free_x",
+                id = "terminal",
+                shared_axis_labels = T,
+                predict_arg = list(newdata = function(x) {
+                  data.frame(beauty = seq(min(x$beauty),
+                                          max(x$beauty),
+                                          length.out = 100))
+                }))
+
+## Boston housing data
+data("BostonHousing", package = "mlbench")
+BostonHousing <- transform(BostonHousing,
+                           chas = factor(chas, levels = 0:1, labels = c("no", "yes")),
+                           rad = factor(rad, ordered = TRUE))
+
+## linear model tree
+bh_tree <- lmtree(medv ~ log(lstat) + I(rm^2) | zn +
+                    indus + chas + nox + age + dis + rad + tax + crim + b + ptratio,
+                  data = BostonHousing, minsize = 40)
+
+ggparty(bh_tree, terminal_space = 0.5) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_splitvar() +
+  geom_nodeplot(gglist = list(
+    geom_point(aes(y = medv, x = `log(lstat)`, col = chas))),
+    height = 0.5) +
+  geom_nodeplot(gglist = list(
+    geom_point(aes(y = medv, x = `I(rm^2)`, col = chas))),
+    height = 0.5,
+    y_nudge = -0.25)
+
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}
 }

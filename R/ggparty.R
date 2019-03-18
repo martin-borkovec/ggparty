@@ -13,13 +13,22 @@
 #' @import ggplot2
 #' @import gtable
 #' @import grid
+#' @import checkmate
 
 
 # ggparty() ---------------------------------------------------------------
 
 
-ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NULL) {
-  #browser()
+ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
+
+  if(missing(terminal_space)) terminal_space <- 2 / (depth(party) + 2)
+  if (!is.null(layout)) {
+    checkmate::assert_data_frame(layout, any.missing = FALSE)
+    checkmate::assert_names(colnames(layout), permutation.of = c("id", "x", "y"))
+    checkmate::assert_integerish(layout$id, lower = 1, unique = TRUE)
+    checkmate::assert_numeric(layout$x, lower = 0, upper = 1)
+    checkmate::assert_numeric(layout$y, lower = 0, upper = 1)
+  }
   plot_data <- get_plot_data(party, horizontal = horizontal, terminal_space = terminal_space)
   if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
@@ -34,8 +43,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NU
   ggplot(data = plot_data,
          mapping = mapping) +
     theme_void() +
-    xlim(0, 1) +
-    ylim(0, 1)
+    xlim(0, 1)
 }
 
 

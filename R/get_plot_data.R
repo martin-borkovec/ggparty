@@ -210,10 +210,19 @@ add_layout <- function(plot_data, horizontal, terminal_space) {
 # }
 
 add_data <- function(party_object, plot_data) {
-  data_columns <- names(party_object[[1]]$data)
+
+  data <- expand_surv(party_object[[1]]$data)
+  #check for surv objects
+
+
+  data_columns <- names(data)
   fitted_values <- !is.null(party_object$node$info$object$fitted.values)
+  residuals <- !is.null(party_object$node$info$object$residuals)
   if (fitted_values) {
     data_columns <- c(data_columns, "fitted_values")
+  }
+  if (residuals) {
+    data_columns <- c(data_columns, "residuals")
   }
 
   for (column in data_columns) {
@@ -223,11 +232,18 @@ add_data <- function(party_object, plot_data) {
   }
 
   for (i in plot_data$id) {
-    node_data <- party_object[[i]]$data
+    node_data <- expand_surv(party_object[[i]]$data)
+
     if (fitted_values) {
       node_data <- cbind(node_data,
                          "fitted_values" = party_object[[i]]$node$info$object$fitted.values)
     }
+
+    if (residuals) {
+      node_data <- cbind(node_data,
+                         "residuals" = party_object[[i]]$node$info$object$residuals)
+    }
+
     for (column in data_columns) {
       data_column <- paste0("data_", column)
       plot_data[i, data_column][[1]] <- list(node_data[column])
@@ -235,4 +251,22 @@ add_data <- function(party_object, plot_data) {
     }
   }
   return(plot_data)
+}
+
+
+# expand_surv() -----------------------------------------------------------
+# takes dataframe and in case surv objects present, expands them and returns new
+# dataframe which contains new columns
+expand_surv <- function(data) {
+  data_check <- data
+  for (i in 1:ncol(data_check)) {
+    if (identical(is(data_check[[i]]), "Surv")) {
+      data <- data[, !names(data) %in% names(data_check[i])]
+      new_columns <- as.matrix(data_check[[i]])
+      new_columns <- as.data.frame(new_columns)
+      names(new_columns) <- paste0(names(data_check[i]),".", names(new_columns))
+      data <- cbind(data, new_columns)
+    }
+  }
+  data
 }
