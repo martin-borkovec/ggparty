@@ -3,7 +3,7 @@ test_that("plots drawn correctly", {
   vdiffr::expect_doppelganger("WeatherPlay Plot",
                               ggparty(py, horizontal = F) +
                                 geom_edge() +
-                                geom_node_splitvar(ynudge = 0.0) +
+                                geom_node_splitvar(y_nudge = 0.0) +
                                 geom_edge_label(shift = 0.5) +
                                 geom_node_info() +
                                 geom_nodeplot(gglist = list(geom_point(aes(temperature,humidity,shape = play,col = humidity,size = temperature))),
@@ -16,3 +16,4 @@ test_that("plots drawn correctly", {
                                 ) +
                                 ylim(-0.3, 1))
   })
+
