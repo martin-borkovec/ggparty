@@ -260,7 +260,6 @@ GeomNodeplot <- ggproto(
 
 
 
-
     # for vertical trees
     if (vertical) {
       node_width <- abs(diff(data$x[data$kids == 0]))[1]
@@ -306,7 +305,9 @@ GeomNodeplot <- ggproto(
     }
 
 
-    # add_fit -----------------------------------------------------------------
+
+
+
 
 
     # draw plots --------------------------------------------------------------
@@ -318,6 +319,23 @@ GeomNodeplot <- ggproto(
 
 
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
+
+    # nodesize ----------------------------------------------------------------
+    nodesize <- log(as.numeric(table(facet_data$id)))
+
+    if (width == "nodesize")
+      width <- scales::rescale(nodesize,
+                               to = c(0,1),
+                               from = c(0, max(nodesize)))
+    else width <-rep(width, length(ids))
+
+    if (height == "nodesize")
+      height <- scales::rescale(nodesize,
+                               to = c(0,1),
+                               from = c(0, max(nodesize)))
+    else height <-rep(width, length(ids))
+
+
     if (!is.null(predict_arg))
       predict_data <- predict_data(data$info, facet_data, predict_arg)
 
@@ -480,10 +498,10 @@ GeomNodeplot <- ggproto(
         nodeplotGrob(
           x = x,
           y = y,
-          width = node_width * width,
+          width = node_width * width[i],
           height = ifelse(data$kids[data$id == ids[i]] == 0,
                           abs(y - y_nudge - y_0),
-                          node_height) * height,
+                          node_height) * height[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "top",
                         "center"),
@@ -495,8 +513,8 @@ GeomNodeplot <- ggproto(
           y = y,
           width = ifelse(data$kids[data$id == ids[i]] == 0,
                          abs(x - x_1),
-                         node_width) * width,
-          height = node_height * height,
+                         node_width) * width[i],
+          height = node_height * height[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "left",
                         "center"),

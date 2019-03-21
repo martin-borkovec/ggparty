@@ -165,7 +165,8 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #' @md
 #'
 geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
-                               label.padding = unit(0.5, "lines"), ids = NULL, ...) {
+                               label.padding = unit(0.5, "lines"), ids = NULL,
+                               extract = NULL,...) {
   default_mapping <- aes(label = splitvar)
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
@@ -178,6 +179,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     params = list(ids = ids,
                   label.padding = label.padding,
                   na.rm = TRUE,
+                  extract = extract,
                   ...)
   )
 }
@@ -194,7 +196,8 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 StatParty <- ggproto(
   "StatParty", Stat,
-  compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL) {
+  compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
+                           extract = NULL) {
     if (!is.null(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     # shift of edge_label
@@ -211,7 +214,20 @@ StatParty <- ggproto(
         paste(output, collapse = " ")
       },
       character(1))
+    # browser()
+    # if (!is.null(extract)) {
+    #   for (j in seq_along(data$id)) {
+    #     if (j == 1) extract_data <- extract(lapply(data[j, 1:8], unlist))
+    #     else extract_data <- rbind(extract_data, extract(data[j, ]))
+    #   }
+    #   data <- cbind(data, extract_data)
+    # }
 
+    # browser()
+    # for (j in seq_along(data$id)) {
+    #   for (i in seq_along(data$info[[1]])) {
+    #     data[j, names(data$info[[1]])[i]] <- data$info[[j]][i]
+    #   }}
     data
   }
 )
