@@ -160,11 +160,15 @@ test_add_levels <- function(party_object) {
   })
 }
 
+test_add_levels(py)
+test_add_levels(t2)
+test_add_levels(ct)
+test_add_levels(ct2)
+test_add_levels(tr_tree)
 ###########
 test_layout_terminal_nodes <- function(party_object) {
   test_that("add_layout function terminals", {
-    terminal_data <-
-      get_plot_data(party_object)[get_plot_data(party_object)$level == max(get_plot_data(party_object)$level), ]
+    terminal_data <- get_plot_data(party_object)[get_plot_data(party_object)$level == max(get_plot_data(party_object)$level), ]
     for (j in 1:(nrow(terminal_data))) {
       j_id <- terminal_data$id[j]
       expect_equal(get_plot_data(party_object)$y[j_id], 0.2)
@@ -185,6 +189,7 @@ test_layout_terminal_nodes(tr_tree)
 ###########
 test_layout_inner_nodes <- function(party_object) {
   terminal_space <- 0.2
+  terminal_level <- max(get_plot_data(party_object)$level)
   test_that("add_layout function inner nodes", {
     inner_data <-
       get_plot_data(party_object)[get_plot_data(party_object)$level != max(get_plot_data(party_object)$level), ]
@@ -195,8 +200,15 @@ test_layout_inner_nodes <- function(party_object) {
         get_plot_data(party_object)$y[i_id],
         1 - i_level / max(get_plot_data(party_object)$level) * (1 - terminal_space)
       )
+      parents <- i_id
+      if (i_level != max(inner_data$level)) {
+        for (j in (i_level + 1):(terminal_level - 1)) {
+          parents <- c(parents, get_plot_data(party_object)[get_plot_data(party_object)$level  == j &
+                                                              get_plot_data(party_object)$parent %in% parents, "id"])
+        }
+      }
       expect_equal(get_plot_data(party_object)$x[i_id],
-                   mean(get_plot_data(party_object)$x[get_plot_data(party_object)$parent %in% i_id &
+                   mean(get_plot_data(party_object)$x[get_plot_data(party_object)$parent %in% parents &
                                                         get_plot_data(party_object)$kids == 0]))
     }
   })
@@ -205,9 +217,9 @@ test_layout_inner_nodes <- function(party_object) {
 
 test_layout_inner_nodes(py)
 test_layout_inner_nodes(t2)
-# test fails: test_layout_inner_nodes(ct)
+test_layout_inner_nodes(ct)
 test_layout_inner_nodes(ct2)
-# test fails: test_layout_inner_nodes(tr_tree)
+test_layout_inner_nodes(tr_tree)
 
 
 #########

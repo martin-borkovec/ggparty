@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggparty.R
 \name{geom_edge}
 \alias{geom_edge}
-\title{Draw edges between children and parents. wrapper of geom_segment}
+\title{Draw edges between children and parents}
 \usage{
 geom_edge(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
   ...)
@@ -17,5 +17,5 @@ geom_edge(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 \item{...}{additional arguments for \code{\link[=geom_segment]{geom_segment()}}}
 }
 \description{
-Draw edges between children and parents. wrapper of geom_segment
+Wrapper of geom_segment(), draws edges between child nodes and corresponding parent nodes
 }

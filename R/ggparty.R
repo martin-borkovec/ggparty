@@ -15,6 +15,7 @@
 #' @import grid
 
 
+
 # ggparty() ---------------------------------------------------------------
 
 
@@ -31,15 +32,15 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
   plot_data <- get_plot_data(party, horizontal = horizontal, terminal_space = terminal_space)
   if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
-  mapping <- aes(x = x, y = y, x_parent = x_parent,
-                 y_parent = y_parent, id = id, kids = kids, info = info)
+  mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
+                 y_parent = "y_parent", id = "id", kids = "kids", info = "info")
 
   for (column_i in names(node_data)) {
     mapping <- adjust_mapping(mapping, aes_string(var = paste0("`", column_i, "`")))
     names(mapping)[length(mapping)] <- column_i
   }
 
-  ggplot(data = plot_data,
+  ggplot2::ggplot(data = plot_data,
          mapping = mapping) +
     theme_void() +
     xlim(0, 1)
@@ -47,7 +48,9 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
 
 
 # geom_edge() -------------------------------------------------------------
-#' Draw edges between children and parents. wrapper of geom_segment
+#' Draw edges between children and parents
+#'
+#' Wrapper of geom_segment(), draws edges between child nodes and corresponding parent nodes
 #'
 #' @param mapping not recommended to change
 #' @param ... additional arguments for [geom_segment()]
@@ -58,10 +61,10 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
 #'
 geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...){
 
-  default_mapping <- aes(x = x,
-                         y = y,
-                         xend = x_parent,
-                         yend = y_parent)
+  default_mapping <- aes_string(x = "x",
+                         y = "y",
+                         xend = "x_parent",
+                         yend = "y_parent")
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -82,7 +85,6 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
 
 
 # geom_edge_label() -------------------------------------------------------
-
 #' Label edge with corresponding splitbreak
 #'
 #' @param mapping not recommended to change
@@ -90,6 +92,7 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
 #' @param ids choose which splitbreaks to label by their children's ids
 #' @param x_nudge,y_nudge nudge label
 #' @param ... additional arguments for [geom_label()]
+#' @param label.size size of label frame, default value label.size = 0 adds no frame
 #'
 #' @export
 #' @md
@@ -103,7 +106,7 @@ geom_edge_label <- function(mapping = NULL,
                             splitlevels = seq_len(100),
                             ...) {
 
-  default_mapping <- aes(label = index)
+  default_mapping <- aes_string(label = "index")
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -138,7 +141,7 @@ geom_edge_label <- function(mapping = NULL,
 #'
 geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
                            label.padding = unit(0.5, "lines"), ...) {
-  default_mapping <- aes(label = info)
+  default_mapping <- aes_string(label = "info")
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -165,9 +168,11 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #' @md
 #'
 geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
+
                                label.padding = unit(0.5, "lines"), ids = NULL,
-                               extract = NULL,...) {
-  default_mapping <- aes(label = splitvar)
+                               extract = NULL, ...) {
+  default_mapping <- aes_string(label = "splitvar")
+
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -238,7 +243,7 @@ StatParty <- ggproto(
 
 adjust_mapping <- function(default_mapping, mapping) {
   if (!is.null(mapping)) {
-    mapping <- `class<-`(modifyList(default_mapping, mapping), "uneval")
+    mapping <- `class<-`(utils::modifyList(default_mapping, mapping), "uneval")
   } else {
     mapping <- default_mapping
   }
@@ -253,5 +258,6 @@ adjust_layout <- function(plot_data, layout) {
     plot_data$x[plot_data$id == id] <- layout$x[layout$id == id]
     plot_data$x_parent[plot_data$parent == id] <- layout$x[layout$id == id]
   }
+  
   plot_data
 }
