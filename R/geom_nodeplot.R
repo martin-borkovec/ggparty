@@ -30,13 +30,13 @@
 #' airq <- subset(airquality, !is.na(Ozone))
 #' airct <- ctree(Ozone ~ ., data = airq)
 #'
-#' ggparty(airct, horizontal = T, terminal_space = 0.6) +
+#' ggparty(airct, horizontal = TRUE, terminal_space = 0.6) +
 #'   geom_edge() +
 #'   geom_edge_label() +
 #'   geom_node_splitvar() +
 #'   geom_nodeplot(gglist = list(
 #'     geom_density(aes(x = Ozone))),
-#'     shared_axis_labels = T)
+#'     shared_axis_labels = TRUE)
 #'
 #' #############################################################
 #'
@@ -91,7 +91,7 @@
 #'                   fit = wbreg, control = mob_control(minsize = 80))
 #'
 #' # horizontal Tree with individual axis labes
-#' ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = T) +
+#' ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
 #'   geom_edge() +
 #'   geom_node_splitvar() +
 #'   geom_edge_label() +
@@ -122,7 +122,7 @@
 #'       z},
 #'       type = "quantile",
 #'       p = 0.5),
-#'     shared_axis_labels = F
+#'     shared_axis_labels = FALSE
 #'   )
 #'
 #' ########################################################################
@@ -133,7 +133,7 @@
 #' tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
 #'                     tenure, data = tr, weights = students, caseweights = FALSE)
 #'
-#' ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
+#' ggparty(tr_tree, terminal_space = 0.5, horizontal = FALSE) +
 #'   geom_edge(size = 1.5) +
 #'   geom_node_splitvar(fontface = "bold", size = 8) +
 #'   geom_edge_label(colour = "grey", size = 6) +
@@ -145,7 +145,7 @@
 #'                               theme_bw(base_size = 15)),
 #'                 scales = "free_x",
 #'                 id = "terminal",
-#'                 shared_axis_labels = T,
+#'                 shared_axis_labels = TRUE,
 #'                 predict_arg = list(newdata = function(x) {
 #'                   data.frame(beauty = seq(min(x$beauty),
 #'                                           max(x$beauty),

@@ -67,6 +67,7 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
         var_levels <- levels(party_object$data[,split_var])
         # iterate through index
         for (j in 1:length(split_index)) {
+          if (is.na(split_index[j])) next
           # get kid index is pointing to
           kid <- kids[split_index[j]]
           # if first index  for kid, just assign according factor level

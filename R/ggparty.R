@@ -13,7 +13,6 @@
 #' @import ggplot2
 #' @import gtable
 #' @import grid
-#' @import checkmate
 
 
 # ggparty() ---------------------------------------------------------------
@@ -100,7 +99,9 @@ geom_edge_label <- function(mapping = NULL,
                             y_nudge = 0,
                             ids = NULL,
                             shift = 0.5,
-                            label.size = 0, ...) {
+                            label.size = 0,
+                            splitlevels = seq_len(100),
+                            ...) {
 
   default_mapping <- aes(label = index)
 
@@ -117,6 +118,7 @@ geom_edge_label <- function(mapping = NULL,
                   shift = shift,
                   label.size = label.size,
                   na.rm = TRUE,
+                  splitlevels = splitlevels,
                   ...)
   )
 }
@@ -192,15 +194,24 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 StatParty <- ggproto(
   "StatParty", Stat,
-  compute_group = function(data, ids, shift = NULL, scales = scales) {
+  compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL) {
     if (!is.null(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     # shift of edge_label
     if (!is.null(shift)){
-      #browser()
+
       data$x <- (data$x * shift + data$x_parent * (1 - shift))
       data$y <- (data$y * shift + data$y_parent * (1 - shift))
     }
+
+    if (!is.null(splitlevels))
+      data$label <- vapply(data$label, function(x) {
+        index <- seq_along(x) %in% splitlevels
+        output <- x[index]
+        paste(output, collapse = " ")
+      },
+      character(1))
+
     data
   }
 )
