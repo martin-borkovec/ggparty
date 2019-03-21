@@ -16,6 +16,8 @@ geom_edge_label(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 \item{shift}{value in (0,1). Move label along corresponding edge.}
 
+\item{label.size}{size of label frame, default value label.size = 0 adds no frame}
+
 \item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}}
 }
 \description{

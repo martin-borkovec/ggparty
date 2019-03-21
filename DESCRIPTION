@@ -10,7 +10,8 @@ Depends:
   partykit
 Imports: 
   grid,
-  gtable
+  gtable,
+  utils
 Suggests:
     dplyr,
     testthat,
