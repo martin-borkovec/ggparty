@@ -19,8 +19,16 @@
 # ggparty() ---------------------------------------------------------------
 
 
-ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NULL) {
-  #browser()
+ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
+
+  if(missing(terminal_space)) terminal_space <- 2 / (depth(party) + 2)
+  if (!is.null(layout)) {
+    checkmate::assert_data_frame(layout, any.missing = FALSE)
+    checkmate::assert_names(colnames(layout), permutation.of = c("id", "x", "y"))
+    checkmate::assert_integerish(layout$id, lower = 1, unique = TRUE)
+    checkmate::assert_numeric(layout$x, lower = 0, upper = 1)
+    checkmate::assert_numeric(layout$y, lower = 0, upper = 1)
+  }
   plot_data <- get_plot_data(party, horizontal = horizontal, terminal_space = terminal_space)
   if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
@@ -35,8 +43,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space = 0.2, layout = NU
   ggplot2::ggplot(data = plot_data,
          mapping = mapping) +
     theme_void() +
-    xlim(0, 1) +
-    ylim(0, 1)
+    xlim(0, 1)
 }
 
 
@@ -95,7 +102,9 @@ geom_edge_label <- function(mapping = NULL,
                             y_nudge = 0,
                             ids = NULL,
                             shift = 0.5,
-                            label.size = 0, ...) {
+                            label.size = 0,
+                            splitlevels = seq_len(100),
+                            ...) {
 
   default_mapping <- aes_string(label = "index")
 
@@ -112,6 +121,7 @@ geom_edge_label <- function(mapping = NULL,
                   shift = shift,
                   label.size = label.size,
                   na.rm = TRUE,
+                  splitlevels = splitlevels,
                   ...)
   )
 }
@@ -158,8 +168,11 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #' @md
 #'
 geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
-                               label.padding = unit(0.5, "lines"), ids = NULL, ...) {
+
+                               label.padding = unit(0.5, "lines"), ids = NULL,
+                               extract = NULL, ...) {
   default_mapping <- aes_string(label = "splitvar")
+
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -171,6 +184,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     params = list(ids = ids,
                   label.padding = label.padding,
                   na.rm = TRUE,
+                  extract = extract,
                   ...)
   )
 }
@@ -187,15 +201,38 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 StatParty <- ggproto(
   "StatParty", Stat,
-  compute_group = function(data, ids, shift = NULL, scales = scales) {
+  compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
+                           extract = NULL) {
     if (!is.null(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     # shift of edge_label
     if (!is.null(shift)){
-      #browser()
+
       data$x <- (data$x * shift + data$x_parent * (1 - shift))
       data$y <- (data$y * shift + data$y_parent * (1 - shift))
     }
+
+    if (!is.null(splitlevels))
+      data$label <- vapply(data$label, function(x) {
+        index <- seq_along(x) %in% splitlevels
+        output <- x[index]
+        paste(output, collapse = " ")
+      },
+      character(1))
+    # browser()
+    # if (!is.null(extract)) {
+    #   for (j in seq_along(data$id)) {
+    #     if (j == 1) extract_data <- extract(lapply(data[j, 1:8], unlist))
+    #     else extract_data <- rbind(extract_data, extract(data[j, ]))
+    #   }
+    #   data <- cbind(data, extract_data)
+    # }
+
+    # browser()
+    # for (j in seq_along(data$id)) {
+    #   for (i in seq_along(data$info[[1]])) {
+    #     data[j, names(data$info[[1]])[i]] <- data$info[[j]][i]
+    #   }}
     data
   }
 )
@@ -221,5 +258,6 @@ adjust_layout <- function(plot_data, layout) {
     plot_data$x[plot_data$id == id] <- layout$x[layout$id == id]
     plot_data$x_parent[plot_data$parent == id] <- layout$x[layout$id == id]
   }
+  
   plot_data
 }
