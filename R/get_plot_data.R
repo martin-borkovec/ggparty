@@ -261,7 +261,7 @@ add_data <- function(party_object, plot_data) {
 expand_surv <- function(data) {
   data_check <- data
   for (i in 1:ncol(data_check)) {
-    if (identical(is(data_check[[i]]), "Surv")) {
+    if (identical(methods::is(data_check[[i]]), "Surv")) {
       data <- data[, !names(data) %in% names(data_check[i])]
       new_columns <- as.matrix(data_check[[i]])
       new_columns <- as.data.frame(new_columns)

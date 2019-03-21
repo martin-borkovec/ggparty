@@ -13,7 +13,7 @@
 #' @import ggplot2
 #' @import gtable
 #' @import grid
-
+#' @import checkmate
 
 
 # ggparty() ---------------------------------------------------------------
@@ -40,7 +40,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
     names(mapping)[length(mapping)] <- column_i
   }
 
-  ggplot2::ggplot(data = plot_data,
+  ggplot(data = plot_data,
          mapping = mapping) +
     theme_void() +
     xlim(0, 1)
@@ -48,9 +48,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
 
 
 # geom_edge() -------------------------------------------------------------
-#' Draw edges between children and parents
-#'
-#' Wrapper of geom_segment(), draws edges between child nodes and corresponding parent nodes
+#' Draw edges between children and parents. wrapper of geom_segment
 #'
 #' @param mapping not recommended to change
 #' @param ... additional arguments for [geom_segment()]
@@ -85,14 +83,16 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
 
 
 # geom_edge_label() -------------------------------------------------------
+
 #' Label edge with corresponding splitbreak
 #'
 #' @param mapping not recommended to change
 #' @param shift value in (0,1). Move label along corresponding edge.
 #' @param ids choose which splitbreaks to label by their children's ids
 #' @param x_nudge,y_nudge nudge label
+#' @param splitlevels which levels of split to plot
+#' @param label.size see [geom_label()]
 #' @param ... additional arguments for [geom_label()]
-#' @param label.size size of label frame, default value label.size = 0 adds no frame
 #'
 #' @export
 #' @md
@@ -106,7 +106,7 @@ geom_edge_label <- function(mapping = NULL,
                             splitlevels = seq_len(100),
                             ...) {
 
-  default_mapping <- aes_string(label = "index")
+  default_mapping <- aes(label = index)
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -164,15 +164,14 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #' @param x_nudge,y_nudge nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
+#' @param extract work in progress
 #' @export
 #' @md
 #'
 geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
-
                                label.padding = unit(0.5, "lines"), ids = NULL,
-                               extract = NULL, ...) {
+                               extract = NULL,...) {
   default_mapping <- aes_string(label = "splitvar")
-
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -258,6 +257,64 @@ adjust_layout <- function(plot_data, layout) {
     plot_data$x[plot_data$id == id] <- layout$x[layout$id == id]
     plot_data$x_parent[plot_data$parent == id] <- layout$x[layout$id == id]
   }
-  
   plot_data
 }
+
+#' @export
+
+geom_node_text <- function(nodetext, arg_lists = NULL, mapping = NULL, x_nudge = 0,
+                           y_nudge = 0, ids = NULL) {
+
+
+  aestext <- syms(nodetext)
+  startbreaks <- endbreaks <- character(0)
+
+  for (i in seq_along(nodetext)) {
+  if (i > 1)                startbreaks[i] <- rep("\n", i - 1)
+  else                      startbreaks[i] <- ""
+  if (i < length(nodetext)) endbreaks[i] <- rep("\n", length(nodetext) - i)
+  else                      endbreaks[i] <- ""
+  }
+
+  first <- which.max(nchar(nodetext))
+
+  mapping <- aes(label = paste(!!(startbreaks[first]),
+                               !!(aestext[[first]]),
+                               !!(endbreaks[first])))
+
+  #mapping <- adjust_mapping(default_mapping, mapping)
+
+  layer_list <- list(layer(
+    data = NULL,
+    mapping = mapping,
+    stat = StatParty,
+    geom = "label",
+    position = position_nudge(x = x_nudge, y = y_nudge),
+    inherit.aes = TRUE,
+    params = c(list(ids = ids,
+                    na.rm = TRUE),
+               arg_lists[[first]]
+  )))
+
+  for (i in seq_along(nodetext)) {
+
+    if(i == first) next
+
+    mapping <- aes(label = paste(!!(startbreaks[i]),
+                                 !!(aestext[[i]]),
+                                 !!(endbreaks[i])))
+    layer_list <- c(layer_list, layer(
+      data = NULL,
+      mapping = mapping,
+      stat = StatParty,
+      geom = "text",
+      position = position_nudge(x = x_nudge, y = y_nudge),
+      inherit.aes = TRUE,
+      params = list(ids = ids,
+                    na.rm = TRUE
+                    )
+    ))
+  }
+  layer_list
+  }
+
