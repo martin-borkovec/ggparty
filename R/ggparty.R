@@ -32,8 +32,8 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
   plot_data <- get_plot_data(party, horizontal = horizontal, terminal_space = terminal_space)
   if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
-  mapping <- aes(x = x, y = y, x_parent = x_parent,
-                 y_parent = y_parent, id = id, kids = kids, info = info)
+  mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
+                 y_parent = "y_parent", id = "id", kids = "kids", info = "info")
 
   for (column_i in names(node_data)) {
     mapping <- adjust_mapping(mapping, aes_string(var = paste0("`", column_i, "`")))
@@ -59,10 +59,10 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
 #'
 geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...){
 
-  default_mapping <- aes(x = x,
-                         y = y,
-                         xend = x_parent,
-                         yend = y_parent)
+  default_mapping <- aes_string(x = "x",
+                         y = "y",
+                         xend = "x_parent",
+                         yend = "y_parent")
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -90,6 +90,8 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
 #' @param shift value in (0,1). Move label along corresponding edge.
 #' @param ids choose which splitbreaks to label by their children's ids
 #' @param x_nudge,y_nudge nudge label
+#' @param splitlevels which levels of split to plot
+#' @param label.size see [geom_label()]
 #' @param ... additional arguments for [geom_label()]
 #'
 #' @export
@@ -100,7 +102,9 @@ geom_edge_label <- function(mapping = NULL,
                             y_nudge = 0,
                             ids = NULL,
                             shift = 0.5,
-                            label.size = 0, ...) {
+                            label.size = 0,
+                            splitlevels = seq_len(100),
+                            ...) {
 
   default_mapping <- aes(label = index)
 
@@ -117,6 +121,7 @@ geom_edge_label <- function(mapping = NULL,
                   shift = shift,
                   label.size = label.size,
                   na.rm = TRUE,
+                  splitlevels = splitlevels,
                   ...)
   )
 }
@@ -136,7 +141,7 @@ geom_edge_label <- function(mapping = NULL,
 #'
 geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
                            label.padding = unit(0.5, "lines"), ...) {
-  default_mapping <- aes(label = info)
+  default_mapping <- aes_string(label = "info")
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -159,12 +164,14 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #' @param x_nudge,y_nudge nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
+#' @param extract work in progress
 #' @export
 #' @md
 #'
 geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
-                               label.padding = unit(0.5, "lines"), ids = NULL, ...) {
-  default_mapping <- aes(label = splitvar)
+                               label.padding = unit(0.5, "lines"), ids = NULL,
+                               extract = NULL,...) {
+  default_mapping <- aes_string(label = "splitvar")
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -176,6 +183,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     params = list(ids = ids,
                   label.padding = label.padding,
                   na.rm = TRUE,
+                  extract = extract,
                   ...)
   )
 }
@@ -192,15 +200,38 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 StatParty <- ggproto(
   "StatParty", Stat,
-  compute_group = function(data, ids, shift = NULL, scales = scales) {
+  compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
+                           extract = NULL) {
     if (!is.null(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     # shift of edge_label
     if (!is.null(shift)){
-      #browser()
+
       data$x <- (data$x * shift + data$x_parent * (1 - shift))
       data$y <- (data$y * shift + data$y_parent * (1 - shift))
     }
+
+    if (!is.null(splitlevels))
+      data$label <- vapply(data$label, function(x) {
+        index <- seq_along(x) %in% splitlevels
+        output <- x[index]
+        paste(output, collapse = " ")
+      },
+      character(1))
+    # browser()
+    # if (!is.null(extract)) {
+    #   for (j in seq_along(data$id)) {
+    #     if (j == 1) extract_data <- extract(lapply(data[j, 1:8], unlist))
+    #     else extract_data <- rbind(extract_data, extract(data[j, ]))
+    #   }
+    #   data <- cbind(data, extract_data)
+    # }
+
+    # browser()
+    # for (j in seq_along(data$id)) {
+    #   for (i in seq_along(data$info[[1]])) {
+    #     data[j, names(data$info[[1]])[i]] <- data$info[[j]][i]
+    #   }}
     data
   }
 )
@@ -211,7 +242,7 @@ StatParty <- ggproto(
 
 adjust_mapping <- function(default_mapping, mapping) {
   if (!is.null(mapping)) {
-    mapping <- `class<-`(modifyList(default_mapping, mapping), "uneval")
+    mapping <- `class<-`(utils::modifyList(default_mapping, mapping), "uneval")
   } else {
     mapping <- default_mapping
   }
@@ -228,3 +259,62 @@ adjust_layout <- function(plot_data, layout) {
   }
   plot_data
 }
+
+#' @export
+
+geom_node_text <- function(nodetext, arg_lists = NULL, mapping = NULL, x_nudge = 0,
+                           y_nudge = 0, ids = NULL) {
+
+
+  aestext <- syms(nodetext)
+  startbreaks <- endbreaks <- character(0)
+
+  for (i in seq_along(nodetext)) {
+  if (i > 1)                startbreaks[i] <- rep("\n", i - 1)
+  else                      startbreaks[i] <- ""
+  if (i < length(nodetext)) endbreaks[i] <- rep("\n", length(nodetext) - i)
+  else                      endbreaks[i] <- ""
+  }
+
+  first <- which.max(nchar(nodetext))
+
+  mapping <- aes(label = paste(!!(startbreaks[first]),
+                               !!(aestext[[first]]),
+                               !!(endbreaks[first])))
+
+  #mapping <- adjust_mapping(default_mapping, mapping)
+
+  layer_list <- list(layer(
+    data = NULL,
+    mapping = mapping,
+    stat = StatParty,
+    geom = "label",
+    position = position_nudge(x = x_nudge, y = y_nudge),
+    inherit.aes = TRUE,
+    params = c(list(ids = ids,
+                    na.rm = TRUE),
+               arg_lists[[first]]
+  )))
+
+  for (i in seq_along(nodetext)) {
+
+    if(i == first) next
+
+    mapping <- aes(label = paste(!!(startbreaks[i]),
+                                 !!(aestext[[i]]),
+                                 !!(endbreaks[i])))
+    layer_list <- c(layer_list, layer(
+      data = NULL,
+      mapping = mapping,
+      stat = StatParty,
+      geom = "text",
+      position = position_nudge(x = x_nudge, y = y_nudge),
+      inherit.aes = TRUE,
+      params = list(ids = ids,
+                    na.rm = TRUE
+                    )
+    ))
+  }
+  layer_list
+  }
+

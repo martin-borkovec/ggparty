@@ -5,7 +5,8 @@
 \title{Label edge with corresponding splitbreak}
 \usage{
 geom_edge_label(mapping = NULL, x_nudge = 0, y_nudge = 0,
-  ids = NULL, shift = 0.5, label.size = 0, ...)
+  ids = NULL, shift = 0.5, label.size = 0,
+  splitlevels = seq_len(100), ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
@@ -15,6 +16,10 @@ geom_edge_label(mapping = NULL, x_nudge = 0, y_nudge = 0,
 \item{ids}{choose which splitbreaks to label by their children's ids}
 
 \item{shift}{value in (0,1). Move label along corresponding edge.}
+
+\item{label.size}{see \code{\link[=geom_label]{geom_label()}}}
+
+\item{splitlevels}{which levels of split to plot}
 
 \item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}}
 }

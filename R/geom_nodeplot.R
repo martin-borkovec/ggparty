@@ -30,13 +30,13 @@
 #' airq <- subset(airquality, !is.na(Ozone))
 #' airct <- ctree(Ozone ~ ., data = airq)
 #'
-#' ggparty(airct, horizontal = T, terminal_space = 0.6) +
+#' ggparty(airct, horizontal = TRUE, terminal_space = 0.6) +
 #'   geom_edge() +
 #'   geom_edge_label() +
 #'   geom_node_splitvar() +
 #'   geom_nodeplot(gglist = list(
 #'     geom_density(aes(x = Ozone))),
-#'     shared_axis_labels = T)
+#'     shared_axis_labels = TRUE)
 #'
 #' #############################################################
 #'
@@ -91,7 +91,7 @@
 #'                   fit = wbreg, control = mob_control(minsize = 80))
 #'
 #' # horizontal Tree with individual axis labes
-#' ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = T) +
+#' ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
 #'   geom_edge() +
 #'   geom_node_splitvar() +
 #'   geom_edge_label() +
@@ -122,7 +122,7 @@
 #'       z},
 #'       type = "quantile",
 #'       p = 0.5),
-#'     shared_axis_labels = F
+#'     shared_axis_labels = FALSE
 #'   )
 #'
 #' ########################################################################
@@ -133,7 +133,7 @@
 #' tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
 #'                     tenure, data = tr, weights = students, caseweights = FALSE)
 #'
-#' ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
+#' ggparty(tr_tree, terminal_space = 0.5, horizontal = FALSE) +
 #'   geom_edge(size = 1.5) +
 #'   geom_node_splitvar(fontface = "bold", size = 8) +
 #'   geom_edge_label(colour = "grey", size = 6) +
@@ -145,7 +145,7 @@
 #'                               theme_bw(base_size = 15)),
 #'                 scales = "free_x",
 #'                 id = "terminal",
-#'                 shared_axis_labels = T,
+#'                 shared_axis_labels = TRUE,
 #'                 predict_arg = list(newdata = function(x) {
 #'                   data.frame(beauty = seq(min(x$beauty),
 #'                                           max(x$beauty),
@@ -260,7 +260,6 @@ GeomNodeplot <- ggproto(
 
 
 
-
     # for vertical trees
     if (vertical) {
       node_width <- abs(diff(data$x[data$kids == 0]))[1]
@@ -306,7 +305,9 @@ GeomNodeplot <- ggproto(
     }
 
 
-    # add_fit -----------------------------------------------------------------
+
+
+
 
 
     # draw plots --------------------------------------------------------------
@@ -318,6 +319,23 @@ GeomNodeplot <- ggproto(
 
 
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
+
+    # nodesize ----------------------------------------------------------------
+    nodesize <- log(as.numeric(table(facet_data$id)))
+
+    if (width == "nodesize")
+      width <- scales::rescale(nodesize,
+                               to = c(0,1),
+                               from = c(0, max(nodesize)))
+    else width <-rep(width, length(ids))
+
+    if (height == "nodesize")
+      height <- scales::rescale(nodesize,
+                               to = c(0,1),
+                               from = c(0, max(nodesize)))
+    else height <-rep(width, length(ids))
+
+
     if (!is.null(predict_arg))
       predict_data <- predict_data(data$info, facet_data, predict_arg)
 
@@ -480,10 +498,10 @@ GeomNodeplot <- ggproto(
         nodeplotGrob(
           x = x,
           y = y,
-          width = node_width * width,
+          width = node_width * width[i],
           height = ifelse(data$kids[data$id == ids[i]] == 0,
                           abs(y - y_nudge - y_0),
-                          node_height) * height,
+                          node_height) * height[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "top",
                         "center"),
@@ -495,8 +513,8 @@ GeomNodeplot <- ggproto(
           y = y,
           width = ifelse(data$kids[data$id == ids[i]] == 0,
                          abs(x - x_1),
-                         node_width) * width,
-          height = node_height * height,
+                         node_width) * width[i],
+          height = node_height * height[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "left",
                         "center"),
@@ -575,8 +593,7 @@ predict_data <- function(info, data, predict_arg) {
     predict_arg$object <- info[[ids[i]]]$object
     predict_data <- predict_arg$newdata
     predict_data$id <- ids[i]
-    predict_data$prediction <- do.call(predict,
-            predict_arg)
+    predict_data$prediction <- do.call(stats::predict, predict_arg)
 
     if (i == 1) resulting_data <- predict_data
     else resulting_data <- rbind(resulting_data, predict_data)
