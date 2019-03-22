@@ -5,8 +5,8 @@
 \title{Draw labels containing node's split variable}
 \usage{
 geom_node_splitvar(mapping = NULL, x_nudge = 0, y_nudge = 0,
-  label.padding = unit(0.5, "lines"), ids = NULL, extract = NULL,
-  ...)
+  label.padding = unit(0.5, "lines"), ids = NULL,
+  extract_info = NULL, ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
@@ -17,7 +17,7 @@ geom_node_splitvar(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 \item{ids}{choose which terminal nodes to label by their ids}
 
-\item{extract}{work in progress}
+\item{extract_info}{work in progress}
 
 \item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}}
 }

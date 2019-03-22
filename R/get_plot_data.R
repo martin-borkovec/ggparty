@@ -1,5 +1,9 @@
+#' @export
+
+
 # transforms recursive structure of object of type "party" to dataframe
-get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2) {
+get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2,
+                          add_vars = NULL) {
   #browser()
   ids <- nodeids(party_object)
   plot_data <- data.frame(id = ids,
@@ -18,6 +22,7 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
   plot_data <- add_levels(plot_data, endnode_level = depth(party_object))
   plot_data <- add_layout(plot_data, horizontal, terminal_space)
   plot_data <- add_data(party_object, plot_data)
+  plot_data <- add_vars(party_object, plot_data, add_vars)
   return(plot_data)
 }
 
@@ -122,6 +127,8 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
 add_info <- function(party_object, plot_data) {
   for (i in plot_data$id) {
     plot_data[i, "info"][[1]] <- list(party_object[[i]]$node$info)
+    # if(is.null(plot_data[i, "info"][[1]]))
+    #   plot_data[i, "info"][[1]] <- NA
   }
   return(plot_data)
 }
@@ -271,3 +278,14 @@ expand_surv <- function(data) {
   }
   data
 }
+
+add_vars <- function(party_object, data, add_vars) {
+  for (i in seq_along(add_vars)) {
+    for (j in seq_len(nrow(data))) {
+      new <- eval(parse(text = paste0("party_object[[", j, "]]", add_vars[[i]])))
+      data[j, names(add_vars)[i]] <- ifelse(is.null(new), NA, new)
+
+    }}
+  data
+}
+

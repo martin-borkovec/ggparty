@@ -19,7 +19,8 @@
 # ggparty() ---------------------------------------------------------------
 
 
-ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
+ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
+                    add_vars = NULL) {
 
   if(missing(terminal_space)) terminal_space <- 2 / (depth(party) + 2)
   if (!is.null(layout)) {
@@ -29,7 +30,12 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL) {
     checkmate::assert_numeric(layout$x, lower = 0, upper = 1)
     checkmate::assert_numeric(layout$y, lower = 0, upper = 1)
   }
-  plot_data <- get_plot_data(party, horizontal = horizontal, terminal_space = terminal_space)
+
+  plot_data <- get_plot_data(party,
+                             horizontal = horizontal,
+                             terminal_space = terminal_space,
+                             add_vars = add_vars)
+
   if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
@@ -164,13 +170,13 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #' @param x_nudge,y_nudge nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
-#' @param extract work in progress
+#' @param extract_info work in progress
 #' @export
 #' @md
 #'
 geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
                                label.padding = unit(0.5, "lines"), ids = NULL,
-                               extract = NULL,...) {
+                               extract_info = NULL,...) {
   default_mapping <- aes_string(label = "splitvar")
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
@@ -183,7 +189,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     params = list(ids = ids,
                   label.padding = label.padding,
                   na.rm = TRUE,
-                  extract = extract,
+                  extract_info = extract_info,
                   ...)
   )
 }
@@ -201,7 +207,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 StatParty <- ggproto(
   "StatParty", Stat,
   compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
-                           extract = NULL) {
+                           extract_info = NULL) {
     if (!is.null(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     # shift of edge_label
@@ -219,12 +225,12 @@ StatParty <- ggproto(
       },
       character(1))
     # browser()
-    # if (!is.null(extract)) {
+    # if (!is.null(extract_info)) {
     #   for (j in seq_along(data$id)) {
-    #     if (j == 1) extract_data <- extract(lapply(data[j, 1:8], unlist))
-    #     else extract_data <- rbind(extract_data, extract(data[j, ]))
+    #     if (j == 1) extract_info_data <- extract_info(lapply(data[j, 1:8], unlist))
+    #     else extract_info_data <- rbind(extract_info_data, extract_info(data[j, ]))
     #   }
-    #   data <- cbind(data, extract_data)
+    #   data <- cbind(data, extract_info_data)
     # }
 
     # browser()
@@ -262,59 +268,124 @@ adjust_layout <- function(plot_data, layout) {
 
 #' @export
 
-geom_node_text <- function(nodetext, arg_lists = NULL, mapping = NULL, x_nudge = 0,
-                           y_nudge = 0, ids = NULL) {
+geom_node_text <- function(mapping = NULL, arg_lists = NULL, x_nudge = 0,
+                           y_nudge = 0, ids = NULL, extract_info = NULL) {
+
+  browser()
+  #aestext <- syms(nodetext)
+
+  if (is.list(mapping)) {
+    startbreaks <- endbreaks <- character(0)
+
+    for (i in seq_along(mapping)) {
+      if (i > 1)                startbreaks[i] <- rep("\n", i - 1)
+      else                      startbreaks[i] <- ""
+      if (i < length(mapping)) endbreaks[i] <- rep("\n", length(mapping) - i)
+      else                      endbreaks[i] <- ""
 
 
-  aestext <- syms(nodetext)
-  startbreaks <- endbreaks <- character(0)
-
-  for (i in seq_along(nodetext)) {
-  if (i > 1)                startbreaks[i] <- rep("\n", i - 1)
-  else                      startbreaks[i] <- ""
-  if (i < length(nodetext)) endbreaks[i] <- rep("\n", length(nodetext) - i)
-  else                      endbreaks[i] <- ""
+      new <- substring(deparse(mapping[[i]]$label), first = 2)
+      #new <- paste0(startbreaks[i], " ", new, " \ ", endbreaks[i], ")")
+      new <- quo(paste(!!startbreaks[i], !!parse(text = new)[[1]], !!endbreaks[i]))
+      mapping[[i]]$label <- new
+    }
   }
 
-  first <- which.max(nchar(nodetext))
 
-  mapping <- aes(label = paste(!!(startbreaks[first]),
-                               !!(aestext[[first]]),
-                               !!(endbreaks[first])))
+  # first <- which.max(nchar(nodetext))
+  # mapping <- aes(label = paste(!!(startbreaks[first]),
+  #                              !!(aestext[[first]]),
+  #                              !!(endbreaks[first])))
+#
+#   mapping <- aes(label = paste(!!startbreaks[first],
+#                                       !!nodetext[[first]],
+#                                       !!endbreaks[first]))
+#
+
+
+
+
 
   #mapping <- adjust_mapping(default_mapping, mapping)
 
   layer_list <- list(layer(
     data = NULL,
-    mapping = mapping,
+    mapping = mapping[[1]],
     stat = StatParty,
     geom = "label",
     position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = TRUE,
     params = c(list(ids = ids,
-                    na.rm = TRUE),
-               arg_lists[[first]]
-  )))
+                    na.rm = TRUE,
+                    extract_info = extract_info))#,
+               # arg_lists[[first]])
+  ))
 
-  for (i in seq_along(nodetext)) {
-
-    if(i == first) next
-
-    mapping <- aes(label = paste(!!(startbreaks[i]),
-                                 !!(aestext[[i]]),
-                                 !!(endbreaks[i])))
-    layer_list <- c(layer_list, layer(
-      data = NULL,
-      mapping = mapping,
-      stat = StatParty,
-      geom = "text",
-      position = position_nudge(x = x_nudge, y = y_nudge),
-      inherit.aes = TRUE,
-      params = list(ids = ids,
-                    na.rm = TRUE
-                    )
-    ))
-  }
+  # for (i in seq_along(nodetext)) {
+  #
+  #   if(i == first) next
+  #
+  #   mapping <- aes(label = paste(!!(startbreaks[i]),
+  #                                !!(aestext[[i]]),
+  #                                !!(endbreaks[i])))
+  #   layer_list <- c(layer_list, layer(
+  #     data = NULL,
+  #     mapping = mapping,
+  #     stat = StatText,
+  #     geom = "text",
+  #     position = position_nudge(x = x_nudge, y = y_nudge),
+  #     inherit.aes = TRUE,
+  #     params = list(ids = ids,
+  #                   na.rm = TRUE,
+  #                   extract_info = extract_info,
+  #                   shift = NULL,
+  #                   splitlevels = NULL)
+  #
+  #   ))
+  # }
   layer_list
-  }
+}
+
+
+# StatText <- ggproto(
+#   "StatText", Stat,
+#   compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
+#                            extract_info = NULL) {
+#   #browser()
+#     if (!is.null(ids)) data <- data[ids, ]
+#     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
+#     # shift of edge_label
+#     # if (!is.null(shift)){
+#     #
+#     #   data$x <- (data$x * shift + data$x_parent * (1 - shift))
+#     #   data$y <- (data$y * shift + data$y_parent * (1 - shift))
+#     # }
+#     #
+#     # if (!is.null(splitlevels))
+#     #   data$label <- vapply(data$label, function(x) {
+#     #     index <- seq_along(x) %in% splitlevels
+#     #     output <- x[index]
+#     #     paste(output, collapse = " ")
+#     #   },
+#     #   character(1))
+#
+# #browser()
+#     if (!is.null(extract_info)) {
+#       for (j in seq_along(data$id)) {
+#          if (is.null(data$info[[j]])) next
+#         #   }
+#         #if (j == 1) extract_info_data <- extract_info(data$info[[j]])
+#         #else extract_info_data <- rbind(extract_info_data, extract_info(data$info[[j]]))
+#         data[j, "label"] <- extract_info(data$info[[j]])
+#
+#       }
+#       #browser()
+#       #data <- cbind(data, extract_info_data)
+#     }
+#
+#     data
+#   }
+# )
+
+
 
