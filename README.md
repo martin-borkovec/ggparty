@@ -52,4 +52,4 @@ ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
-[![Coverage Status](https://coveralls.io/repos/github/Niyazu/ggparty/badge.svg?branch=master)](https://coveralls.io/github/Niyazu/ggparty?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Niyazu/ggparty/badge.svg?branch=master)](https://coveralls.io/github/Niyazu/ggparty?branch=nyz_0)
