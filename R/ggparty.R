@@ -266,85 +266,8 @@ adjust_layout <- function(plot_data, layout) {
   plot_data
 }
 
-#' @export
-
-geom_node_text <- function(mapping = NULL, arg_lists = NULL, x_nudge = 0,
-                           y_nudge = 0, ids = NULL, extract_info = NULL) {
-
-  browser()
-  #aestext <- syms(nodetext)
-
-  if (is.list(mapping)) {
-    startbreaks <- endbreaks <- character(0)
-
-    for (i in seq_along(mapping)) {
-      if (i > 1)                startbreaks[i] <- rep("\n", i - 1)
-      else                      startbreaks[i] <- ""
-      if (i < length(mapping)) endbreaks[i] <- rep("\n", length(mapping) - i)
-      else                      endbreaks[i] <- ""
 
 
-      new <- substring(deparse(mapping[[i]]$label), first = 2)
-      #new <- paste0(startbreaks[i], " ", new, " \ ", endbreaks[i], ")")
-      new <- quo(paste(!!startbreaks[i], !!parse(text = new)[[1]], !!endbreaks[i]))
-      mapping[[i]]$label <- new
-    }
-  }
-
-
-  # first <- which.max(nchar(nodetext))
-  # mapping <- aes(label = paste(!!(startbreaks[first]),
-  #                              !!(aestext[[first]]),
-  #                              !!(endbreaks[first])))
-#
-#   mapping <- aes(label = paste(!!startbreaks[first],
-#                                       !!nodetext[[first]],
-#                                       !!endbreaks[first]))
-#
-
-
-
-
-
-  #mapping <- adjust_mapping(default_mapping, mapping)
-
-  layer_list <- list(layer(
-    data = NULL,
-    mapping = mapping[[1]],
-    stat = StatParty,
-    geom = "label",
-    position = position_nudge(x = x_nudge, y = y_nudge),
-    inherit.aes = TRUE,
-    params = c(list(ids = ids,
-                    na.rm = TRUE,
-                    extract_info = extract_info))#,
-               # arg_lists[[first]])
-  ))
-
-  # for (i in seq_along(nodetext)) {
-  #
-  #   if(i == first) next
-  #
-  #   mapping <- aes(label = paste(!!(startbreaks[i]),
-  #                                !!(aestext[[i]]),
-  #                                !!(endbreaks[i])))
-  #   layer_list <- c(layer_list, layer(
-  #     data = NULL,
-  #     mapping = mapping,
-  #     stat = StatText,
-  #     geom = "text",
-  #     position = position_nudge(x = x_nudge, y = y_nudge),
-  #     inherit.aes = TRUE,
-  #     params = list(ids = ids,
-  #                   na.rm = TRUE,
-  #                   extract_info = extract_info,
-  #                   shift = NULL,
-  #                   splitlevels = NULL)
-  #
-  #   ))
-  # }
-  layer_list
-}
 
 
 # StatText <- ggproto(
@@ -386,6 +309,4 @@ geom_node_text <- function(mapping = NULL, arg_lists = NULL, x_nudge = 0,
 #     data
 #   }
 # )
-
-
 
