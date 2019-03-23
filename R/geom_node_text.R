@@ -6,96 +6,61 @@ geom_node_text <- function(mapping = NULL, arg_lists = NULL, x_nudge = 0,
   #browser()
   #aestext <- syms(nodetext)
 
-  if (is.list(mapping)) {
-    startbreaks <- endbreaks <- character(0)
-
-    for (i in seq_along(mapping)) {
-      if (i > 1)                startbreaks <- rep("\n", i - 1)
-      else                      startbreaks <- ""
-      if (i < length(mapping)) endbreaks <- rep("\n", length(mapping) - i)
-      else                      endbreaks <- ""
-
-
-      new <- substring(deparse(mapping[[i]]$label), first = 2)
-      #new <- paste0(startbreaks[i], " ", new, " \ ", endbreaks[i], ")")
-      new <- quo(paste(!!startbreaks,!!parse(text = new)[[1]], !!endbreaks))
-      mapping[[i]]$label <- new
-    }
-   # browser()
-  }
-
-
-  # first <- which.max(nchar(nodetext))
-  # mapping <- aes(label = paste(!!(startbreaks[first]),
-  #                              !!(aestext[[first]]),
-  #                              !!(endbreaks[first])))
+  # if (is.list(mapping)) {
+  #   startbreaks <- endbreaks <- character(0)
+  #   for (i in seq_along(mapping)) {
+  #     if (i > 1)                startbreaks <- rep("\n", i - 1)
+  #     else                      startbreaks <- ""
+  #     if (i < length(mapping)) endbreaks <- rep("\n", length(mapping) - i)
+  #     else                      endbreaks <- ""
   #
-  #   mapping <- aes(label = paste(!!startbreaks[first],
-  #                                       !!nodetext[[first]],
-  #                                       !!endbreaks[first]))
   #
+  #     new <- substring(deparse(mapping[[i]]$label), first = 2)
+  #     #new <- paste0(startbreaks[i], " ", new, " \ ", endbreaks[i], ")")
+  #     new <- quo(paste(!!startbreaks,!!parse(text = new)[[1]], !!endbreaks))
+  #     mapping[[i]]$label <- new
+  #   }
+  #   # browser()
+  # }
+
+  layer_list <- list()
+
+# LEGEND ------------------------------------------------------------------
 
 
+  for (i in seq_along(mapping))
+    layer_list <- c(layer_list, layer(
+      data = NULL,
+      mapping = mapping[[i]],
+      stat = StatParty,
+      geom = GeomLabel2,
+      position = position_nudge(x = x_nudge, y = y_nudge),
+      inherit.aes = TRUE,
+      params = c(list(ids = ids,
+                      na.rm = TRUE,
+                      fill = NA,
+                      only_legend = T)
 
 
+    )))
 
-  #mapping <- adjust_mapping(default_mapping, mapping)
 
-  layer_list <- list(layer(
+# Labels -------------------------------------------------------------------
+
+
+  layer_list <- c(layer_list, layer(
     data = NULL,
-    mapping = mapping[[1]],
+    mapping = NULL,
     stat = StatParty,
     geom = GeomNodetext,
     position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = TRUE,
     params = c(list(ids = ids,
-                    na.rm = TRUE
-                    ))#,
-    # arg_lists[[first]])
+                    na.rm = TRUE,
+                    aes_list = mapping
+                    ))
   ))
 
-  # layer_list <- c(layer_list, layer(
-  #   data = NULL,
-  #   mapping = mapping[[2]],
-  #   stat = StatParty,
-  #   geom = "text",
-  #   position = position_nudge(x = x_nudge, y = y_nudge),
-  #   inherit.aes = TRUE,
-  #   params = c(list(ids = ids,
-  #                   na.rm = TRUE,
-  #                   extract_info = extract_info,
-  #                   #col = "red",
-  #                   lineheight = 2))#,
-    #fontface = "bold"))#,
-    # arg_lists[[first]])
-  # ))
-
-  # layer_list <- c(layer_list, layer(
-  #   data = NULL,
-  #   mapping = mapping[[3]],
-  #   stat = StatParty,
-  #   geom = "text",
-  #   position = position_nudge(x = x_nudge, y = y_nudge),
-  #   inherit.aes = TRUE,
-  #   params = c(list(ids = ids,
-  #                   na.rm = TRUE,
-  #                   extract_info = extract_info,
-  #                   # col = "red",
-  #                   #fontface = "bold",
-  #                   # size = 4,
-  #                   lineheight = 2)
-  #   )
-  # ))
-
-  # for (i in seq_along(nodetext)) {
-  #
-  #   if(i == first) next
-  #
-  #   mapping <- aes(label = paste(!!(startbreaks[i]),
-  #                                !!(aestext[[i]]),
-  #                                !!(endbreaks[i])))
-  #   ))
-  # }
   layer_list
 }
 
@@ -108,29 +73,60 @@ GeomNodetext <- ggproto(
                         data,
                         panel_params,
                         coord,
-                        gglist,
-                        plot_call,
-                        width,
-                        height,
                         ids,
-                        shared_axis_labels,
                         scales,
-                        predict_arg
+                        aes_list
                         ) {
 
 
     #data <- coord$transform(data, panel_params)
 
-    grob_list <- ggplotGrob(ggplot(data) +
-                              geom_label2(aes(x, y, label = paste("ROFL!:", id)),
-                                         parameters = list(coord, panel_params)) +
-                              theme_void())
-      #,
-                                                   # aes(label = formatC(p.value, format = "e", digits = 2)),
-                                                   # aes(label = splitvar))))
-      # grob_list <- grob_list$grobs[[5]]$children$
-    grob_list <- grob_list$grobs[[find_grob(grob_list$grobs, "panel")]]
+    # line_sizes <- c(8, 4, 4)
+    # line_size_factor <- line_sizes / 4
+    #
+    # attach(data)
+    # max_lengths <- numeric()
+    #
+    # for(j in data$id) {
+    #   line_lengths <- numeric()
+    #   for (i in seq_along(aes_list)) {
+    #     line_lengths <- nchar(rlang::eval_tidy(aes_list[[i]]$label))
+    #     line_lengths <- line_lengths * line_size_factor[i]
+    #   }
+    #   longest_line[j] <- which.max(line_lengths, na.rm = T)
+    # }
+    # browser()
+    # detach(data)
 
+# BOXES -------------------------------------------------------------------
+
+browser()
+    boxes <- ggplotGrob(ggplot(data) +
+                              geom_label2(aes(x, y, label = paste("ROFL!: \n", id,"\n lol","\n lol"),
+                                              col = splitvar),
+                                          size = 8,
+                                         parameters = list(coord, panel_params),
+                                         only_border = F,
+                                         fixed_height = NULL#unit(56 * 0.75, "mm")
+                                         ) +
+                              theme_void())
+
+    grob_list <- boxes$grobs[[find_grob(boxes$grobs, "panel")]]$children
+
+    grob_list <- c(grob_list,  roundrectGrob(0.5, 0.5, default.units = "native",
+                                             width = grobWidth(grob_list[[1]]),
+                                             height = grobHeight(grob_list[[1]]))
+    )
+
+# TEXTS --------------------------------------------------------------------
+
+    # texts <- ggplotGrob(ggplot(data) +
+    #                       geom_label2(aes(x, y, label = paste("ROFL!:", id),
+    #                                       col = splitvar),
+    #                                   parameters = list(coord, panel_params)) +
+    #                       theme_void())
+    #
+    # grob_list <- c(grob_list, texts$grobs[[find_grob(texts$grobs, "panel")]])$children
 
     #class(grob_list) <- "gList"
     #ggname("geom_labelO", grid::grobTree(children = grob_list))

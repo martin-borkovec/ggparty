@@ -3,7 +3,7 @@
 #' @param label.padding Amount of padding around label. Defaults to 0.25 lines.
 #' @param label.r Radius of rounded corners. Defaults to 0.15 lines.
 #' @param label.size Size of label border, in mm.
-geom_label <- function(mapping = NULL, data = NULL,
+geom_label3 <- function(mapping = NULL, data = NULL,
                        stat = "identity", position = "identity",
                        ...,
                        parse = FALSE,
@@ -27,7 +27,7 @@ geom_label <- function(mapping = NULL, data = NULL,
     data = data,
     mapping = mapping,
     stat = stat,
-    geom = GeomLabel,
+    geom = GeomLabel3,
     position = position,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
@@ -47,7 +47,7 @@ geom_label <- function(mapping = NULL, data = NULL,
 #' @format NULL
 #' @usage NULL
 #' @export
-GeomLabel <- ggproto("GeomLabel", Geom,
+GeomLabel3 <- ggproto("GeomLabel3", Geom,
                      required_aes = c("x", "y", "label"),
 
                      default_aes = aes(
@@ -56,14 +56,12 @@ GeomLabel <- ggproto("GeomLabel", Geom,
                        lineheight = 1.2
                      ),
 
-
                      draw_panel = function(self, data, panel_params, coord, parse = FALSE,
                                            na.rm = FALSE,
                                            label.padding = unit(0.25, "lines"),
                                            label.r = unit(0.15, "lines"),
                                            label.size = 0.25) {
                        lab <- data$label
-                       browser()
                        if (parse) {
                          lab <- parse_safe(as.character(lab))
                        }
@@ -101,6 +99,7 @@ GeomLabel <- ggproto("GeomLabel", Geom,
                        class(grobs) <- "gList"
 
                        ggname("geom_label", grobTree(children = grobs))
+                       grobs <- NULL
                      },
 
                      draw_key = draw_key_label
