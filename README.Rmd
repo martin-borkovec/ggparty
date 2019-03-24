@@ -63,7 +63,7 @@ ggparty(tr_tree,
                                    list(size = 20),
                                    list(size = 12)),
                   ids = "inner") +
-  geom_node_label(aes(label = paste("Node", id, "N = ", nodesize)),
+  geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
                   fontface = "bold",
                   ids = "terminal",
                   nudge_y = 0.01) 
