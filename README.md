@@ -8,7 +8,7 @@ Install
 
 ``` r
 devtools::install_github("mmostly-harmless/ggparty", 
-                          dependencies=TRUE)
+                         dependencies=TRUE)
 ```
 
 Example
@@ -27,30 +27,28 @@ ggparty(tr_tree,
         terminal_space = 0.5,
         add_vars = list(p.value = "$node$info$p.value")) +
   geom_edge(size = 1.5) +
-  geom_node_label(aes(label = paste("Node", id)),
-                  ids = "terminal") +
-                    geom_edge_label(colour = "grey", size = 6) +
-                    geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
-                                                               y = eval,
-                                                               col = tenure,
-                                                               shape = minority),
-                                                           alpha = 0.8),
-                                                expression(
-                                                  geom_line(data = predict_data,
-                                                            aes(x = beauty,
-                                                                y = prediction),
-                                                            col = "blue",
-                                                            size = 1.2)),
-                                                theme_bw(base_size = 15)),
-                                  scales = "fixed",
-                                  id = "terminal",
-                                  shared_axis_labels = T,
-                                  predict_arg = list(newdata = function(x) {
-                                    data.frame(beauty = seq(min(x$beauty),
-                                                            max(x$beauty),
-                                                            length.out = 100))
-                                  })) +
-    geom_node_label(aes(col = splitvar),
+  geom_edge_label(colour = "grey", size = 6) +
+  geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
+                                             y = eval,
+                                             col = tenure,
+                                             shape = minority),
+                                         alpha = 0.8),
+                              expression(
+                                geom_line(data = predict_data,
+                                          aes(x = beauty,
+                                              y = prediction),
+                                          col = "blue",
+                                          size = 1.2)),
+                              theme_bw(base_size = 15)),
+                scales = "fixed",
+                id = "terminal",
+                shared_axis_labels = T,
+                predict_arg = list(newdata = function(x) {
+                  data.frame(beauty = seq(min(x$beauty),
+                                          max(x$beauty),
+                                          length.out = 100))
+                })) +
+  geom_node_label(aes(col = splitvar),
                   line_list = list(aes(label = paste("Node", id)),
                                    aes(label = splitvar),
                                    aes(label = paste("p =", formatC(p.value, format = "e", digits = 2)))),
@@ -61,6 +59,7 @@ ggparty(tr_tree,
   geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
                   fontface = "bold",
                   ids = "terminal",
+                  fontsize = 12,
                   nudge_y = 0.01) 
 ```
 
