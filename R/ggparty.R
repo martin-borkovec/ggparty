@@ -72,9 +72,9 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...){
 
   default_mapping <- aes_string(x = "x",
-                         y = "y",
-                         xend = "x_parent",
-                         yend = "y_parent")
+                                y = "y",
+                                xend = "x_parent",
+                                yend = "y_parent")
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -212,10 +212,12 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 StatParty <- ggproto(
   "StatParty", Stat,
-  compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
+  compute_group = function(data, ids = NULL, shift = NULL, scales = scales, splitlevels = NULL,
                            extract_info = NULL) {
-    if (!is.null(ids)) data <- data[ids, ]
+    #browser()
+    if (is.numeric(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
+    if (is.character(ids) && ids == "inner") data <- data[data$kids != 0, ]
     # shift of edge_label
     if (!is.null(shift)){
 

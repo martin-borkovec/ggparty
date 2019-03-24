@@ -7,6 +7,7 @@ geom_node_label <- function(mapping = NULL,
                             data = NULL,
                             aes_list,
                             line_gpar = NULL,
+                            ids = NULL,
                             stat = "identity",
                             position = "identity",
                             ...,
@@ -31,7 +32,7 @@ geom_node_label <- function(mapping = NULL,
   layer(
     data = data,
     mapping = mapping,
-    stat = stat,
+    stat = StatParty,
     geom = GeomNodeLabel,
     position = position,
     show.legend = show.legend,
@@ -44,6 +45,7 @@ geom_node_label <- function(mapping = NULL,
       label.size = label.size,
       na.rm = na.rm,
       line_gpar = line_gpar,
+      ids = ids,
       ...
     )
   )
@@ -72,7 +74,7 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                            line_gpar) {
                        #lab <- data$label
 
-
+                       on.exit(detach(data))
                        attach(data)
                        lab <- list()
                        for (j in seq_along(data$id)) {
@@ -84,7 +86,7 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                          lab[[j]] <- labs
 
                        }
-                       detach(data)
+
 
                        # if (parse) {
                        #   lab <- parse_safe(as.character(lab))
@@ -105,7 +107,7 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
 
                        grobs <- lapply(1:nrow(data), function(i) {
                          row <- data[i, , drop = FALSE]
-                         # browser()
+                         #browser()
                          text_gp <- list()
                          for (j in seq_along(line_gpar)) {
 
@@ -124,16 +126,26 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                              line_gpar[[j]]$fontface),
                            lineheight = ifelse(is.null(line_gpar[[j]]$lineheight),
                                                row$lineheight,
-                                               line_gpar[[j]]$lineheight)
+                                               line_gpar[[j]]$lineheight),
+                           fill = ifelse(is.null(line_gpar[[j]]$fill),
+                                          row$fill,
+                                          line_gpar[[j]]$fill)
+
+
                            )))
                          }
 
-
+#browser()
 
                          nodelabelGrob(lab[[i]],
                                    x = unit(row$x, "native"),
                                    y = unit(row$y, "native"),
-                                   just = c(row$hjust, row$vjust),
+                                   just = c(ifelse(is.null(line_gpar[[j]]$hjust),
+                                                   row$hjust,
+                                                   resolveHJust(line_gpar[[j]]$hjust, NULL)),
+                                            ifelse(is.null(line_gpar[[j]]$vjust),
+                                                   row$vjust,
+                                                   resolveVJust(line_gpar[[j]]$vjust, NULL))),
                                    padding = label.padding,
                                    r = label.r,
                                    text.gp = text_gp,
@@ -174,15 +186,57 @@ makeContent.nodelabelgrob <- function(x) {
   vj <- resolveVJust(x$just, NULL)
 
   #browser()
-y_shift <- unit(c(1, 0, -1), "lines")
 
   text_list <- list()
-# browser()
   for (i in seq_along(x$label)) {
+
+    y_shift <- rep(0, length(x$label))
+    if(length(x$label) %% 2 == 0)
+      for (j in seq_along(y_shift)) {
+        if (j <= length(y_shift) / 2) {
+          if (j == i) y_shift[j] <- 0.5
+          if (j > i)  y_shift[j] <- 1
+        }
+        if (j > length(y_shift) / 2) {
+          if (j == i) y_shift[j] <- -0.5
+          if (j < i)  y_shift[j] <- -1
+        }
+
+      }
+    else
+      for (j in seq_along(y_shift)) {
+        if (j < length(y_shift) / 2 + 0.5) {
+          if (j == i) y_shift[j] <- 0.5
+          if (j > i)  y_shift[j] <- 1
+        }
+        if (j == length(y_shift) / 2 + 0.5){
+          if (j > i) y_shift[j] <- 0.5
+          if (j == i) y_shift[j] <- 0
+          if (j < i) y_shift[j] <- -0.5
+        }
+        if (j > length(y_shift) / 2 + 0.5) {
+          if (j < i)  y_shift[j] <- -1
+          if (j == i) y_shift[j] <- -0.5
+        }
+      }
+
+    if (i == 1) {
+      box_up <- y_shift
+      box_up[1] <- 1
+    }
+    if (i == length(x$label)) {
+      box_down <- y_shift
+      box_down[length(box_down)] <- -1
+    }
+
     text_list <- c(text_list, list(textGrob(
-      x$label[i],
-      x$x + 2 * (0.5 - hj) * x$padding,
-      x$y + 2 * (0.5 - vj) * x$padding + y_shift[i] ,
+      label = x$label[i],
+      x = x$x + 2 * (0.5 - hj) * x$padding,
+      y = x$y + 2 * (0.5 - vj) * x$padding + unit(sum(y_shift *
+        sapply(x$text.gp, function(x) x$fontsize * x$lineheight)), "point"),
+        #unit(x$text.gp[[i]]$fontsize * x$text.gp[[i]]$lineheight, "points"),
+
+
       just = c(hj, vj),
       gp = x$text.gp[[i]],
       name = paste0("text", i))))
@@ -196,14 +250,22 @@ y_shift <- unit(c(1, 0, -1), "lines")
 
   }
 
-
-  r <- list(roundrectGrob(x$x, x$y, default.units = "native",
-                     width = max(widths) + 2 * x$padding,
-                     height = sum(heights) + unit(1, "line") +  2 * x$padding,
-                     just = c(hj, vj),
-                     r = x$r,
-                     gp = x$rect.gp,
-                     name = "box"
+#browser()
+  r <- list(roundrectGrob(x = x$x,
+                          y = x$y +
+                          unit(
+                            sum(box_up * sapply(x$text.gp, function(x)
+                              x$fontsize * x$lineheight) +
+                            box_down * sapply(x$text.gp, function(x)
+                              x$fontsize * x$lineheight)) / 2, "point"),
+                          default.units = "native",
+                          width = max(widths) + 2 * x$padding,
+                          height = unit(sum(sapply(x$text.gp, function(x)
+                            x$fontsize * x$lineheight)), "point") +  2 * x$padding,
+                          just = c(hj, vj),
+                          r = x$r,
+                          gp = x$rect.gp,
+                          name = "box"
   ))
 
   grob_list <- c(r, text_list)
