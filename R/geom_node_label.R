@@ -5,7 +5,7 @@
 #' @param label.size Size of label border, in mm.
 geom_node_label <- function(mapping = NULL,
                             data = NULL,
-                            aes_list,
+                            line_list = NULL,
                             line_gpar = NULL,
                             ids = NULL,
                             stat = "identity",
@@ -40,7 +40,7 @@ geom_node_label <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = list(
-      aes_list = aes_list,
+      line_list = line_list,
       parse = parse,
       label.padding = label.padding,
       label.r = label.r,
@@ -63,7 +63,7 @@ geom_node_label <- function(mapping = NULL,
 GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                      required_aes = c("x", "y"),
 
-                     default_aes = aes(
+                     default_aes = aes(label = NULL,
                        colour = "black", fill = "white", size = 3.88, angle = 0,
                       alpha = NA, family = "", fontface = 1,
                        lineheight = 1.2
@@ -76,53 +76,63 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                            label.size = 0.25,
                                            label.col = NULL,
                                            label.fill = NULL,
-                                           aes_list,
+                                           line_list,
                                            line_gpar
                                            ) {
 
                        on.exit(detach(data))
                        attach(data)
-                       lab <- list()
-                       for (j in seq_along(data$id)) {
-                         labs <- character()
-                         for (i in seq_along(aes_list)) {
-                           labs[i] <- rlang::eval_tidy(aes_list[[i]]$label)[j]
-                           if (i %in% parse) labs[i] <- ggplot2:::parse_safe(as.character(labs[i]))
+                       if (is.null(line_list)) lab <- data$label
+                       else {
+                         lab <- list()
 
-                         }
-                         lab[[j]] <- labs
-                       }
+                         for (j in seq_along(data$id)) {
+                           labs <- character()
+                           for (i in seq_along(line_list)) {
+                             labs[i] <- rlang::eval_tidy(line_list[[i]]$label)[j]
+                             if (i %in% parse) labs[i] <- ggplot2:::parse_safe(as.character(labs[i]))
+
+                           }
+                           lab[[j]] <- labs
+                         }}
 
                        data <- coord$transform(data, panel_params)
 
                        grobs <- lapply(1:nrow(data), function(i) {
                          row <- data[i, , drop = FALSE]
                          text_gp <- list()
-                         for (j in seq_along(line_gpar)) {
-
-                         text_gp <- c(text_gp, list(gpar(
-                           col = ifelse(is.null(line_gpar[[j]]$col),
-                                        row$colour,
-                                        line_gpar[[j]]$col),
-                           fontsize = ifelse(is.null(line_gpar[[j]]$size),
-                                             row$size * .pt,
-                                             line_gpar[[j]]$size),
-                           fontfamily = ifelse(is.null(line_gpar[[j]]$family),
-                                               row$family,
-                                               line_gpar[[j]]$family),
-                           fontface = ifelse(is.null(line_gpar[[j]]$fontface),
-                                             row$fontface,
-                                             line_gpar[[j]]$fontface),
-                           lineheight = ifelse(is.null(line_gpar[[j]]$lineheight),
-                                               row$lineheight,
-                                               line_gpar[[j]]$lineheight),
-                           fill = ifelse(is.null(line_gpar[[j]]$fill),
-                                          row$fill,
-                                          line_gpar[[j]]$fill)
-
-
-                           )))
-                         }
+                         if (is.null(line_gpar))
+                           text_gp <- list(
+                             gpar(
+                               col = row$colour,
+                               fontsize = row$size * .pt,
+                               fontfamily = row$family,
+                               fontface = row$fontface,
+                               lineheight = row$lineheight,
+                               fill = row$fill))
+                         else
+                           for (j in seq_along(line_gpar)) {
+                             text_gp <- c(text_gp, list(gpar(
+                               col = ifelse(is.null(line_gpar[[j]]$col),
+                                            row$colour,
+                                            line_gpar[[j]]$col),
+                               fontsize = ifelse(is.null(line_gpar[[j]]$size),
+                                                 row$size * .pt,
+                                                 line_gpar[[j]]$size),
+                               fontfamily = ifelse(is.null(line_gpar[[j]]$family),
+                                                   row$family,
+                                                   line_gpar[[j]]$family),
+                               fontface = ifelse(is.null(line_gpar[[j]]$fontface),
+                                                 row$fontface,
+                                                 line_gpar[[j]]$fontface),
+                               lineheight = ifelse(is.null(line_gpar[[j]]$lineheight),
+                                                   row$lineheight,
+                                                   line_gpar[[j]]$lineheight),
+                               fill = ifelse(is.null(line_gpar[[j]]$fill),
+                                             row$fill,
+                                             line_gpar[[j]]$fill)
+                             )))
+                           }
 
                          nodelabelGrob(lab[[i]],
                                    x = unit(row$x, "native"),
