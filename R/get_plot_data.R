@@ -7,6 +7,8 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
   #browser()
   ids <- nodeids(party_object)
   plot_data <- data.frame(id = ids,
+                          x = NA,
+                          y = NA,
                           parent = NA,
                           breaks = NA,
                           index = I(rep(list(NA), length(party_object))),
@@ -14,8 +16,8 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
                           splitvar = NA,
                           level = NA,
                           kids = NA,
-                          x = NA,
-                          y = NA)
+                          nodesize = NA
+                          )
   plot_data <- add_kids_parents(party_object, plot_data)
   plot_data <- add_splitvar_breaks_index(party_object, plot_data)
   plot_data <- add_info(party_object, plot_data)
@@ -23,6 +25,7 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
   plot_data <- add_layout(plot_data, horizontal, terminal_space)
   plot_data <- add_data(party_object, plot_data)
   plot_data <- add_vars(party_object, plot_data, add_vars)
+
   return(plot_data)
 }
 
@@ -241,6 +244,7 @@ add_data <- function(party_object, plot_data) {
 
   for (i in plot_data$id) {
     node_data <- expand_surv(party_object[[i]]$data)
+    plot_data[i, "nodesize"] <- nrow(node_data)
 
     if (fitted_values) {
       node_data <- cbind(node_data,
@@ -251,6 +255,7 @@ add_data <- function(party_object, plot_data) {
       node_data <- cbind(node_data,
                          "residuals" = party_object[[i]]$node$info$object$residuals)
     }
+
 
     for (column in data_columns) {
       data_column <- paste0("data_", column)

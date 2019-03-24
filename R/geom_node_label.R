@@ -3,19 +3,23 @@
 #' @param label.padding Amount of padding around label. Defaults to 0.25 lines.
 #' @param label.r Radius of rounded corners. Defaults to 0.15 lines.
 #' @param label.size Size of label border, in mm.
-geom_node_label <- function(mapping = NULL, data = NULL,
+geom_node_label <- function(mapping = NULL,
+                            data = NULL,
                             aes_list,
-                       stat = "identity", position = "identity",
-                       ...,
-                       parse = FALSE,
-                       nudge_x = 0,
-                       nudge_y = 0,
-                       label.padding = unit(0.25, "lines"),
-                       label.r = unit(0.15, "lines"),
-                       label.size = 0.25,
-                       na.rm = FALSE,
-                       show.legend = NA,
-                       inherit.aes = TRUE) {
+                            line_gpar = NULL,
+                            stat = "identity",
+                            position = "identity",
+                            ...,
+                            parse = FALSE,
+                            nudge_x = 0,
+                            nudge_y = 0,
+                            label.padding = unit(0.25, "lines"),
+                            label.r = unit(0.15, "lines"),
+                            label.size = 0.25,
+                            na.rm = FALSE,
+                            show.legend = NA,
+                            inherit.aes = TRUE) {
+
   if (!missing(nudge_x) || !missing(nudge_y)) {
     if (!missing(position)) {
       stop("You must specify either `position` or `nudge_x`/`nudge_y`.", call. = FALSE)
@@ -39,6 +43,7 @@ geom_node_label <- function(mapping = NULL, data = NULL,
       label.r = label.r,
       label.size = label.size,
       na.rm = na.rm,
+      line_gpar = line_gpar,
       ...
     )
   )
@@ -63,7 +68,8 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                            label.padding = unit(0.25, "lines"),
                                            label.r = unit(0.15, "lines"),
                                            label.size = 0.25,
-                                           aes_list) {
+                                           aes_list,
+                                           line_gpar) {
                        #lab <- data$label
 
 
@@ -72,7 +78,6 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                        for (j in seq_along(data$id)) {
                          labs <- character()
                          for (i in seq_along(aes_list)) {
-                           print(i)
                            labs[i] <- rlang::eval_tidy(aes_list[[i]]$label)[j]
 
                          }
@@ -93,21 +98,45 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                          data$hjust <- compute_just(data$hjust, data$x)
                        }
 
+
+
+
+
+
                        grobs <- lapply(1:nrow(data), function(i) {
                          row <- data[i, , drop = FALSE]
+                         # browser()
+                         text_gp <- list()
+                         for (j in seq_along(line_gpar)) {
+
+                         text_gp <- c(text_gp, list(gpar(
+                           col = ifelse(is.null(line_gpar[[j]]$col),
+                                        row$colour,
+                                        line_gpar[[j]]$col),
+                           fontsize = ifelse(is.null(line_gpar[[j]]$size),
+                                             row$size * .pt,
+                                             line_gpar[[j]]$size),
+                           fontfamily = ifelse(is.null(line_gpar[[j]]$family),
+                                               row$family,
+                                               line_gpar[[j]]$family),
+                           fontface = ifelse(is.null(line_gpar[[j]]$fontface),
+                                             row$fontface,
+                                             line_gpar[[j]]$fontface),
+                           lineheight = ifelse(is.null(line_gpar[[j]]$lineheight),
+                                               row$lineheight,
+                                               line_gpar[[j]]$lineheight)
+                           )))
+                         }
+
+
+
                          nodelabelGrob(lab[[i]],
                                    x = unit(row$x, "native"),
                                    y = unit(row$y, "native"),
                                    just = c(row$hjust, row$vjust),
                                    padding = label.padding,
                                    r = label.r,
-                                   text.gp = gpar(
-                                     col = row$colour,
-                                     fontsize = row$size * .pt,
-                                     fontfamily = row$family,
-                                     fontface = row$fontface,
-                                     lineheight = row$lineheight
-                                   ),
+                                   text.gp = text_gp,
                                    rect.gp = gpar(
                                      col = if (isTRUE(all.equal(label.size, 0))) NA else row$colour,
                                      fill = alpha(row$fill, row$alpha),
@@ -145,34 +174,32 @@ makeContent.nodelabelgrob <- function(x) {
   vj <- resolveVJust(x$just, NULL)
 
   #browser()
+y_shift <- unit(c(1, 0, -1), "lines")
 
   text_list <- list()
-  widths <- heights <- numeric()
+# browser()
+  for (i in seq_along(x$label)) {
+    text_list <- c(text_list, list(textGrob(
+      x$label[i],
+      x$x + 2 * (0.5 - hj) * x$padding,
+      x$y + 2 * (0.5 - vj) * x$padding + y_shift[i] ,
+      just = c(hj, vj),
+      gp = x$text.gp[[i]],
+      name = paste0("text", i))))
 
-  t1 <- textGrob(
-    x$label[1],
-    x$x + 2 * (0.5 - hj) * x$padding,
-    x$y + 2 * (0.5 - vj) * x$padding + unit(-0.5, "lines") ,
-    just = c(hj, vj),
-    gp = x$text.gp,
-    name = "text1")
+    if (i == 1) widths <- grobWidth(text_list[[i]])
+    else        widths <- unit.c(widths, grobWidth(text_list[[i]]))
 
-  t2 <- textGrob(
-    x$label[2],
-    x$x + 2 * (0.5 - hj) * x$padding,
-    x$y + 2 * (0.5 - vj) * x$padding + unit(0.5, "lines") ,
-    just = c(hj, vj),
-    gp = x$text.gp,
-    name = "text2")
+    if (i == 1) heights <- grobHeight(text_list[[i]])
+    else        heights <- unit.c(heights, grobHeight(text_list[[i]]))
 
-text_list <- list(t1, t2)
+
+  }
+
 
   r <- list(roundrectGrob(x$x, x$y, default.units = "native",
-                     width =  grobWidth(text_list[[1]]) +
-                       grobWidth(text_list[[2]]) +
-                       2 * x$padding,
-                     height = sum(grobHeight(text_list[[1]]) +
-                                    grobHeight(text_list[[2]])) + 2 * x$padding,
+                     width = max(widths) + 2 * x$padding,
+                     height = sum(heights) + unit(1, "line") +  2 * x$padding,
                      just = c(hj, vj),
                      r = x$r,
                      gp = x$rect.gp,
