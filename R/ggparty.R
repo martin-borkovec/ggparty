@@ -204,13 +204,6 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
 
 # StatParty ---------------------------------------------------------------
 
-
-# StatParty <- ggproto("StatParty", Stat,
-#                      compute_group = function(data, scales = scales) {
-#                        data <- data[!duplicated(data$id), ]
-#                      }
-# )
-
 StatParty <- ggproto(
   "StatParty", Stat,
   compute_group = function(data, ids = NULL, shift = NULL, scales = scales, splitlevels = NULL,
@@ -254,7 +247,6 @@ StatParty <- ggproto(
 
 # adjust_mapping () -------------------------------------------------------
 
-
 adjust_mapping <- function(default_mapping, mapping) {
   if (!is.null(mapping)) {
     mapping <- `class<-`(utils::modifyList(default_mapping, mapping), "uneval")
@@ -263,7 +255,8 @@ adjust_mapping <- function(default_mapping, mapping) {
   }
 }
 
-# adjust_layout()
+
+# adjust_layout() ---------------------------------------------------------
 
 adjust_layout <- function(plot_data, layout) {
   for (id in layout$id) {
@@ -276,46 +269,4 @@ adjust_layout <- function(plot_data, layout) {
 }
 
 
-
-
-
-# StatText <- ggproto(
-#   "StatText", Stat,
-#   compute_group = function(data, ids, shift = NULL, scales = scales, splitlevels = NULL,
-#                            extract_info = NULL) {
-#   #browser()
-#     if (!is.null(ids)) data <- data[ids, ]
-#     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
-#     # shift of edge_label
-#     # if (!is.null(shift)){
-#     #
-#     #   data$x <- (data$x * shift + data$x_parent * (1 - shift))
-#     #   data$y <- (data$y * shift + data$y_parent * (1 - shift))
-#     # }
-#     #
-#     # if (!is.null(splitlevels))
-#     #   data$label <- vapply(data$label, function(x) {
-#     #     index <- seq_along(x) %in% splitlevels
-#     #     output <- x[index]
-#     #     paste(output, collapse = " ")
-#     #   },
-#     #   character(1))
-#
-# #browser()
-#     if (!is.null(extract_info)) {
-#       for (j in seq_along(data$id)) {
-#          if (is.null(data$info[[j]])) next
-#         #   }
-#         #if (j == 1) extract_info_data <- extract_info(data$info[[j]])
-#         #else extract_info_data <- rbind(extract_info_data, extract_info(data$info[[j]]))
-#         data[j, "label"] <- extract_info(data$info[[j]])
-#
-#       }
-#       #browser()
-#       #data <- cbind(data, extract_info_data)
-#     }
-#
-#     data
-#   }
-# )
 

@@ -42,7 +42,7 @@ pn <- partynode(1L, split = sp_o, kids = list(
     partynode(8L, info = "no")))))
 py <- party(pn, WeatherPlay)
 ```
-Every ggparty plot starts with a call to the ggparty function which requires an object of class party. In most cases we will probably want to draw at least edges, edge labels and node labels, so we will have to call the respective functions. The default mappings of geom_edge and and geom_edge_label ensure that lines between the related nodes are drawn and the corresponding splitbreaks are plotted at their centers.  
+Every ggparty plot starts with a call to the eponymous ggparty function which requires an object of class party. In most cases we will probably want to draw at least edges, edge labels and node labels, so we will have to call the respective functions. The default mappings of geom_edge and and geom_edge_label ensure that lines between the related nodes are drawn and the corresponding splitbreaks are plotted at their centers.  
 Since the text we want to print on the nodes differs depending on the kind of node, we will call geom_label twice. Once for the inner nodes, to plot the split variables and once for the terminal nodes to plot the info elements of the tree, which in this case contain the play decision.
 ```{r Weatherplay, fig.width = 7}
 ggparty(py) +
@@ -108,7 +108,7 @@ ggplot(t2[2]$data) +
 ```
 
 So if we were to use the above code to create the desired plot for one node, we can instead pass the two components added to the ggplot call as a list to gglist and geom_node_plot will create a version of it for every specified node (per default the terminal plots). Keep in mind, that since it's a list we need to use "," instead of "+" to combine the components. 
-```{r, fig.asp=0.5, fig.width = 7}
+```{r, fig.asp=0.6, fig.width = 7}
 ggparty(t2) +
   geom_edge() +
   geom_edge_label() +

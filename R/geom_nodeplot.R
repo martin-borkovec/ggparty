@@ -18,8 +18,9 @@
 #' Predictions and newdata will be stored in `predict_data` and
 #' can be accessed via geoms within gglist. These geoms need to be expressions to ensure
 #' correct evaluation. See examples.
-#'
 #' @param legend_separator if TRUE line between legend and tree is drawn
+#'
+#' @import checkmate
 #'
 #' @export
 #' @seealso [ggparty()]
@@ -192,6 +193,16 @@ geom_nodeplot <- function(plot_call = "ggplot",
                           predict_arg = NULL,
                           legend_separator = FALSE) {
 
+  #input_checks
+  assert_list(gglist)
+  assert_numeric(width, finite = TRUE, any.missing = FALSE, max.len = 1)
+  assert_numeric(height, finite = TRUE, any.missing = FALSE, max.len = 1)
+  assert_subset(scales, c("fixed", "free", "free_x", "free_y"))
+  assert_numeric(x_nudge, lower = -1, upper = 1, finite = TRUE, any.missing = FALSE,
+                 max.len = 1)
+  assert_logical(shared_axis_labels)
+  assert_list(predict_arg, null.ok = TRUE)
+  assert_logical(legend_separator)
 
   nodeplot_layer <- ggplot2::layer(
     data = NULL,
@@ -212,26 +223,26 @@ geom_nodeplot <- function(plot_call = "ggplot",
       x_nudge = x_nudge,
       y_nudge = y_nudge))
 
+  # set correct plot specs and draw legend separator
   if (shared_axis_labels) {
-    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.075, 1.05),
-                                                             xlim = c(-0.05, 1.05),
-                                                             default = TRUE))
+    nodeplot_layer <- list(nodeplot_layer, coord_cartesian(ylim = c(-0.075, 1.05),
+                                                           xlim = c(-0.05, 1.05),
+                                                           default = TRUE))
     if (legend_separator) nodeplot_layer <- list(nodeplot_layer,
                                                  geom_hline(yintercept = -0.05))
   } else {
-    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.025, 1.05),
-                                                             xlim = c(-0.05, 1.05),
-                                                             default = TRUE))
+    nodeplot_layer <- list(nodeplot_layer, coord_cartesian(ylim = c(-0.025, 1.05),
+                                                           xlim = c(-0.05, 1.05),
+                                                           default = TRUE))
     if (legend_separator) nodeplot_layer <- list(nodeplot_layer,
                                                  geom_hline(yintercept = 0))
   }
- nodeplot_layer
+  nodeplot_layer
 
 }
 
 
 # GeomNodeplot ------------------------------------------------------------
-
 
 GeomNodeplot <- ggproto(
   "GeomNodeplot",
@@ -255,11 +266,9 @@ GeomNodeplot <- ggproto(
 
     data <- coord$transform(data, panel_params)
 
-
-
-    # vertical tree?
     vertical <- all(data$horizontal == FALSE)
 
+    # rescale some constants and inputs
     y_0 <- scales::rescale(0, from = panel_params$y.range)
     y_1 <- scales::rescale(1, from = panel_params$y.range)
     x_1 <- scales::rescale(1, from = panel_params$x.range)
@@ -270,6 +279,8 @@ GeomNodeplot <- ggproto(
     y_nudge <- scales::rescale(y_nudge, from = panel_params$y.range) - y_0
     x_nudge <- scales::rescale(x_nudge, from = panel_params$x.range) - x_0
 
+
+    # calculate node node sizes ------------------------------------------------
 
     # for vertical trees
     if (vertical) {
@@ -285,11 +296,9 @@ GeomNodeplot <- ggproto(
       xlab_x <- (x_1 + max(data$x)) / 2
       ylab_x <- max(data$x)
       ylab_y <- scales::rescale(0.5, from = panel_params$y.range)
-
     }
 
     grob_list <- list()
-    #if (any(is.na(ids))) ids <- unique(data$id)
     if (all(ids == "all")) ids <- unique(data$id)
     if (all(ids == "terminal")) ids <- unique(data$id[data$kids == 0])
     if (all(ids == "inner")) ids <- unique(data$id[data$kids != 0])
@@ -297,17 +306,16 @@ GeomNodeplot <- ggproto(
 
     #  transform data_* columns from lists to full dataframe -------------------
 
-    nodeplot_data_lists <-  dplyr::select(data, dplyr::starts_with("data_"))
+    data_columns <- substring(names(data), first = 1, last = 5) == "data_"
+    nodeplot_data_lists <-  data[, data_columns]
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
     lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
-
+    # initialize dataframe with right number of rows per id
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
-
-
+    # fill dataframe
     for (column in names(nodeplot_data_lists)) {
       content <- numeric(0)
       for (i in seq_along(data$id)) {
-        #
         rows <- nodeplot_data_lists[[column]][[i]]
         content <- rbind(content, rows)
       }
@@ -315,75 +323,55 @@ GeomNodeplot <- ggproto(
     }
 
 
-
-
-
-
-
     # draw plots --------------------------------------------------------------
 
-
     base_data <- nodeplot_data
-    #base_data <- add_prediction(info = data$info, data = base_data)
-
-
-
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
 
+
     # nodesize ----------------------------------------------------------------
+
     nodesize <- data$nodesize[data$id %in% ids]
-
-    # if (width == "nodesize")
-    #   width <- scales::rescale(nodesize,
-    #                            to = c(0,1),
-    #                            from = c(0, max(nodesize)))
-    # else
     if(length(width) == 1) width <-rep(width, length(ids))
-    #
-    # if (height == "nodesize")
-    #   height <- scales::rescale(nodesize,
-    #                            to = c(0,1),
-    #                            from = c(0, max(nodesize)))
-    # else
+    else assert_subset(length(width), choices = c(1, length(ids)))
+
     if(length(height) == 1) height <-rep(height, length(ids))
+    else assert_subset(length(height), choices = c(1, length(ids)))
 
-    if (size[1] == "nodesize")
-      size <- scales::rescale(nodesize,
-                                to = c(0,1),
-                                from = c(0, max(nodesize)))
+    if (size[1] == "nodesize") size <-
+      scales::rescale(nodesize, to = c(0, 1), from = c(0, max(nodesize)))
     if (size[1] == "log(nodesize)")
-      size <- scales::rescale(log(nodesize),
-                              to = c(0,1),
+      size <- scales::rescale(log(nodesize), to = c(0,1),
                               from = c(0, max(log(nodesize))))
-    if (length(size) == 1)
-      size <-rep(size, length(ids))
+    if (length(size) == 1) size <- rep(size, length(ids))
+    else assert_subset(length(size), choices = c(1, length(ids)))
 
+
+    # calculate newdata and resulting predictions -----------------------------
 
     if (!is.null(predict_arg))
       predict_data <- predict_data(data$info_list, facet_data, predict_arg)
 
 
-    # generate faceted base_plot
+    # generate faceted base_plot ----------------------------------------------
 
-
+    # facet_wrap for indiviual panels
     facet_gtable <- ggplotGrob(do.call(plot_call,
                                        args = list(data = facet_data)) +
                                  lapply(gglist, eval.parent, n = 1) +
                                  theme(legend.position = "bottom") +
-                                 facet_wrap( ~ id, scales = scales, nrow = 1))
+                                 facet_wrap( ~ id, scales = scales, nrow = 1)
+                               )
 
-
-
+    # lab specifications for base table
     ggxlab <- ifelse(shared_axis_labels,
-                      list(theme(axis.title.x = element_blank())),
-                      list())
-
-
+                     list(theme(axis.title.x = element_blank())),
+                     list())
     ggylab <- list()
     if (shared_axis_labels & vertical) ggylab <- list(theme(axis.title.y = element_blank()))
     if (shared_axis_labels & !vertical) ggylab <- list(ylab(" "))
 
-
+    # base plot as template
     base_gtable <- ggplotGrob(do.call(plot_call,
                                       args = list(data = base_data)) +
                                 lapply(gglist, eval.parent, n = 1) +
@@ -391,15 +379,13 @@ GeomNodeplot <- ggproto(
                                 ggylab +
                                 theme(legend.position = "none")
                               )
-
-    # get base_gtable's base_layout
     base_layout <- base_gtable$layout
+
 
     # legend ------------------------------------------------------------------
 
     if (any(facet_gtable$layout$name == "guide-box")) {
       # extract gtable containing legend
-
       legend_gtable <- reduce_gtable(facet_gtable, "guide-box")
       legend_gtable$layout$t <- 1
       legend_gtable$layout$b <- 1
@@ -414,15 +400,20 @@ GeomNodeplot <- ggproto(
         just = ifelse(shared_axis_labels, "top", "bottom"),
         node_gtable = legend_gtable
       )
+      # add to groblist
       grob_list <- c(grob_list, list(legend_gtable))
     }
-    # shared axes labels
+
+
+    # shared axis labels ------------------------------------------------------
+
     if (shared_axis_labels) {
 
-      # x axis label
+
+      # x axis label -----------------------------------------------------------
+
       if (any(facet_gtable$layout$name == "xlab-b")) {
         # extract gtable containing bottom x_axis
-
         xlab_gtable <- reduce_gtable(facet_gtable, "xlab-b")
         xlab_gtable$layout$t <- 1
         xlab_gtable$layout$b <- 1
@@ -436,11 +427,13 @@ GeomNodeplot <- ggproto(
           height = (y_0 - xlab_y),
           just = "top",
           node_gtable = xlab_gtable
-        )
+          )
         grob_list <- c(grob_list, list(xlab_gtable))
       }
 
-      # y axis label
+
+      # y axis label ------------------------------------------------------------
+
       if (any(facet_gtable$layout$name == "ylab-l")) {
         # extract gtable containing bottom x_axis
         ylab_gtable <- reduce_gtable(facet_gtable, "ylab-l")
@@ -453,24 +446,21 @@ GeomNodeplot <- ggproto(
         ylab_gtable$grobs[[1]]$vp <- NULL
         ylab_gtable$grobs[[1]]$widths <- unit(0,"pt")
         ylab_gtable$grobs[[1]]$heights <- unit(0,"pt")
-        ylab_gtable$grobs[[1]]$children$GRID.text.124$just <- "left"
 
         #call nodeplotGrob on ylab_gtable
         ylab_gtable <- nodeplotGrob(
           y = ylab_y,
           x = ylab_x,
-          width = 0.5, #abs(legend_y - y_0),
-          height = 1, #min(data$y),
-          just = "center",#ifelse(vertical, "right", "left"),
+          width = 0.5,
+          height = 1,
+          just = "center",
           node_gtable = ylab_gtable
         )
-
         grob_list <- c(grob_list, list(ylab_gtable))
       }
     }
 
     # nodeplots ---------------------------------------------------------------
-
 
     # iterate through all ids to get all nodeplots
     nodeplot_gtable <- lapply(seq_along(ids), function(i) {
@@ -508,8 +498,6 @@ GeomNodeplot <- ggproto(
       facet_x_axis_index <-  which(facet_gtable$layout$name == x_axis_i)
       node_gtable$grobs[[base_x_axis_index]] <- facet_gtable$grobs[[facet_x_axis_index]]
 
-
-
       # generate nodeplotGrob ---------------------------------------------------
 
       # get x and y coords of nodeplot
@@ -545,7 +533,6 @@ GeomNodeplot <- ggproto(
       }
     })
     #combine nodeplots and legend
-    #
     grob_list <- c(nodeplot_gtable, grob_list)
     class(grob_list) <- "gList"
     ggname("geom_nodeplots", grid::grobTree(children = grob_list))
@@ -576,7 +563,7 @@ makeContent.nodeplotgrob <- function(x) {
                          y = x$y,
                          width = x$width,
                          height = x$height,
-                        just = x$just)
+                         just = x$just)
 
   grid::setChildren(x, grid::gList(r))
 }
