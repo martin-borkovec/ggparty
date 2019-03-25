@@ -8,7 +8,7 @@ Install
 
 ``` r
 devtools::install_github("mmostly-harmless/ggparty", 
-                          dependencies=TRUE)
+                         dependencies=TRUE)
 ```
 
 Example
@@ -23,9 +23,10 @@ tr <- subset(TeachingRatings, credits == "more")
 tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
                     tenure, data = tr, weights = students, caseweights = FALSE)
 
-ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
+ggparty(tr_tree,
+        terminal_space = 0.5,
+        add_vars = list(p.value = "$node$info$p.value")) +
   geom_edge(size = 1.5) +
-  geom_node_splitvar(fontface = "bold", size = 8) +
   geom_edge_label(colour = "grey", size = 6) +
   geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
                                              y = eval,
@@ -44,9 +45,22 @@ ggparty(tr_tree, terminal_space = 0.5, horizontal = F) +
                 shared_axis_labels = T,
                 predict_arg = list(newdata = function(x) {
                   data.frame(beauty = seq(min(x$beauty),
-                                           max(x$beauty),
-                                           length.out = 100))
-                }))
+                                          max(x$beauty),
+                                          length.out = 100))
+                })) +
+  geom_node_label(aes(col = splitvar),
+                  line_list = list(aes(label = paste("Node", id)),
+                                   aes(label = splitvar),
+                                   aes(label = paste("p =", formatC(p.value, format = "e", digits = 2)))),
+                  line_gpar = list(list(size = 12, col = "black", fontface = "bold"),
+                                   list(size = 20),
+                                   list(size = 12)),
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
+                  fontface = "bold",
+                  ids = "terminal",
+                  fontsize = 12,
+                  nudge_y = 0.01) 
 ```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
