@@ -183,6 +183,7 @@ geom_nodeplot <- function(plot_call = "ggplot",
                           gglist = NULL,
                           width = 1,
                           height = 1,
+                          size = 1,
                           ids = "terminal",
                           scales = "fixed",
                           x_nudge = 0,
@@ -203,17 +204,22 @@ geom_nodeplot <- function(plot_call = "ggplot",
       plot_call = enquote(plot_call),
       width = width,
       height = height,
+      size = size,
       ids = ids,
       scales = scales,
       shared_axis_labels = shared_axis_labels,
-      predict_arg = predict_arg))
+      predict_arg = predict_arg,
+      x_nudge = x_nudge,
+      y_nudge = y_nudge))
 
   if (shared_axis_labels) {
-    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.05, 1)))
+    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.05, 1),
+                                                             default = TRUE))
     if (legend_separator) nodeplot_layer <- list(nodeplot_layer,
                                                  geom_hline(yintercept = -0.05))
   } else {
-    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(0, 1)))
+    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(0, 1),
+                                                             default = TRUE))
     if (legend_separator) nodeplot_layer <- list(nodeplot_layer,
                                                  geom_hline(yintercept = 0))
   }
@@ -237,18 +243,20 @@ GeomNodeplot <- ggproto(
                         plot_call,
                         width,
                         height,
+                        size,
                         ids,
                         shared_axis_labels,
                         scales,
-                        predict_arg) {
-
+                        predict_arg,
+                        x_nudge,
+                        y_nudge) {
 
     data <- coord$transform(data, panel_params)
 
 
 
     # vertical tree?
-    vertical <- ifelse(data$y[data$id == 1] == max(data$y), TRUE, FALSE)
+    vertical <- all(data$horizontal == FALSE)
 
     y_0 <- scales::rescale(0, from = panel_params$y.range)
     y_1 <- scales::rescale(1, from = panel_params$y.range)
@@ -257,7 +265,8 @@ GeomNodeplot <- ggproto(
     legend_x <- scales::rescale(0.5, from = panel_params$x.range)
     legend_y <- scales::rescale(-0.05, from = panel_params$y.range)
     xlab_y <- scales::rescale(-0.025, from = panel_params$y.range)
-
+    y_nudge <- scales::rescale(y_nudge, from = panel_params$y.range)
+    x_nudge <- scales::rescale(x_nudge, from = panel_params$x.range)
 
 
     # for vertical trees
@@ -267,7 +276,6 @@ GeomNodeplot <- ggproto(
       xlab_x <- legend_x
       ylab_y <- (min(data$y) + y_0) * 0.5
       ylab_x <- scales::rescale(-0.045, from = panel_params$x.range)
-      y_nudge <- data$y[data$id == 1] - y_1
     } else {
       # for horizontal trees
       node_width <- abs(diff(data$x[data$kids != 0]))[1]
@@ -321,19 +329,33 @@ GeomNodeplot <- ggproto(
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
 
     # nodesize ----------------------------------------------------------------
-    nodesize <- log(as.numeric(table(facet_data$id)))
+    browser()
+    nodesize <- data$nodesize[data$id %in% ids]
 
-    if (width == "nodesize")
-      width <- scales::rescale(nodesize,
-                               to = c(0,1),
-                               from = c(0, max(nodesize)))
-    else width <-rep(width, length(ids))
+    # if (width == "nodesize")
+    #   width <- scales::rescale(nodesize,
+    #                            to = c(0,1),
+    #                            from = c(0, max(nodesize)))
+    # else
+    if(length(width) == 1) width <-rep(width, length(ids))
+    #
+    # if (height == "nodesize")
+    #   height <- scales::rescale(nodesize,
+    #                            to = c(0,1),
+    #                            from = c(0, max(nodesize)))
+    # else
+    if(length(height) == 1) height <-rep(height, length(ids))
 
-    if (height == "nodesize")
-      height <- scales::rescale(nodesize,
-                               to = c(0,1),
-                               from = c(0, max(nodesize)))
-    else height <-rep(width, length(ids))
+    if (size == "nodesize")
+      size <- scales::rescale(nodesize,
+                                to = c(0,1),
+                                from = c(0, max(nodesize)))
+    if (size == "log(nodesize)")
+      size <- scales::rescale(log(nodesize),
+                              to = c(0,1),
+                              from = c(0, max(log(nodesize))))
+    if (length(size) == 1)
+      size <-rep(size, length(ids))
 
 
     if (!is.null(predict_arg))
@@ -492,16 +514,16 @@ GeomNodeplot <- ggproto(
       # get x and y coords of nodeplot
       x <- unique(data[data$id == ids[i], "x"])
       y <- unique(data[data$id == ids[i], "y"])
-
+      #browser()
       #vertical tree
-      if(data$y[data$id == 1] == max(data$y)) {
+      if(vertical) {
         nodeplotGrob(
           x = x,
           y = y,
-          width = node_width * width[i],
+          width = node_width * width[i] * size[i],
           height = ifelse(data$kids[data$id == ids[i]] == 0,
                           abs(y - y_nudge - y_0),
-                          node_height) * height[i],
+                          node_height) * height[i] * size[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "top",
                         "center"),
@@ -512,9 +534,9 @@ GeomNodeplot <- ggproto(
           x = x,
           y = y,
           width = ifelse(data$kids[data$id == ids[i]] == 0,
-                         abs(x - x_1),
-                         node_width) * width[i],
-          height = node_height * height[i],
+                         abs(x - x_nudge - x_1),
+                         node_width) * width[i] * size[i],
+          height = node_height * height[i] * size[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "left",
                         "center"),
