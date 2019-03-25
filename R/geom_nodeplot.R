@@ -593,8 +593,7 @@ predict_data <- function(info, data, predict_arg) {
     predict_arg$object <- info[[ids[i]]]$object
     predict_data <- predict_arg$newdata
     predict_data$id <- ids[i]
-    predict_data$prediction <- do.call(predict,
-            predict_arg)
+    predict_data$prediction <- do.call(stats::predict, predict_arg)
 
     if (i == 1) resulting_data <- predict_data
     else resulting_data <- rbind(resulting_data, predict_data)
