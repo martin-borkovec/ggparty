@@ -5,9 +5,9 @@
 \title{generate geom of nodeplot}
 \usage{
 geom_nodeplot(plot_call = "ggplot", gglist = NULL, width = 1,
-  height = 1, ids = "terminal", scales = "fixed", x_nudge = 0,
-  y_nudge = 0, shared_axis_labels = FALSE, predict_arg = NULL,
-  legend_separator = FALSE)
+  height = 1, size = 1, ids = "terminal", scales = "fixed",
+  x_nudge = 0, y_nudge = 0, shared_axis_labels = FALSE,
+  predict_arg = NULL, legend_separator = FALSE)
 }
 \arguments{
 \item{plot_call}{any function that generates a ggplot2 object.}

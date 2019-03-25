@@ -16,7 +16,8 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
                           splitvar = NA,
                           level = NA,
                           kids = NA,
-                          nodesize = NA
+                          nodesize = NA,
+                          horizontal = FALSE
                           )
   plot_data <- add_kids_parents(party_object, plot_data)
   plot_data <- add_splitvar_breaks_index(party_object, plot_data)
@@ -25,7 +26,7 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
   plot_data <- add_layout(plot_data, horizontal, terminal_space)
   plot_data <- add_data(party_object, plot_data)
   plot_data <- add_vars(party_object, plot_data, add_vars)
-
+  plot_data$horizontal <- horizontal
   return(plot_data)
 }
 

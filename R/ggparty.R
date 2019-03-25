@@ -40,7 +40,8 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
                  y_parent = "y_parent", id = "id", kids = "kids", info = "info",
-                 splitvar = "splitvar")
+                 splitvar = "splitvar", horizontal = "horizontal",
+                 nodesize = "nodesize")
 
   for (column_i in names(add_vars)) {
     mapping <- adjust_mapping(mapping, aes_string(var = paste0(column_i)))
