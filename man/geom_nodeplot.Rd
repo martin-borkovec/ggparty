@@ -31,7 +31,7 @@ the terminal space. Only recommended if \code{ids}  "terminal" or "all".}
 
 \item{predict_arg}{named list containing arguments to be passed to call of
 predict on node$info$object. Caution: newdata has to be a function with
-one argument, i.e. the ggplot data whose result will be used for the predict call as
+a single argument, i.e. the ggplot data whose result will be used for the predict call as
 the newdata argument.
 Predictions and newdata will be stored in \code{predict_data} and
 can be accessed via geoms within gglist. These geoms need to be expressions to ensure

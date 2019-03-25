@@ -82,9 +82,12 @@ class(t2)
 
 ggparty(t2) +
   geom_edge(size = 1.5) +
-  geom_node_inner(fontface = "bold") +
-  geom_edge_label_discrete(colour = "grey") +
-  geom_edge_label_continuous(colour = "grey") +
+  geom_edge_label() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
+
+
+
   geom_nodeplot(gglist = list(geom_bar(aes(x = play)),
                               theme_bw()),
                 ids = "terminal") +
