@@ -13,7 +13,7 @@
 #'  the terminal space. Only recommended if `ids`  "terminal" or "all".
 #' @param predict_arg named list containing arguments to be passed to call of
 #' predict on node$info$object. Caution: newdata has to be a function with
-#' one argument, i.e. the ggplot data whose result will be used for the predict call as
+#' a single argument, i.e. the ggplot data whose result will be used for the predict call as
 #' the newdata argument.
 #' Predictions and newdata will be stored in `predict_data` and
 #' can be accessed via geoms within gglist. These geoms need to be expressions to ensure
@@ -213,12 +213,14 @@ geom_nodeplot <- function(plot_call = "ggplot",
       y_nudge = y_nudge))
 
   if (shared_axis_labels) {
-    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.05, 1),
+    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.075, 1.05),
+                                                             xlim = c(-0.05, 1.05),
                                                              default = TRUE))
     if (legend_separator) nodeplot_layer <- list(nodeplot_layer,
                                                  geom_hline(yintercept = -0.05))
   } else {
-    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(0, 1),
+    nodeplot_layer <- list(nodeplot_layer,   coord_cartesian(ylim = c(-0.025, 1.05),
+                                                             xlim = c(-0.05, 1.05),
                                                              default = TRUE))
     if (legend_separator) nodeplot_layer <- list(nodeplot_layer,
                                                  geom_hline(yintercept = 0))
@@ -265,8 +267,8 @@ GeomNodeplot <- ggproto(
     legend_x <- scales::rescale(0.5, from = panel_params$x.range)
     legend_y <- scales::rescale(-0.05, from = panel_params$y.range)
     xlab_y <- scales::rescale(-0.025, from = panel_params$y.range)
-    y_nudge <- scales::rescale(y_nudge, from = panel_params$y.range)
-    x_nudge <- scales::rescale(x_nudge, from = panel_params$x.range)
+    y_nudge <- scales::rescale(y_nudge, from = panel_params$y.range) - y_0
+    x_nudge <- scales::rescale(x_nudge, from = panel_params$x.range) - x_0
 
 
     # for vertical trees
@@ -329,7 +331,6 @@ GeomNodeplot <- ggproto(
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
 
     # nodesize ----------------------------------------------------------------
-    browser()
     nodesize <- data$nodesize[data$id %in% ids]
 
     # if (width == "nodesize")
@@ -346,11 +347,11 @@ GeomNodeplot <- ggproto(
     # else
     if(length(height) == 1) height <-rep(height, length(ids))
 
-    if (size == "nodesize")
+    if (size[1] == "nodesize")
       size <- scales::rescale(nodesize,
                                 to = c(0,1),
                                 from = c(0, max(nodesize)))
-    if (size == "log(nodesize)")
+    if (size[1] == "log(nodesize)")
       size <- scales::rescale(log(nodesize),
                               to = c(0,1),
                               from = c(0, max(log(nodesize))))
@@ -359,7 +360,7 @@ GeomNodeplot <- ggproto(
 
 
     if (!is.null(predict_arg))
-      predict_data <- predict_data(data$info, facet_data, predict_arg)
+      predict_data <- predict_data(data$info_list, facet_data, predict_arg)
 
 
     # generate faceted base_plot
@@ -514,7 +515,6 @@ GeomNodeplot <- ggproto(
       # get x and y coords of nodeplot
       x <- unique(data[data$id == ids[i], "x"])
       y <- unique(data[data$id == ids[i], "y"])
-      #browser()
       #vertical tree
       if(vertical) {
         nodeplotGrob(
@@ -606,13 +606,12 @@ ggname <- function (prefix, grob) {
   grob
 }
 
-predict_data <- function(info, data, predict_arg) {
-
+predict_data <- function(info_list, data, predict_arg) {
   ids <- unique(data$id)
   newdata_function <- predict_arg$newdata
   for (i in 1:length(ids)) {
     predict_arg$newdata <- do.call(newdata_function, list(data))
-    predict_arg$object <- info[[ids[i]]]$object
+    predict_arg$object <- info_list[[ids[i]]]$object
     predict_data <- predict_arg$newdata
     predict_data$id <- ids[i]
     predict_data$prediction <- do.call(stats::predict, predict_arg)

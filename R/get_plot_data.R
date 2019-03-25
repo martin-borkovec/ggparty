@@ -10,9 +10,10 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
                           x = NA,
                           y = NA,
                           parent = NA,
-                          breaks = NA,
-                          index = I(rep(list(NA), length(party_object))),
-                          info = I(rep(list(NA), length(party_object))),
+                          breaks = I(rep(list(NA), length(party_object))),
+                          #index = I(rep(list(NA), length(party_object))),
+                          info = NA,
+                          info_list = I(rep(list(NA), length(party_object))),
                           splitvar = NA,
                           level = NA,
                           kids = NA,
@@ -80,11 +81,11 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
           # get kid index is pointing to
           kid <- kids[split_index[j]]
           # if first index  for kid, just assign according factor level
-          if (is.na(plot_data$index[kid])) {
-            plot_data[kid, "index"] <- var_levels[j]
+          if (is.na(plot_data$breaks[kid])) {
+            plot_data[kid, "breaks"] <- var_levels[j]
             # else add factor level to present level(s)
           } else {
-            plot_data[kid, "index"][[1]] <- list(c(plot_data[kid, "index"][[1]],
+            plot_data[kid, "breaks"][[1]] <- list(c(plot_data[kid, "breaks"][[1]],
                                                    var_levels[j]))
           }
         }
@@ -100,17 +101,17 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
           kid <- kids[split_index[j]]
           # for first interval use -inf as lower bound
           if (j == 1) {
-            plot_data[kid, "index"] <- paste(ifelse(party_split$right == TRUE,
+            plot_data[kid, "breaks"] <- paste(ifelse(party_split$right == TRUE,
                                                     "\u2264","<"),
                                              split_breaks[1])
             # for last interval use inf as upper bound
           } else if (j == length(split_index)) {
-            plot_data[kid, "index"] <- paste(ifelse(party_split$right == TRUE,
+            plot_data[kid, "breaks"] <- paste(ifelse(party_split$right == TRUE,
                                                     ">","<"),
                                              split_breaks[j - 1])
             # else use break[j-1] for lower interval bound
           } else {
-            plot_data[kid, "index"] <- paste0(ifelse(party_split$right == TRUE,
+            plot_data[kid, "breaks"] <- paste0(ifelse(party_split$right == TRUE,
                                                      "(","["),
                                               split_breaks[j - 1],", ",
                                               split_breaks[j],
@@ -130,9 +131,11 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
 
 add_info <- function(party_object, plot_data) {
   for (i in plot_data$id) {
-    plot_data[i, "info"][[1]] <- list(party_object[[i]]$node$info)
-    # if(is.null(plot_data[i, "info"][[1]]))
-    #   plot_data[i, "info"][[1]] <- NA
+    if (is.null(party_object[[i]]$node$info)) next
+    if (!is.list(party_object[[i]]$node$info))
+      plot_data[i, "info"] <- party_object[[i]]$node$info
+    else
+      plot_data[i, "info_list"][[1]] <- list(party_object[[i]]$node$info)
   }
   return(plot_data)
 }

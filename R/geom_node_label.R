@@ -175,7 +175,6 @@ nodelabelGrob <- function(label, x = unit(0.5, "npc"), y = unit(0.5, "npc"),
 
 #' @export
 makeContent.nodelabelgrob <- function(x) {
-
   text_list <- list()
   for (i in seq_along(x$label)) {
 

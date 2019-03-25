@@ -40,6 +40,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
                  y_parent = "y_parent", id = "id", kids = "kids", info = "info",
+                 info_list = "info_list",
                  splitvar = "splitvar", horizontal = "horizontal",
                  nodesize = "nodesize")
 
@@ -55,8 +56,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 
   ggplot(data = plot_data,
          mapping = mapping) +
-    theme_void() +
-    xlim(0, 1)
+    theme_void()
 }
 
 
@@ -119,7 +119,7 @@ geom_edge_label <- function(mapping = NULL,
                             splitlevels = seq_len(100),
                             ...) {
 
-  default_mapping <- aes(label = index)
+  default_mapping <- aes(label = breaks)
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
