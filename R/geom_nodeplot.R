@@ -195,13 +195,13 @@ geom_nodeplot <- function(plot_call = "ggplot",
 
   #input_checks
   assert_list(gglist)
-  assert_numeric(width, finite = TRUE, any.missing = FALSE, max.len = 1)
-  assert_numeric(height, finite = TRUE, any.missing = FALSE, max.len = 1)
+  assert_numeric(width, lower = 0, finite = TRUE, any.missing = FALSE, max.len = 1)
+  assert_numeric(height, lower =0, finite = TRUE, any.missing = FALSE, max.len = 1)
   assert_subset(scales, c("fixed", "free", "free_x", "free_y"))
   assert_numeric(x_nudge, lower = -1, upper = 1, finite = TRUE, any.missing = FALSE,
                  max.len = 1)
   assert_logical(shared_axis_labels)
-  assert_list(predict_arg, null.ok = TRUE)
+  assert_list(predict_arg, null.ok = TRUE, names = "unique")
   assert_logical(legend_separator)
 
   nodeplot_layer <- ggplot2::layer(
@@ -348,7 +348,6 @@ GeomNodeplot <- ggproto(
 
 
     # calculate newdata and resulting predictions -----------------------------
-
     if (!is.null(predict_arg))
       predict_data <- predict_data(data$info_list, facet_data, predict_arg)
 

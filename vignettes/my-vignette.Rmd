@@ -217,6 +217,7 @@ once with the second and then generate predictions of the type "quantile" with p
 to 0.5. 
 
 ```{r, fig.asp = 0.8, fig.width=7}
+# function to generate newdata for predictions
 generate_newdata <- function(data){
   z <- data.frame(horTh = factor(rep(c("yes", "no"),
                                      each = length(data$pnodes))),
@@ -228,8 +229,6 @@ generate_newdata <- function(data){
   z$x <- model.matrix(~ ., data = z)
   z}
 
-
-# horizontal Tree with individual axis labes
 ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
   geom_edge() +
   geom_node_splitvar() +
@@ -255,6 +254,22 @@ ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
   )
 
 ```
+  
+geom_node_label allows us to create mulitline labels and specifiy individual
+graphical parameters for each line. To do this, we must not set label in aes,
+but instead pass a list of aes to the argument line_list. The order of the list
+is the same as the order in which the lines will be printend. Additionally we
+have to pass a list to line_gpar. This list must be the same length as line_list
+and contain separate named lists of graphical parameters. If we don't want to
+change anything for a specific line, the respective list hast to be an empty
+list. Mapping with the mapping argument of geom_node_label still works and
+affects all lines and the border. The line specific graphical arguments
+
+This may seem very convoluted, but keep in mind, that we only have to go
+through this process if we want to addres the graphical parameters of specific
+lines. If we want to plot multiple lines and are fine with uniform graphical
+parameters, we can just set the label in the aes of the mapping.  
+
 
 ```{r}
 data("TeachingRatings", package = "AER")
