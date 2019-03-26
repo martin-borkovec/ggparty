@@ -1,6 +1,3 @@
-#' @export
-
-
 # transforms recursive structure of object of type "party" to dataframe
 get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2,
                           add_vars = NULL) {

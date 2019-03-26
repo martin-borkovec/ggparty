@@ -2,20 +2,20 @@
 % Please edit documentation in R/ggparty.R
 \name{geom_edge}
 \alias{geom_edge}
-\title{Draw edges between children and parents. wrapper of geom_segment}
+\title{Draw edges between children and parents}
 \usage{
-geom_edge(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
+geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
   ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
 
-\item{x_nudge, y_nudge}{nudge label}
+\item{nudge_x, nudge_y}{nudge label}
 
 \item{ids}{choose which edges to draw by their children's ids}
 
 \item{...}{additional arguments for \code{\link[=geom_segment]{geom_segment()}}}
 }
 \description{
-Draw edges between children and parents. wrapper of geom_segment
+wrapper of geom_segment. Draws edges between child and parent nodes.
 }

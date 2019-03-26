@@ -22,7 +22,6 @@
 #' @param legend_separator if TRUE line between legend and tree is drawn
 #'
 #' @export
-#' @import survival
 #' @seealso [ggparty()]
 #' @examples
 #'
@@ -178,6 +177,7 @@
 #'
 
 # geom_node_plot () --------------------------------------------------------
+
 
 geom_node_plot <- function(plot_call = "ggplot",
                           gglist = NULL,

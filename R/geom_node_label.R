@@ -1,8 +1,21 @@
-#' @export
-#' @rdname geom_text
+#' Draw labels containing node's info
+#'
+#' @inheritParams geom_edge
+#' @inheritParams ggplot2::layer
+#' @param line_list to be documented
+#' @param line_gpar to be documented
+#' @param parse to be documented
+#' @param label.col to be documented
+#' @param label.fill to be documented
+#' @param na.rm If `FALSE`, the default, missing values are removed with
+#'   a warning. If `TRUE`, missing values are silently removed.
+#' @param ids choose which nodes to label by their ids
+#' @param ... additional arguments for [geom_label()]#'
 #' @param label.padding Amount of padding around label. Defaults to 0.25 lines.
 #' @param label.r Radius of rounded corners. Defaults to 0.15 lines.
 #' @param label.size Size of label border, in mm.
+#' @export
+#' @md
 geom_node_label <- function(mapping = NULL,
                             data = NULL,
                             line_list = NULL,
@@ -55,11 +68,13 @@ geom_node_label <- function(mapping = NULL,
   )
 }
 
-
+#'
 #' @rdname ggplot2-ggproto
 #' @format NULL
 #' @usage NULL
 #' @export
+#' @md
+#'
 GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                      required_aes = c("x", "y"),
 

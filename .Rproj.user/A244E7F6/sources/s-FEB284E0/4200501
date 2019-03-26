@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1553521752561.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4200501",
+    "lastKnownWriteTime" : 1553529750,
+    "last_content_update" : 1553529750979,
+    "path" : "~/GitHub/ggparty/R/geom_nodeplot.R",
+    "project_path" : "R/geom_nodeplot.R",
+    "properties" : {
+        "cursorPosition" : "35,20",
+        "scrollLine" : "24"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

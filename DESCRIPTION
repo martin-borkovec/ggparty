@@ -11,7 +11,11 @@ Depends:
 Imports: 
   grid,
   gtable,
-  utils
+  utils,
+  checkmate,
+  methods,
+  survival,
+  TH.data
 Suggests:
     dplyr,
     testthat,
