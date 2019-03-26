@@ -2,7 +2,6 @@
 
 S3method(makeContent,nodelabelgrob)
 S3method(makeContent,nodeplotgrob)
-export(GeomNodeLabel)
 export(geom_edge)
 export(geom_edge_label)
 export(geom_node_info)
