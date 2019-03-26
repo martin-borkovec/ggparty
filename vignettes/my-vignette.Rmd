@@ -114,12 +114,12 @@ ggparty(t2) +
   geom_edge_label() +
   geom_node_label(aes(label = splitvar),
                   ids = "inner") +
-  geom_nodeplot(gglist = list(geom_bar(aes(x = "", fill = play),
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = play),
                                        position = position_fill()),
                               xlab("play")))
 ```
 
-Thanks to the felxibility of ggplot we are also very flexible in creating these node plots so that the barplot can be easily changed into a pie chart. The additional argument size can be set to "nodesize" which changes the size of the node plot relative to the number of obersvations in the respective node. 
+Thanks to the flexibility of ggplot we are also very flexible in creating these node plots so that the barplot can be easily changed into a pie chart. The additional argument size can be set to "nodesize" which changes the size of the node plot relative to the number of observations in the respective node. 
 
 ```{r, fig.width = 7}
 ggparty(t2) +
@@ -127,7 +127,7 @@ ggparty(t2) +
   geom_edge_label() +
   geom_node_label(aes(label = splitvar),
                   ids = "inner") +
-  geom_nodeplot(gglist = list(geom_bar(aes(x = "", fill = play),
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = play),
                                        position = position_fill()),
                               coord_polar("y"),
                               theme_void()),
@@ -154,23 +154,23 @@ bh_tree <- lmtree(medv ~ log(lstat) + I(rm^2) | zn +
 ggparty positions all the nodes within the unit square. For vertical trees the root is always at (0.5, 1), for horizontal ones it is at (0, 0.5). The argument terminal_size specifies how much room should be left for terminal plots. The default value depends on the depth of the supplied tree. The terminal nodes are placed at this value and in case labels are drawn, they are drawn there. In case plots are to be drawn their top borders are aligned to this value, i.e. the terminal plots are not centered. Therefore reducing the height of a terminal node shrinks it towards the top.  
 
 So if we want to plot multiple plots per node we have to keep that in mind and can achieve this for example like this.  
-The first geom_node_plot only takes the argument height = 0.5 which halves it size and effectively makes it
+The first geom_node_plot only takes the argument height = 0.5 which halves its size and effectively makes it
 occupy only the upper half of the area it would normaly do. For the second geom_node_plot we also specify
 the size to be 0.5 but additionaly we have to specify nudge_y. Since the terminal space is set to be 0.5,
-we know that that the first plot now spans from 0.5 to 0.25. So we want to move the line where to place the
+we know that the first plot now spans from 0.5 to 0.25. So we want to move the line where to place the
 second plot to 0.25, i.e. nudge it from 0.5 by -0.25.
 ```{r, fig.width= 7, fig.asp=1}
 ggparty(bh_tree, terminal_space = 0.5) +
   geom_edge() +
   geom_edge_label() +
   geom_node_splitvar() +
-  geom_nodeplot(gglist = list(
+  geom_node_plot(gglist = list(
     geom_point(aes(y = medv, x = `log(lstat)`, col = chas))),
     height = 0.5) +
-  geom_nodeplot(gglist = list(
+  geom_node_plot(gglist = list(
     geom_point(aes(y = medv, x = `I(rm^2)`, col = chas))),
     height = 0.5,
-    y_nudge = -0.25)
+    nudge_y = -0.25)
 
 ```
 
@@ -233,7 +233,7 @@ ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
   geom_edge() +
   geom_node_splitvar() +
   geom_edge_label() +
-  geom_nodeplot(
+  geom_node_plot(
     gglist = list(geom_point(aes(y = `Surv(time, cens).time`,
                                  x = pnodes,
                                  col = horTh),
@@ -284,7 +284,7 @@ ggparty(tr_tree,
         add_vars = list(p.value = "$node$info$p.value")) +
   geom_edge(size = 1.5) +
   geom_edge_label(colour = "grey", size = 4) +
-  geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
+  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
                                              y = eval,
                                              col = tenure,
                                              shape = minority),

@@ -57,8 +57,8 @@ test_valid_indexes <- function(party_object) {
   test_that("valid indexes", {
     expect_success(expect_output(get_plot_data(party_object)[1, ]$index, NA))
     for (i in 1:length(get_plot_data(party_object)$id)) {
-      if (!is.na(get_plot_data(party_object)[i, "index"]) &&
-          is.na(get_plot_data(party_object)[i, "breaks"])) {
+      if (!is.null(get_plot_data(party_object)[i, "index"]) &&
+          is.null(get_plot_data(party_object)[i, "breaks"])) {
         party_split <- party_object[[i]]$node$split
         party_node <- party_object[[i]]$node
         split_index <- party_split$index
@@ -91,8 +91,8 @@ test_valid_breaks <- function(party_object) {
   test_that("valid breaks", {
     expect_success(expect_output(get_plot_data(party_object)[1, ]$index, NA))
     for (i in 1:length(get_plot_data(party_object)$id)) {
-      if (!is.na(get_plot_data(py)[i, "breaks"]) &&
-          is.na(get_plot_data(party_object)[i, "index"])) {
+      if (!is.null(get_plot_data(py)[i, "breaks"]) &&
+          is.null(get_plot_data(party_object)[i, "index"])) {
         party_split <- party_object[[i]]$node$split
         party_node <- party_object[[i]]$node
         split_breaks <- party_split$breaks
@@ -110,7 +110,7 @@ test_valid_breaks <- function(party_object) {
         }
       }
       else{
-        expect_success(expect_output(get_plot_data(party_object)[i, ]$breaks, NA))
+        expect_success(expect_output(get_plot_data(party_object)[i, ]$index, NA))
 
       }
     }

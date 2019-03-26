@@ -1,24 +1,25 @@
-#' generate geom of nodeplot
+#' Generate geom of node plot
 #'
-#' @param plot_call any function that generates a ggplot2 object.
-#' @param gglist list of additional ggplot components. Data of nodes can be
+#' @param plot_call Any function that generates a ggplot2 object.
+#' @param gglist List of additional ggplot components. Data of nodes can be
 #'  mapped. Fitted values of modelparty objects can be mapped with "fitted_values".
-#' @param width expansion factor for viewport's width
-#' @param height expansion factor for viewport's height
-#' @param ids which ids to plot. numeric, "terminal", "inner" ar "all". defaults
+#' @param width Expansion factor for viewport's width
+#' @param height Expansion factor for viewport's height
+#' @param size Expansion factor for viewport's size
+#' @param ids Id's to plot. Numeric, "terminal", "inner" or "all". Defaults
 #' to "terminal"
 #' @param scales see [facet_wrap()]
-#' @param x_nudge,y_nudge nudge nodeplot
-#' @param shared_axis_labels if TRUE only one pair of axes labels is plotted in
+#' @param nudge_x,nudge_y Nudges node plot
+#' @param shared_axis_labels If TRUE only one pair of axes labels is plotted in
 #'  the terminal space. Only recommended if `ids`  "terminal" or "all".
-#' @param predict_arg named list containing arguments to be passed to call of
+#' @param predict_arg Named list containing arguments to be passed to call of
 #' predict on node$info$object. Caution: newdata has to be a function with
 #' a single argument, i.e. the ggplot data whose result will be used for the predict call as
 #' the newdata argument.
 #' Predictions and newdata will be stored in `predict_data` and
 #' can be accessed via geoms within gglist. These geoms need to be expressions to ensure
 #' correct evaluation. See examples.
-#' @param legend_separator if TRUE line between legend and tree is drawn
+#' @param legend_separator If 'TRUE' line between legend and tree is drawn.
 #'
 #' @import checkmate
 #'
@@ -35,7 +36,7 @@
 #'   geom_edge() +
 #'   geom_edge_label() +
 #'   geom_node_splitvar() +
-#'   geom_nodeplot(gglist = list(
+#'   geom_node_plot(gglist = list(
 #'     geom_density(aes(x = Ozone))),
 #'     shared_axis_labels = TRUE)
 #'
@@ -57,7 +58,7 @@
 #'   geom_edge() +
 #'   geom_edge_label() +
 #'   geom_node_splitvar() +
-#'   geom_nodeplot(gglist =
+#'   geom_node_plot(gglist =
 #'                   list(aes(x = `log(price/citations)`, y = `log(subs)`),
 #'                        geom_point(),
 #'                        expression(geom_line(data = predict_data,
@@ -96,7 +97,7 @@
 #'   geom_edge() +
 #'   geom_node_splitvar() +
 #'   geom_edge_label() +
-#'   geom_nodeplot(
+#'   geom_node_plot(
 #'     gglist = list(geom_point(aes(y = `Surv(time, cens).time`,
 #'                                  x = pnodes,
 #'                                  col = horTh),
@@ -138,7 +139,7 @@
 #'   geom_edge(size = 1.5) +
 #'   geom_node_splitvar(fontface = "bold", size = 8) +
 #'   geom_edge_label(colour = "grey", size = 6) +
-#'   geom_nodeplot(gglist = list(geom_point(aes(x = fitted_values,
+#'   geom_node_plot(gglist = list(geom_point(aes(x = fitted_values,
 #'                                              y = residuals,
 #'                                              col = tenure,
 #'                                              shape = minority)),
@@ -168,27 +169,27 @@
 #'   geom_edge() +
 #'   geom_edge_label() +
 #'   geom_node_splitvar() +
-#'   geom_nodeplot(gglist = list(
+#'   geom_node_plot(gglist = list(
 #'     geom_point(aes(y = medv, x = `log(lstat)`, col = chas))),
 #'     height = 0.5) +
-#'   geom_nodeplot(gglist = list(
+#'   geom_node_plot(gglist = list(
 #'     geom_point(aes(y = medv, x = `I(rm^2)`, col = chas))),
 #'     height = 0.5,
-#'     y_nudge = -0.25)
+#'     nudge_y = -0.25)
 #'
 
-# geom_nodeplot () --------------------------------------------------------
+# geom_node_plot () --------------------------------------------------------
 
 
-geom_nodeplot <- function(plot_call = "ggplot",
+geom_node_plot <- function(plot_call = "ggplot",
                           gglist = NULL,
                           width = 1,
                           height = 1,
                           size = 1,
                           ids = "terminal",
                           scales = "fixed",
-                          x_nudge = 0,
-                          y_nudge = 0,
+                          nudge_x = 0,
+                          nudge_y = 0,
                           shared_axis_labels = FALSE,
                           predict_arg = NULL,
                           legend_separator = FALSE) {
@@ -198,7 +199,7 @@ geom_nodeplot <- function(plot_call = "ggplot",
   assert_numeric(width, lower = 0, finite = TRUE, any.missing = FALSE, max.len = 1)
   assert_numeric(height, lower =0, finite = TRUE, any.missing = FALSE, max.len = 1)
   assert_subset(scales, c("fixed", "free", "free_x", "free_y"))
-  assert_numeric(x_nudge, lower = -1, upper = 1, finite = TRUE, any.missing = FALSE,
+  assert_numeric(nudge_x, lower = -1, upper = 1, finite = TRUE, any.missing = FALSE,
                  max.len = 1)
   assert_logical(shared_axis_labels)
   assert_list(predict_arg, null.ok = TRUE, names = "unique")
@@ -209,7 +210,7 @@ geom_nodeplot <- function(plot_call = "ggplot",
     mapping = NULL,
     stat = "identity",
     geom = GeomNodeplot,
-    position = position_nudge(x = x_nudge, y = y_nudge),
+    position = position_nudge(x = nudge_x, y = nudge_y),
     params = list(
       gglist = gglist,
       plot_call = enquote(plot_call),
@@ -220,8 +221,8 @@ geom_nodeplot <- function(plot_call = "ggplot",
       scales = scales,
       shared_axis_labels = shared_axis_labels,
       predict_arg = predict_arg,
-      x_nudge = x_nudge,
-      y_nudge = y_nudge))
+      nudge_x = nudge_x,
+      nudge_y = nudge_y))
 
   # set correct plot specs and draw legend separator
   if (shared_axis_labels) {
@@ -261,8 +262,8 @@ GeomNodeplot <- ggproto(
                         shared_axis_labels,
                         scales,
                         predict_arg,
-                        x_nudge,
-                        y_nudge) {
+                        nudge_x,
+                        nudge_y) {
 
     data <- coord$transform(data, panel_params)
 
@@ -276,8 +277,8 @@ GeomNodeplot <- ggproto(
     legend_x <- scales::rescale(0.5, from = panel_params$x.range)
     legend_y <- scales::rescale(-0.05, from = panel_params$y.range)
     xlab_y <- scales::rescale(-0.025, from = panel_params$y.range)
-    y_nudge <- scales::rescale(y_nudge, from = panel_params$y.range) - y_0
-    x_nudge <- scales::rescale(x_nudge, from = panel_params$x.range) - x_0
+    nudge_y <- scales::rescale(nudge_y, from = panel_params$y.range) - y_0
+    nudge_x <- scales::rescale(nudge_x, from = panel_params$x.range) - x_0
 
 
     # calculate node node sizes ------------------------------------------------
@@ -509,7 +510,7 @@ GeomNodeplot <- ggproto(
           y = y,
           width = node_width * width[i] * size[i],
           height = ifelse(data$kids[data$id == ids[i]] == 0,
-                          abs(y - y_nudge - y_0),
+                          abs(y - nudge_y - y_0),
                           node_height) * height[i] * size[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
                         "top",
@@ -521,7 +522,7 @@ GeomNodeplot <- ggproto(
           x = x,
           y = y,
           width = ifelse(data$kids[data$id == ids[i]] == 0,
-                         abs(x - x_nudge - x_1),
+                         abs(x - nudge_x - x_1),
                          node_width) * width[i] * size[i],
           height = node_height * height[i] * size[i],
           just = ifelse(data$kids[data$id == ids[i]] == 0,
@@ -534,7 +535,7 @@ GeomNodeplot <- ggproto(
     #combine nodeplots and legend
     grob_list <- c(nodeplot_gtable, grob_list)
     class(grob_list) <- "gList"
-    ggname("geom_nodeplots", grid::grobTree(children = grob_list))
+    ggname("geom_node_plots", grid::grobTree(children = grob_list))
   }
 )
 
