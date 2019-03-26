@@ -1,13 +1,14 @@
 #' ggplot an object of the party class
 #'
-#' @param party partyobject to plot
-#' @param horizontal horizontal plot?
-#' @param terminal_space proportion of the plot that should be reserved for
-#' the terminal nodeplots
-#' @param layout optional layout adjustment. Must be data.frame containing the
+#' @param party Party object to plot.
+#' @param horizontal Horizontal if 'TRUE'.
+#' @param terminal_space Proportion of the plot that should be reserved for
+#' the terminal node plots.
+#' @param layout Optional layout adjustment. Must be data.frame containing the
 #'  columns "id", "x" and "y".
+#' @param add_vars Additional variables input. Must be string of characters.
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_splitvar()],
-#'  [geom_node_info()], [geom_nodeplot()]
+#'  [geom_node_info()], [geom_node_plot()]
 #' @export
 #' @import partykit
 #' @import ggplot2
@@ -65,12 +66,12 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 #'
 #' @param mapping not recommended to change
 #' @param ... additional arguments for [geom_segment()]
-#' @param x_nudge,y_nudge nudge label
+#' @param nudge_x,nudge_y nudge label
 #' @param ids choose which edges to draw by their children's ids
 #' @export
 #' @md
 #'
-geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...){
+geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...){
 
   default_mapping <- aes_string(x = "x",
                                 y = "y",
@@ -84,7 +85,7 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
     mapping = mapping,
     stat = StatParty,
     geom = "segment",
-    position = position_nudge(x = x_nudge, y = y_nudge),
+    position = position_nudge(x = nudge_x, y = nudge_y),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   na.rm = TRUE,
@@ -102,7 +103,7 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
 #' @param mapping not recommended to change
 #' @param shift value in (0,1). Move label along corresponding edge.
 #' @param ids choose which splitbreaks to label by their children's ids
-#' @param x_nudge,y_nudge nudge label
+#' @param nudge_x,nudge_y nudge label
 #' @param splitlevels which levels of split to plot
 #' @param label.size see [geom_label()]
 #' @param ... additional arguments for [geom_label()]
@@ -111,8 +112,8 @@ geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...)
 #' @md
 #'
 geom_edge_label <- function(mapping = NULL,
-                            x_nudge = 0,
-                            y_nudge = 0,
+                            nudge_x = 0,
+                            nudge_y = 0,
                             ids = NULL,
                             shift = 0.5,
                             label.size = 0,
@@ -128,7 +129,7 @@ geom_edge_label <- function(mapping = NULL,
     mapping = mapping,
     stat = StatParty,
     geom = "label",
-    position = position_nudge(x = x_nudge, y = y_nudge),
+    position = position_nudge(x = nudge_x, y = nudge_y),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   shift = shift,
@@ -146,13 +147,13 @@ geom_edge_label <- function(mapping = NULL,
 #'
 #' @param mapping not recommended to change
 #' @param ids choose which nodes to label by their ids
-#' @param x_nudge,y_nudge nudge label
+#' @param nudge_x,nudge_y nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
 #' @export
 #' @md
 #'
-geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
+geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
                            label.padding = unit(0.5, "lines"), ...) {
   default_mapping <- aes_string(label = "info")
   mapping <- adjust_mapping(default_mapping, mapping)
@@ -161,7 +162,7 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
     mapping = mapping,
     stat = StatParty,
     geom = "label",
-    position = position_nudge(x = x_nudge, y = y_nudge),
+    position = position_nudge(x = nudge_x, y = nudge_y),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   label.padding = label.padding,
@@ -174,14 +175,14 @@ geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
 #'
 #' @param mapping not recommended to change
 #' @param ids choose which terminal nodes to label by their ids
-#' @param x_nudge,y_nudge nudge label
+#' @param nudge_x,nudge_y nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
 #' @param extract_info work in progress
 #' @export
 #' @md
 #'
-geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
+geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
                                label.padding = unit(0.5, "lines"), ids = NULL,
                                extract_info = NULL,...) {
   default_mapping <- aes_string(label = "splitvar")
@@ -191,7 +192,7 @@ geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
     mapping = mapping,
     stat = StatParty,
     geom = "label",
-    position = position_nudge(x = x_nudge, y = y_nudge),
+    position = position_nudge(x = nudge_x, y = nudge_y),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   label.padding = label.padding,
