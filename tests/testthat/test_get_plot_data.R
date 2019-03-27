@@ -126,8 +126,15 @@ test_valid_breaks(tr_tree)
 test_add_info <- function(party_object) {
   test_that("add_info function", {
     for (i in get_plot_data(party_object)$id) {
-      expect_equal(get_plot_data(party_object)[i, "info"][[1]],
-                   list(party_object[[i]]$node$info)[[1]])
+      if(testList(list(party_object[[i]]$node$info)[[1]])){
+        expect_equal(get_plot_data(party_object)[i, "info_list"][[1]],
+                     list(party_object[[i]]$node$info)[[1]])
+      }
+      else if(!is.null(list(party_object[[i]]$node$info)[[1]])){
+        expect_equal(get_plot_data(party_object)[i, "info"][[1]],
+                     list(party_object[[i]]$node$info)[[1]])
+
+      }
     }
   })
 }
@@ -234,7 +241,7 @@ test_add_data <- function(party_object) {
                 "fitted_values" = party_object[[i]]$node$info$object$fitted.values)
       }
       for (column in data_columns) {
-        data_column <- paste0("data_", column)
+        data_column <- paste0("nodedata_", column)
         expect_equal(get_plot_data(party_object)[i, data_column][[1]], node_data[column])
       }
     }
