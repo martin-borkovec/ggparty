@@ -395,7 +395,9 @@ df <- data.frame(x_dens = numeric(), y_dens = numeric(), id = numeric(), breaks 
 for (id in c(2, 5)){
   x_dens <- density(tr_tree[id]$data$age)$x
   y_dens <- density(tr_tree[id]$data$age)$y
-  breaks <- ifelse(x_dens < 50, "left", "right")
+  breaks <- rep("left", nrow(tr_tree[id]$data))
+  breaks[tr_tree[id]$data$gender == "male" & x_dens > 50] <- "right"
+  breaks[tr_tree[id]$data$gender == "female" & x_dens > 40] <- "right"
   df <- rbind(df, data.frame(x_dens, y_dens, id, breaks))
   }
 
