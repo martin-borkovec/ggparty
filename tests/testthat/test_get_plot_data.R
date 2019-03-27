@@ -55,10 +55,9 @@ test_split_variable(tr_tree)
 
 test_valid_indexes <- function(party_object) {
   test_that("valid indexes", {
-    expect_success(expect_output(get_plot_data(party_object)[1, ]$index, NA))
+    expect_success(expect_output(get_plot_data(party_object)[1, ]$breaks_label, NA))
     for (i in 1:length(get_plot_data(party_object)$id)) {
-      if (!is.null(get_plot_data(party_object)[i, "index"]) &&
-          is.null(get_plot_data(party_object)[i, "breaks"])) {
+      if (!is.na(get_plot_data(party_object)[i, "breaks_label"])) {
         party_split <- party_object[[i]]$node$split
         party_node <- party_object[[i]]$node
         split_index <- party_split$index
@@ -70,12 +69,12 @@ test_valid_indexes <- function(party_object) {
         var_levels <- levels(party_object$data[, split_var])
         for (j in 1:length(split_index)) {
           kid <- kids[split_index[j]]
-          expect_equal(get_plot_data(party_object)[kid, "index"][[1]],
+          expect_equal(get_plot_data(party_object)[kid, "breaks_label"][[1]],
                        levels(party_object[i]$data[, split_var])[j])
         }
       }
       else{
-        expect_success(expect_output(get_plot_data(party_object)[i, ]$index, NA))
+        expect_success(expect_output(get_plot_data(party_object)[i, ]$breaks_label, NA))
       }
     }
   })
@@ -87,41 +86,6 @@ test_valid_indexes(ct)
 test_valid_indexes(ct2)
 test_valid_indexes(tr_tree)
 
-test_valid_breaks <- function(party_object) {
-  test_that("valid breaks", {
-    expect_success(expect_output(get_plot_data(party_object)[1, ]$index, NA))
-    for (i in 1:length(get_plot_data(party_object)$id)) {
-      if (!is.null(get_plot_data(py)[i, "breaks"]) &&
-          is.null(get_plot_data(party_object)[i, "index"])) {
-        party_split <- party_object[[i]]$node$split
-        party_node <- party_object[[i]]$node
-        split_breaks <- party_split$breaks
-        if (is.null(split_breaks)) {
-          next
-        }
-        split_var <- names(party_object[i]$data)[party_split$varid]
-        kids <- which(get_plot_data(party_object)$parent == i)
-
-        var_levels <- levels(party_object$data[, split_var])
-        for (j in 1:length(split_breaks)) {
-          kid <- kids[split_breaks[j]]
-          expect_equal(get_plot_data(party_object)[kid, "index"][[1]],
-                       levels(party_object[i]$data[, split_var])[j])
-        }
-      }
-      else{
-        expect_success(expect_output(get_plot_data(party_object)[i, ]$index, NA))
-
-      }
-    }
-  })
-}
-
-test_valid_breaks(py)
-test_valid_breaks(t2)
-test_valid_breaks(ct)
-test_valid_breaks(ct2)
-test_valid_breaks(tr_tree)
 
 test_add_info <- function(party_object) {
   test_that("add_info function", {
