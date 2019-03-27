@@ -17,7 +17,6 @@ Imports:
   survival,
   TH.data
 Suggests:
-    dplyr,
     testthat,
     mlbench,
     AER,

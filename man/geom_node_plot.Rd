@@ -40,6 +40,9 @@ can be accessed via geoms within gglist. These geoms need to be expressions to e
 correct evaluation. See examples.}
 
 \item{legend_separator}{If 'TRUE' line between legend and tree is drawn.}
+
+\item{add_data}{add optional dataframe for geom_nodeplot to use. If you want
+node-specific data a column called "id" needs to be included.}
 }
 \description{
 Generate geom of node plot

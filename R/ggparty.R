@@ -6,6 +6,10 @@
 #' the terminal nodeplots
 #' @param layout optional layout adjustment. Must be data.frame containing the
 #'  columns "id", "x" and "y".
+#' @param add_vars named list containing either strings specifying locations
+#'  of element to be extracted from
+#'  each node or functions of plot_data and node. In either case returned object
+#'  has to be of length 1.
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_splitvar()],
 #'  [geom_node_info()], [geom_node_plot()]
 #' @export

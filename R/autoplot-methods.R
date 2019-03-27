@@ -1,16 +1,16 @@
 #' @export
-autoplot.party <- function(object) {
+autoplot.party <- function(object, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
-    geom_node_label(aes(label = splitvar),
+    geom_node_label(aes_string(label = "splitvar"),
                     ids = "inner") +
     geom_node_label(aes_string(label = "info"),
                     ids = "terminal")
 }
 
 #' @export
-autoplot.constparty <- function(object) {
+autoplot.constparty <- function(object, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
@@ -24,7 +24,7 @@ autoplot.constparty <- function(object) {
 }
 
 #' @export
-autoplot.modelparty <- function(object, plot_var) {
+autoplot.modelparty <- function(object, plot_var, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +

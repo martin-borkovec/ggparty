@@ -17,6 +17,11 @@ the terminal nodeplots}
 
 \item{layout}{optional layout adjustment. Must be data.frame containing the
 columns "id", "x" and "y".}
+
+\item{add_vars}{named list containing either strings specifying locations
+of element to be extracted from
+each node or functions of plot_data and node. In either case returned object
+has to be of length 1.}
 }
 \description{
 ggplot an object of the party class

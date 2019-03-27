@@ -20,7 +20,8 @@
 #' can be accessed via geoms within gglist. These geoms need to be expressions to ensure
 #' correct evaluation. See examples.
 #' @param legend_separator If 'TRUE' line between legend and tree is drawn.
-#'
+#' @param add_data add optional dataframe for geom_nodeplot to use. If you want
+#' node-specific data a column called "id" needs to be included.
 #' @import checkmate
 #'
 #' @export
