@@ -241,7 +241,7 @@ add_data <- function(party_object, plot_data) {
   # initialize data.frame with columns of lists -----------------------------
 
   for (column in data_columns) {
-    data_column <- paste0("data_", column)
+    data_column <- paste0("nodedata_", column)
     plot_data[[data_column]] <- rep(list(NA), nrow(plot_data))
   }
 
@@ -267,7 +267,7 @@ add_data <- function(party_object, plot_data) {
     }
 
     for (column in data_columns) {
-      data_column <- paste0("data_", column)
+      data_column <- paste0("nodedata_", column)
       plot_data[i, data_column][[1]] <- list(node_data[column])
     }
   }

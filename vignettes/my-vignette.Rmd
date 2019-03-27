@@ -322,4 +322,103 @@ ggparty(tr_tree,
 
 
 If we want to extract additional elements of the tree we can do it by specifiying add_vars accordingly.
+```{r, fig.width = 7, fig.asp = 1}
+data("TeachingRatings", package = "AER")
+tr <- subset(TeachingRatings, credits == "more")
+
+tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+                    tenure, data = tr, weights = students, caseweights = FALSE)
+
+# generate colors
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+ggred <- gg_color_hue(2)[1]
+ggteal <- gg_color_hue(2)[2]
+
+# create dataframe with densities
+df <- data.frame(x_dens = numeric(), y_dens = numeric(), id = numeric(), breaks = character())
+for (id in c(2, 5)){
+  x_dens <- density(tr_tree[id]$data$age)$x
+  y_dens <- density(tr_tree[id]$data$age)$y
+  breaks <- ifelse(x_dens < 50, "left", "right")
+  df <- rbind(df, data.frame(x_dens, y_dens, id, breaks))
+  }
+
+# get the party started
+ggparty(tr_tree, terminal_space = 0.4,
+        add_vars = list(breaks = "$node$split$breaks"),
+        layout = data.frame(id = c(1, 2, 5, 7),
+                            x = c(0.35, 0.15, 0.7, 0.8),
+                            y = c(0.95, 0.6, 0.8, 0.55))) +
+  geom_edge(size = 1.2,
+            col = c(NA, ggred, ggred, ggteal, ggteal, ggred, ggteal, ggred, ggteal),
+            alpha = 1) +
+  geom_node_plot(ids = c(2,5),
+                 add_data = df,
+                 gglist = list(
+                   expression(geom_line(data = add_data,
+                                        aes(x = x_dens,
+                                            y = y_dens),
+                                        show.legend = FALSE,
+                                        alpha = 0.8)
+                   ),
+                   expression(geom_ribbon(data = add_data,
+                                          aes(x = x_dens,
+                                              ymin = 0,
+                                              ymax = y_dens,
+                                              fill = breaks),
+                                          show.legend = FALSE,
+                                          alpha = 0.8)),
+                   xlab("age"),
+                   theme_bw(),
+                   theme(axis.title.y = element_blank())),
+                 size = 1.5,
+                 height = 0.5
+  ) + 
+  geom_node_plot(ids = 1,
+                 gglist = list(expression(geom_bar(aes(x = gender, fill = gender),
+                                                   show.legend = FALSE,
+                                                   alpha = .8)),
+                               theme_bw(),
+                               theme(axis.title.y = element_blank())),
+                 size = 1.5,
+                 height = 0.5
+  ) +
+  geom_node_plot(ids = 7,
+                 gglist = list(geom_bar(aes(x = division, fill = division),
+                                        show.legend = FALSE,
+                                        alpha = .8),
+                               theme_bw(),
+                               theme(axis.title.y = element_blank())),
+                 size = 1.5,
+                 height = 0.5
+  ) +
+  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
+                                              y = eval,
+                                              col = tenure,
+                                              shape = minority),
+                                          alpha = 0.8),
+                               expression(
+                                 geom_line(data = predict_data,
+                                           aes(x = beauty,
+                                               y = prediction),
+                                           col = "blue",
+                                           size = 1.1)),
+                               theme_bw(base_size = 10),
+                               scale_color_manual(values = c(gg_color_hue(4)[2],
+                                                             gg_color_hue(4)[4]))),
+                 scales = "fixed",
+                 id = "terminal",
+                 shared_axis_labels = T,
+                 predict_arg = list(newdata = function(x) {
+                   data.frame(beauty = seq(min(x$beauty),
+                                           max(x$beauty),
+                                           length.out = 100))
+                 })) +
+  theme(legend.position = "none")
+
+
+```
 

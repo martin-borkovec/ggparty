@@ -37,7 +37,8 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
                              add_vars = add_vars)
 
   if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
-  node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
+  data_columns <- substring(names(plot_data), first = 1, last = 9) == "nodedata_"
+  node_data <-  plot_data[, data_columns]
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
                  y_parent = "y_parent", id = "id", kids = "kids", info = "info",
                  info_list = "info_list", p.value = "p.value",
@@ -92,8 +93,7 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...)
     geom = GeomSegment,
     position = position_nudge(x = nudge_x, y = nudge_y),
     inherit.aes = TRUE,
-    params = list(ids = ids,
-                  na.rm = TRUE,
+    params = list(na.rm = TRUE,
                   ...)
   )
 }

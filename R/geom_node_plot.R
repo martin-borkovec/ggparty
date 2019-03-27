@@ -192,7 +192,8 @@ geom_node_plot <- function(plot_call = "ggplot",
                           nudge_y = 0,
                           shared_axis_labels = FALSE,
                           predict_arg = NULL,
-                          legend_separator = FALSE) {
+                          legend_separator = FALSE,
+                          add_data = NULL) {
 
   #input_checks
   assert_list(gglist)
@@ -222,7 +223,8 @@ geom_node_plot <- function(plot_call = "ggplot",
       shared_axis_labels = shared_axis_labels,
       predict_arg = predict_arg,
       nudge_x = nudge_x,
-      nudge_y = nudge_y))
+      nudge_y = nudge_y,
+      add_data = add_data))
 
   # set correct plot specs and draw legend separator
   if (shared_axis_labels) {
@@ -263,7 +265,8 @@ GeomNodeplot <- ggproto(
                         scales,
                         predict_arg,
                         nudge_x,
-                        nudge_y) {
+                        nudge_y,
+                        add_data) {
 
     data <- coord$transform(data, panel_params)
 
@@ -307,9 +310,9 @@ GeomNodeplot <- ggproto(
 
     #  transform data_* columns from lists to full dataframe -------------------
 
-    data_columns <- substring(names(data), first = 1, last = 5) == "data_"
+    data_columns <- substring(names(data), first = 1, last = 9) == "nodedata_"
     nodeplot_data_lists <-  data[, data_columns]
-    names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 6)
+    names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 10)
     lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
     # initialize dataframe with right number of rows per id
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))

@@ -7,7 +7,7 @@
 geom_node_plot(plot_call = "ggplot", gglist = NULL, width = 1,
   height = 1, size = 1, ids = "terminal", scales = "fixed",
   nudge_x = 0, nudge_y = 0, shared_axis_labels = FALSE,
-  predict_arg = NULL, legend_separator = FALSE)
+  predict_arg = NULL, legend_separator = FALSE, add_data = NULL)
 }
 \arguments{
 \item{plot_call}{Any function that generates a ggplot2 object.}
