@@ -1,14 +1,13 @@
 #' ggplot an object of the party class
 #'
-#' @param party Party object to plot.
-#' @param horizontal Horizontal if 'TRUE'.
-#' @param terminal_space Proportion of the plot that should be reserved for
-#' the terminal node plots.
-#' @param layout Optional layout adjustment. Must be data.frame containing the
+#' @param party partyobject to plot
+#' @param horizontal horizontal plot?
+#' @param terminal_space proportion of the plot that should be reserved for
+#' the terminal nodeplots
+#' @param layout optional layout adjustment. Must be data.frame containing the
 #'  columns "id", "x" and "y".
-#' @param add_vars Additional variables input. Must be string of characters.
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_splitvar()],
-#'  [geom_node_info()], [geom_node_plot()]
+#'  [geom_node_info()], [geom_nodeplot()]
 #' @export
 #' @import partykit
 #' @import ggplot2
@@ -41,17 +40,23 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
   node_data <- dplyr::select(plot_data, dplyr::starts_with("data_"))
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
                  y_parent = "y_parent", id = "id", kids = "kids", info = "info",
-                 info_list = "info_list",
+                 info_list = "info_list", p.value = "p.value",
                  splitvar = "splitvar", horizontal = "horizontal",
                  nodesize = "nodesize")
 
-  for (column_i in names(add_vars)) {
-    mapping <- adjust_mapping(mapping, aes_string(var = paste0(column_i)))
-    names(mapping)[length(mapping)] <- column_i
-  }
+
+# add tree data to mapping ------------------------------------------------
 
   for (column_i in names(node_data)) {
     mapping <- adjust_mapping(mapping, aes_string(var = paste0("`", column_i, "`")))
+    names(mapping)[length(mapping)] <- column_i
+  }
+
+
+# add add_vars to mapping -------------------------------------------------
+
+  for (column_i in names(add_vars)) {
+    mapping <- adjust_mapping(mapping, aes_string(var = paste0(column_i)))
     names(mapping)[length(mapping)] <- column_i
   }
 
@@ -66,12 +71,12 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 #'
 #' @param mapping not recommended to change
 #' @param ... additional arguments for [geom_segment()]
-#' @param nudge_x,nudge_y nudge label
+#' @param x_nudge,y_nudge nudge label
 #' @param ids choose which edges to draw by their children's ids
 #' @export
 #' @md
 #'
-geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...){
+geom_edge <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL, ...){
 
   default_mapping <- aes_string(x = "x",
                                 y = "y",
@@ -83,9 +88,9 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...)
   layer(
     data = NULL,
     mapping = mapping,
-    stat = StatParty,
-    geom = "segment",
-    position = position_nudge(x = nudge_x, y = nudge_y),
+    stat = "identity",
+    geom = GeomSegment,
+    position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   na.rm = TRUE,
@@ -103,7 +108,7 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...)
 #' @param mapping not recommended to change
 #' @param shift value in (0,1). Move label along corresponding edge.
 #' @param ids choose which splitbreaks to label by their children's ids
-#' @param nudge_x,nudge_y nudge label
+#' @param x_nudge,y_nudge nudge label
 #' @param splitlevels which levels of split to plot
 #' @param label.size see [geom_label()]
 #' @param ... additional arguments for [geom_label()]
@@ -112,15 +117,15 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...)
 #' @md
 #'
 geom_edge_label <- function(mapping = NULL,
-                            nudge_x = 0,
-                            nudge_y = 0,
+                            x_nudge = 0,
+                            y_nudge = 0,
                             ids = NULL,
                             shift = 0.5,
                             label.size = 0,
                             splitlevels = seq_len(100),
                             ...) {
 
-  default_mapping <- aes(label = breaks)
+  default_mapping <- aes_string(label = "breaks_label")
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -129,7 +134,7 @@ geom_edge_label <- function(mapping = NULL,
     mapping = mapping,
     stat = StatParty,
     geom = "label",
-    position = position_nudge(x = nudge_x, y = nudge_y),
+    position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   shift = shift,
@@ -147,13 +152,13 @@ geom_edge_label <- function(mapping = NULL,
 #'
 #' @param mapping not recommended to change
 #' @param ids choose which nodes to label by their ids
-#' @param nudge_x,nudge_y nudge label
+#' @param x_nudge,y_nudge nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
 #' @export
 #' @md
 #'
-geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
+geom_node_info <- function(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
                            label.padding = unit(0.5, "lines"), ...) {
   default_mapping <- aes_string(label = "info")
   mapping <- adjust_mapping(default_mapping, mapping)
@@ -162,7 +167,7 @@ geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
     mapping = mapping,
     stat = StatParty,
     geom = "label",
-    position = position_nudge(x = nudge_x, y = nudge_y),
+    position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   label.padding = label.padding,
@@ -175,14 +180,14 @@ geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 #'
 #' @param mapping not recommended to change
 #' @param ids choose which terminal nodes to label by their ids
-#' @param nudge_x,nudge_y nudge label
+#' @param x_nudge,y_nudge nudge label
 #' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
 #' @param ... additional arguments for [geom_label()]
 #' @param extract_info work in progress
 #' @export
 #' @md
 #'
-geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
+geom_node_splitvar <- function(mapping = NULL, x_nudge = 0, y_nudge = 0,
                                label.padding = unit(0.5, "lines"), ids = NULL,
                                extract_info = NULL,...) {
   default_mapping <- aes_string(label = "splitvar")
@@ -192,7 +197,7 @@ geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
     mapping = mapping,
     stat = StatParty,
     geom = "label",
-    position = position_nudge(x = nudge_x, y = nudge_y),
+    position = position_nudge(x = x_nudge, y = y_nudge),
     inherit.aes = TRUE,
     params = list(ids = ids,
                   label.padding = label.padding,
@@ -227,20 +232,6 @@ StatParty <- ggproto(
         paste(output, collapse = " ")
       },
       character(1))
-    # browser()
-    # if (!is.null(extract_info)) {
-    #   for (j in seq_along(data$id)) {
-    #     if (j == 1) extract_info_data <- extract_info(lapply(data[j, 1:8], unlist))
-    #     else extract_info_data <- rbind(extract_info_data, extract_info(data[j, ]))
-    #   }
-    #   data <- cbind(data, extract_info_data)
-    # }
-
-    # browser()
-    # for (j in seq_along(data$id)) {
-    #   for (i in seq_along(data$info[[1]])) {
-    #     data[j, names(data$info[[1]])[i]] <- data$info[[j]][i]
-    #   }}
     data
   }
 )
@@ -267,6 +258,7 @@ adjust_layout <- function(plot_data, layout) {
     plot_data$x_parent[plot_data$parent == id] <- layout$x[layout$id == id]
   }
   plot_data
+
 }
 
 

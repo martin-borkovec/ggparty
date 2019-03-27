@@ -314,6 +314,6 @@ get_y_shift <- function(label) {
 }
 
 
-# calucaltes size of unit "lines" based on  fontsize and lineheight ------------
+# caluclates size of unit "lines" based on fontsize and lineheight ------------
 
 line_size <- function(x) x$fontsize * x$lineheight
