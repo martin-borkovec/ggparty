@@ -41,6 +41,10 @@ a call to a position adjustment function.}
 
 \item{parse}{If \code{TRUE}, the labels will be parsed into expressions.}
 
+\item{nudge_x}{nudge label}
+
+\item{nudge_y}{nudge label}
+
 \item{label.padding}{Amount of padding around label. Defaults to 0.25 lines.}
 
 \item{label.r}{Radius of rounded corners. Defaults to 0.15 lines.}
