@@ -7,7 +7,7 @@
 #' @param layout optional layout adjustment. Must be data.frame containing the
 #'  columns "id", "x" and "y".
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_splitvar()],
-#'  [geom_node_info()], [geom_nodeplot()]
+#'  [geom_node_info()], [geom_node_plot()]
 #' @export
 #' @import partykit
 #' @import ggplot2

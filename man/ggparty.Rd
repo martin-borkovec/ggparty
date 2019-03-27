@@ -23,5 +23,5 @@ ggplot an object of the party class
 }
 \seealso{
 \code{\link[=geom_edge]{geom_edge()}}, \code{\link[=geom_edge_label]{geom_edge_label()}}, \code{\link[=geom_node_splitvar]{geom_node_splitvar()}},
-\code{\link[=geom_node_info]{geom_node_info()}}, \code{\link[=geom_nodeplot]{geom_nodeplot()}}
+\code{\link[=geom_node_info]{geom_node_info()}}, \code{\link[=geom_node_plot]{geom_node_plot()}}
 }

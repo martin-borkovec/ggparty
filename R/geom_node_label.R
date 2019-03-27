@@ -80,11 +80,6 @@ geom_node_label <- function(mapping = NULL,
   )
 }
 
-#' @rdname ggparty-ggproto
-#' @format NULL
-#' @usage NULL
-#' @export
-#' @md
 GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                          required_aes = c("x", "y"),
 
