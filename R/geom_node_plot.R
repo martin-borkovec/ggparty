@@ -285,15 +285,15 @@ GeomNodeplot <- ggproto(
 
     # for vertical trees
     if (vertical) {
-      node_width <- abs(diff(data$x[data$kids == 0]))[1]
-      node_height <- abs(diff(data$y[data$kids != 0]))[1]
+      node_width <- mean(abs(diff(data$x[data$kids == 0])))
+      node_height <- mean(abs(diff(data$y[data$kids != 0])))
       xlab_x <- legend_x
       ylab_y <- (min(data$y) + y_0) * 0.5
       ylab_x <- scales::rescale(-0.045, from = panel_params$x.range)
     } else {
       # for horizontal trees
-      node_width <- abs(diff(data$x[data$kids != 0]))[1]
-      node_height <- abs(diff(data$y[data$kids == 0]))[1]
+      node_width <- mean(abs(diff(data$x[data$kids != 0])))
+      node_height <- mean(abs(diff(data$y[data$kids == 0])))
       xlab_x <- (x_1 + max(data$x)) / 2
       ylab_x <- max(data$x)
       ylab_y <- scales::rescale(0.5, from = panel_params$y.range)
@@ -328,7 +328,7 @@ GeomNodeplot <- ggproto(
 
     base_data <- nodeplot_data
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
-
+    data <- data[data$id %in% ids, ]
 
     # nodesize ----------------------------------------------------------------
 
@@ -354,7 +354,7 @@ GeomNodeplot <- ggproto(
 
 
     # generate faceted base_plot ----------------------------------------------
-
+# browser()
     # facet_wrap for indiviual panels
     facet_gtable <- ggplotGrob(do.call(plot_call,
                                        args = list(data = facet_data)) +
@@ -598,7 +598,7 @@ predict_data <- function(info_list, data, predict_arg) {
   newdata_function <- predict_arg$newdata
   for (i in 1:length(ids)) {
     predict_arg$newdata <- do.call(newdata_function, list(data))
-    predict_arg$object <- info_list[[ids[i]]]$object
+    predict_arg$object <- info_list[[i]]$object
     predict_data <- predict_arg$newdata
     predict_data$id <- ids[i]
     predict_data$prediction <- do.call(stats::predict, predict_arg)

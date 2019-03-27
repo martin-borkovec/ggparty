@@ -28,7 +28,7 @@ ggparty(tr_tree,
         add_vars = list(p.value = "$node$info$p.value")) +
   geom_edge(size = 1.5) +
   geom_edge_label(colour = "grey", size = 6) +
-  geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
+  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
                                              y = eval,
                                              col = tenure,
                                              shape = minority),
@@ -68,4 +68,5 @@ ggparty(tr_tree,
 ![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+
 [![Coverage Status](https://coveralls.io/repos/github/mmostly-harmless/ggparty/badge.svg?branch=master)](https://coveralls.io/github/mmostly-harmless/ggparty?branch=master)
