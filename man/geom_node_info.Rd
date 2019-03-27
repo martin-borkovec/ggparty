@@ -4,13 +4,13 @@
 \alias{geom_node_info}
 \title{Draw labels containing node's info}
 \usage{
-geom_node_info(mapping = NULL, nudge_x = 0, nudge_y = 0,
+geom_node_info(mapping = NULL, x_nudge = 0, y_nudge = 0,
   ids = NULL, label.padding = unit(0.5, "lines"), ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
 
-\item{nudge_x, nudge_y}{nudge label}
+\item{x_nudge, y_nudge}{nudge label}
 
 \item{ids}{choose which nodes to label by their ids}
 

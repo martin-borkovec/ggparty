@@ -4,14 +4,14 @@
 \alias{geom_node_splitvar}
 \title{Draw labels containing node's split variable}
 \usage{
-geom_node_splitvar(mapping = NULL, nudge_x = 0, nudge_y = 0,
+geom_node_splitvar(mapping = NULL, x_nudge = 0, y_nudge = 0,
   label.padding = unit(0.5, "lines"), ids = NULL,
   extract_info = NULL, ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
 
-\item{nudge_x, nudge_y}{nudge label}
+\item{x_nudge, y_nudge}{nudge label}
 
 \item{label.padding}{Amount of padding around label. Defaults to 0.5 lines.}
 

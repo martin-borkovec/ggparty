@@ -4,14 +4,14 @@
 \alias{geom_edge_label}
 \title{Label edge with corresponding splitbreak}
 \usage{
-geom_edge_label(mapping = NULL, nudge_x = 0, nudge_y = 0,
+geom_edge_label(mapping = NULL, x_nudge = 0, y_nudge = 0,
   ids = NULL, shift = 0.5, label.size = 0,
   splitlevels = seq_len(100), ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
 
-\item{nudge_x, nudge_y}{nudge label}
+\item{x_nudge, y_nudge}{nudge label}
 
 \item{ids}{choose which splitbreaks to label by their children's ids}
 

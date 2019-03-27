@@ -4,13 +4,13 @@
 \alias{geom_edge}
 \title{Draw edges between children and parents. wrapper of geom_segment}
 \usage{
-geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
+geom_edge(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
   ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
 
-\item{nudge_x, nudge_y}{nudge label}
+\item{x_nudge, y_nudge}{nudge label}
 
 \item{ids}{choose which edges to draw by their children's ids}
 

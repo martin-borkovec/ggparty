@@ -8,22 +8,20 @@ ggparty(party, horizontal = FALSE, terminal_space, layout = NULL,
   add_vars = NULL)
 }
 \arguments{
-\item{party}{Party object to plot.}
+\item{party}{partyobject to plot}
 
-\item{horizontal}{Horizontal if 'TRUE'.}
+\item{horizontal}{horizontal plot?}
 
-\item{terminal_space}{Proportion of the plot that should be reserved for
-the terminal node plots.}
+\item{terminal_space}{proportion of the plot that should be reserved for
+the terminal nodeplots}
 
-\item{layout}{Optional layout adjustment. Must be data.frame containing the
+\item{layout}{optional layout adjustment. Must be data.frame containing the
 columns "id", "x" and "y".}
-
-\item{add_vars}{Additional variables input. Must be string of characters.}
 }
 \description{
 ggplot an object of the party class
 }
 \seealso{
 \code{\link[=geom_edge]{geom_edge()}}, \code{\link[=geom_edge_label]{geom_edge_label()}}, \code{\link[=geom_node_splitvar]{geom_node_splitvar()}},
-\code{\link[=geom_node_info]{geom_node_info()}}, \code{\link[=geom_node_plot]{geom_node_plot()}}
+\code{\link[=geom_node_info]{geom_node_info()}}, \code{\link[=geom_nodeplot]{geom_nodeplot()}}
 }

@@ -5,12 +5,11 @@
 \title{Draw labels containing node's info}
 \usage{
 geom_node_label(mapping = NULL, data = NULL, line_list = NULL,
-  line_gpar = NULL, ids = NULL, stat = "identity",
-  position = "identity", ..., parse = FALSE, nudge_x = 0,
-  nudge_y = 0, label.padding = unit(0.25, "lines"),
-  label.r = unit(0.15, "lines"), label.size = 0.25, label.col = NULL,
-  label.fill = NULL, na.rm = FALSE, show.legend = NA,
-  inherit.aes = TRUE)
+  line_gpar = NULL, ids = NULL, position = "identity", ...,
+  parse = FALSE, nudge_x = 0, nudge_y = 0,
+  label.padding = unit(0.25, "lines"), label.r = unit(0.15, "lines"),
+  label.size = 0.25, label.col = NULL, label.fill = NULL,
+  na.rm = FALSE, show.legend = NA, inherit.aes = TRUE)
 }
 \arguments{
 \item{mapping}{not recommended to change}
@@ -35,19 +34,12 @@ will be used as the layer data.}
 
 \item{ids}{choose which nodes to label by their ids}
 
-\item{stat}{The statistical transformation to use on the data for this
-layer, as a string.}
-
 \item{position}{Position adjustment, either as a string, or the result of
 a call to a position adjustment function.}
 
 \item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}#'}
 
 \item{parse}{If \code{TRUE}, the labels will be parsed into expressions.}
-
-\item{nudge_x}{nudge label}
-
-\item{nudge_y}{nudge label}
 
 \item{label.padding}{Amount of padding around label. Defaults to 0.25 lines.}
 
