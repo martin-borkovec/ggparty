@@ -248,7 +248,6 @@ makeContent.nodelabelgrob <- function(x) {
 
 
   # draw border ---------------------------------------------------------------
-
   r <- list(roundrectGrob(x = x$x,
                           y = x$y + unit(sum(
                             x$box_up * sapply(x$text.gp, line_size) +
@@ -256,8 +255,11 @@ makeContent.nodelabelgrob <- function(x) {
                             "point"),
                           default.units = "native",
                           width = max(widths) + 2 * x$padding,
-                          height = unit(sum(sapply(x$text.gp, line_size)),
-                                        "point") +  2 * x$padding,
+                          # height = grobHeight(text_list[[1]]),
+                          height =
+                          {if(length(x$label) == 1) grobHeight(text_list[[1]])
+                            else unit(sum(sapply(x$text.gp, line_size)),"point")}
+                          +  2 * x$padding,
                           r = x$r,
                           gp = x$rect.gp,
                           name = "box"

@@ -23,7 +23,8 @@ Suggests:
     coin,
     vdiffr,
     knitr,
-    rmarkdown
+    rmarkdown,
+    pander
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
