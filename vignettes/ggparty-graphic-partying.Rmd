@@ -13,7 +13,8 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
 collapse = TRUE,
-comment = "#>"
+comment = "#>",
+fig.width = 7
 )
 ```
 
@@ -121,7 +122,7 @@ ggparty(t2,
 
 To visualize the distribution of the variable play we will use the geom_node_plot function. It allows us to show the *data* of each node in its separate plot. For this to work, we have to specify the argument gglist. Basically we have to provide a list of all the ggplot components we would add to a ggplot call on the data element of a node.  
 
-```{r}
+```{r, fig.width = 3}
 ggplot(t2[2]$data) +
   geom_bar(aes(x = "", fill = play),
            position = position_fill()) +
@@ -294,7 +295,8 @@ generate_newdata <- function(data){
 
 ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
   geom_edge() +
-  geom_node_splitvar() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
   geom_edge_label() +
   geom_node_plot(
     gglist = list(geom_point(aes(y = `Surv(time, cens).time`,
@@ -375,7 +377,7 @@ ggparty(tr_tree,
 
 
 If we want to extract additional elements of the tree we can do it by specifiying add_vars accordingly.
-```{r, fig.width = 7, fig.asp = 1}
+```{r, fig.asp = 1}
 data("TeachingRatings", package = "AER")
 tr <- subset(TeachingRatings, credits == "more")
 
@@ -395,9 +397,9 @@ df <- data.frame(x_dens = numeric(), y_dens = numeric(), id = numeric(), breaks 
 for (id in c(2, 5)){
   x_dens <- density(tr_tree[id]$data$age)$x
   y_dens <- density(tr_tree[id]$data$age)$y
-  breaks <- rep("left", nrow(tr_tree[id]$data))
-  breaks[tr_tree[id]$data$gender == "male" & x_dens > 50] <- "right"
-  breaks[tr_tree[id]$data$gender == "female" & x_dens > 40] <- "right"
+  breaks <- rep("left", length(x_dens))
+  if (id == 2) breaks[x_dens > 50] <- "right"
+  if (id == 5) breaks[x_dens > 40] <- "right"
   df <- rbind(df, data.frame(x_dens, y_dens, id, breaks))
   }
 
@@ -473,7 +475,29 @@ ggparty(tr_tree, terminal_space = 0.4,
                                            length.out = 100))
                  })) +
   theme(legend.position = "none")
-
-
 ```
+
+```{r}
+autoplot(py)
+```
+
+```{r}
+autoplot(t2)
+```
+
+```{r, fig.asp = 1}
+autoplot(bh_tree, plot_var = "log(lstat)", show_fit = FALSE)
+autoplot(bh_tree, plot_var = "I(rm^2)", show_fit = TRUE)
+```
+
+```{r}
+autoplot(gbsg2_tree, plot_var = "pnodes")
+```
+
+```{r, fig.asp = 1}
+autoplot(tr_tree)
+```
+
+
+
 

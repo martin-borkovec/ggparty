@@ -10,6 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(echo = TRUE, dpi=300)
 ```
 
+ggparty aims to extend ggplot2 functionality to the partykit package. It provides the necessary tools
+to create clearly structured and highly customizable visualizations for tree-objects of the class party.
+  
+  
+
 ```{r}
 library(ggparty)
 ```
@@ -44,9 +49,18 @@ ggparty(py) +
 
 ## ggparty()
 As we have seen, ggparty takes a tree of class party and allows us to plot the contained information in the style of
-the ggplot package. This is made possible by the internal function get_plot_data, to which said tree is passed and a dataframe containing the relevant information is returned on which ggplot is called with all the necessary settings and specifications. The information accessible this way includes the *id*, the *x* and *y* coordinates, the *parent* node's id, the number of *kids*, a list of the *breaks*, the *level* (root being 0), the *nodesize* and the parent's coordinates *x_parent* and *y_parent* of the nodes^[The words in italic represent the respective column names.]. The data contained in the nodes is stored as lists inside the dataframe and is only through the geom_node_plot function comfortably accessible which will be introduced below.  
+the ggplot package. This is made possible by the internal function get_plot_data, to which said tree is passed and a dataframe containing the relevant information is returned.
 
-As a result we can now map different aspects of our plot to poperties of the nodes. Whether that's sensible in this case is a different question.
+This data.frame is the data argument of the call to ggplot with all the necessary settings and specifications. The information accessible this way includes the *id*, the *x* and *y* coordinates, the *parent* node's id, the number of *kids*, a list of the *breaks*, the *level* (root being 0), the *nodesize* and the parent's coordinates *x_parent* and *y_parent* of the nodes^[The words in italic represent the respective column names.]. The data contained in the nodes is stored as lists inside the dataframe and is comfortably accessible only through the geom_node_plot function which will be introduced below.  
+
+
+```{r, results = "asis"}
+pander::pandoc.table(ggparty:::get_plot_data(py)[,1:15])
+```
+
+
+Thanks to the ggplot structure we can now map different aspects of our plot to poperties of the nodes. Whether that's sensible in this case is a different question.
+
 ```{r, fig.width = 7}
 ggparty(py) +
   geom_edge() +
@@ -86,9 +100,21 @@ t2 <- party(n1,
 t2 <- as.constparty(t2)
 ```
 
+```{r, fig.width = 7}
+ggparty(t2,
+        add_vars = list(play_prob = function(data, party) {
+          mean(party$data$play == "yes")})) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Playprob.:\n",play_prob)),
+                  ids = "terminal")
+```
+
 To visualize the distribution of the variable play we will use the geom_node_plot function. It allows us to show the *data* of each node in its separate plot. For this to work, we have to specify the argument gglist. Basically we have to provide a list of all the ggplot components we would add to a ggplot call on the data element of a node.  
 
-```{r}
+```{r, fig.width = 3}
 ggplot(t2[2]$data) +
   geom_bar(aes(x = "", fill = play),
            position = position_fill()) +
@@ -124,6 +150,10 @@ ggparty(t2) +
 
 
 
+
+
+## Layout
+
 ```{r}
 ## Boston housing data
 data("BostonHousing", package = "mlbench")
@@ -137,8 +167,25 @@ bh_tree <- lmtree(medv ~ log(lstat) + I(rm^2) | zn +
                   data = BostonHousing, minsize = 40)
 
 ```
+Let's take a look at ggparty's layout system with the help of this lmtree based on Boston housing data set from mlbench.
 
-## Layout
+```{r, fig.width= 7, fig.asp=1}
+bh_plot <- ggparty(bh_tree, terminal_space = 0.5) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_splitvar() +
+  geom_node_plot(gglist = list(
+    geom_point(aes(y = medv, x = `log(lstat)`, col = chas),
+               alpha = 0.6)),
+    height = 0.5) +
+  geom_node_plot(gglist = list(
+    geom_point(aes(y = medv, x = `I(rm^2)`, col = chas),
+               alpha = 0.6)),
+    height = 0.5,
+    nudge_y = -0.25)
+
+bh_plot
+```
 ggparty positions all the nodes within the unit square. For vertical trees the root is always at (0.5, 1), for horizontal ones it is at (0, 0.5). The argument terminal_size specifies how much room should be left for terminal plots. The default value depends on the depth of the supplied tree. The terminal nodes are placed at this value and in case labels are drawn, they are drawn there. In case plots are to be drawn their top borders are aligned to this value, i.e. the terminal plots are not centered. Therefore reducing the height of a terminal node shrinks it towards the top.  
 
 So if we want to plot multiple plots per node we have to keep that in mind and can achieve this for example like this.  
@@ -146,24 +193,45 @@ The first geom_node_plot only takes the argument height = 0.5 which halves its s
 occupy only the upper half of the area it would normaly do. For the second geom_node_plot we also specify
 the size to be 0.5 but additionaly we have to specify nudge_y. Since the terminal space is set to be 0.5,
 we know that the first plot now spans from 0.5 to 0.25. So we want to move the line where to place the
-second plot to 0.25, i.e. nudge it from 0.5 by -0.25.
+second plot to 0.25, i.e. nudge it from 0.5 by -0.25.  
+  
+Changing the theme from the default theme_void to one were gridlines are drawn 
+allows us to see the above desribed layout structure.
+
+
+```{r, fig.width=7, fig.asp = 1}
+bh_plot + theme_bw()
+```
+
+We can use this information to manually set the positions of nodes. To do this
+we must pass a data.frame containing the columns id, x and y to the layout
+argument of ggparty. 
+
 ```{r, fig.width= 7, fig.asp=1}
-ggparty(bh_tree, terminal_space = 0.5) +
+ggparty(bh_tree, terminal_space = 0.5,
+        # x and y values need to be between 0 and 1
+        layout = data.frame(id = c(1, 2),
+                            x = c(0.7, 0.3),
+                            y = c(1, 0.9))
+        ) +
   geom_edge() +
   geom_edge_label() +
   geom_node_splitvar() +
   geom_node_plot(gglist = list(
-    geom_point(aes(y = medv, x = `log(lstat)`, col = chas))),
+    geom_point(aes(y = medv, x = `log(lstat)`, col = chas),
+               alpha = 0.6)),
     height = 0.5) +
   geom_node_plot(gglist = list(
-    geom_point(aes(y = medv, x = `I(rm^2)`, col = chas))),
+    geom_point(aes(y = medv, x = `I(rm^2)`, col = chas),
+               alpha = 0.6)),
     height = 0.5,
-    nudge_y = -0.25)
+    nudge_y = -0.25) + 
+  theme_bw()
 
 ```
 
-### adjust layout maye
 
+## Predictions
 
 Next we are going to apply ggparty on a tree of class modelparty. As the name suggests
 these objects are model-based trees, therefore we might want to be able to make some predictions.
@@ -268,30 +336,20 @@ tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
 ```
 ```{r, fig.width= 7, fig.asp= 1}
 ggparty(tr_tree,
-        terminal_space = 0.5,
-        add_vars = list(p.value = "$node$info$p.value")) +
+        terminal_space = 0.5)+
   geom_edge(size = 1.5) +
   geom_edge_label(colour = "grey", size = 4) +
-  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
-                                             y = eval,
+  geom_node_plot(gglist = list(geom_point(aes(x = fitted_values,
+                                             y = residuals,
                                              col = tenure,
                                              shape = minority),
                                          alpha = 0.8),
-                              expression(
-                                geom_line(data = predict_data,
-                                          aes(x = beauty,
-                                              y = prediction),
-                                          col = "blue",
-                                          size = 1.2)),
-                              theme_bw(base_size = 10)),
-                scales = "fixed",
-                id = "terminal",
-                shared_axis_labels = T,
-                predict_arg = list(newdata = function(x) {
-                  data.frame(beauty = seq(min(x$beauty),
-                                          max(x$beauty),
-                                          length.out = 100))
-                })) +
+                               geom_hline(yintercept = 0),
+                               theme_bw(base_size = 10)),
+                 scales = "free_x",
+                 id = "terminal",
+                 shared_axis_labels = T
+  ) +
   geom_node_label(aes(col = splitvar),
                   line_list = list(aes(label = paste("Node", id)),
                                    aes(label = splitvar),
@@ -310,7 +368,7 @@ ggparty(tr_tree,
 
 
 If we want to extract additional elements of the tree we can do it by specifiying add_vars accordingly.
-```{r, fig.width = 7, fig.asp = 1}
+```{r, fig.asp = 1}
 data("TeachingRatings", package = "AER")
 tr <- subset(TeachingRatings, credits == "more")
 
@@ -330,7 +388,9 @@ df <- data.frame(x_dens = numeric(), y_dens = numeric(), id = numeric(), breaks 
 for (id in c(2, 5)){
   x_dens <- density(tr_tree[id]$data$age)$x
   y_dens <- density(tr_tree[id]$data$age)$y
-  breaks <- ifelse(x_dens < 50, "left", "right")
+  breaks <- rep("left", nrow(tr_tree[id]$data))
+  if (id == 2) breaks[x_dens > 50] <- "right"
+  if (id == 5) breaks[x_dens > 40] <- "right"
   df <- rbind(df, data.frame(x_dens, y_dens, id, breaks))
   }
 
@@ -406,8 +466,29 @@ ggparty(tr_tree, terminal_space = 0.4,
                                            length.out = 100))
                  })) +
   theme(legend.position = "none")
-
-
 ```
+
+```{r}
+autoplot(py)
+```
+
+```{r}
+autoplot(t2)
+```
+
+```{r}
+autoplot(bh_tree, plot_var = "log(lstat)", show_fit = FALSE)
+autoplot(bh_tree, plot_var = "I(rm^2)", show_fit = TRUE)
+```
+
+```{r}
+autoplot(gbsg2_tree, plot_var = "pnodes")
+```
+
+```{r}
+autoplot(tr_tree)
+```
+
+
 
 

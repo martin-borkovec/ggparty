@@ -1,4 +1,5 @@
 #' @export
+#' @importFrom methods is
 autoplot.party <- function(object, ...) {
   ggparty(object) +
     geom_edge() +
@@ -24,28 +25,50 @@ autoplot.constparty <- function(object, ...) {
 }
 
 #' @export
-autoplot.modelparty <- function(object, plot_var, ...) {
+autoplot.modelparty <- function(object, plot_var = NULL, ...) {
+
+  # if no plot var defined, use first covariable
+  if (is.null(plot_var)) plot_var <- names(object$data)[2]
+
+  y_var <- object$terms[[2]]
+  if(all(is(object$data[[1]]) == "Surv"))
+    y_var <- paste0(names(object$data)[1], ".time")
+
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
     geom_node_label(aes_string(label = "splitvar"),
                     ids = "inner") +
-    geom_node_plot(gglist = list(geom_point(aes(x = !!ensym(plot_var),
-                                             y = !!object$terms[[2]])),
-                                expression(
-                                  geom_line(data = predict_data,
-                                            aes(x = !!ensym(plot_var),
-                                                y = prediction),
-                                            size = 1.2,
-                                            col = "blue")
-                                )),
-                  predict_arg =
-                    list(newdata =
-                           function(x) {
-                             z <- data.frame(seq(from = min(x[, eval(plot_var)], na.rm = T),
-                                                 to = max(x[, eval(plot_var)], na.rm = T),
-                                                 length.out = 100))
-                             names(z) <- eval(plot_var)
-                             return(z)
-                           }))
+    geom_node_plot(gglist = list(geom_point(aes(x = !!sym(plot_var),
+                                                y = !!sym(y_var)
+                                                )
+                                )))
 }
+
+#' @export
+autoplot.lmtree <- function(object, plot_var = NULL, show_fit = TRUE, ...) {
+
+  # if no plot var defined, use first covariable
+  if (is.null(plot_var)) plot_var <- names(object$data)[2]
+
+  # plot fitted values if show_fit
+  plot_fit <- NULL
+  if (show_fit == TRUE)
+    plot_fit <- list(
+      geom_line(aes(x = !!sym(plot_var),
+                    y = !!sym("fitted_values")),
+                col = "blue"))
+
+  ggparty(object) +
+    geom_edge() +
+    geom_edge_label() +
+    geom_node_label(aes_string(label = "splitvar"),
+                    ids = "inner") +
+    geom_node_plot(gglist = list(geom_point(aes(x = !!sym(plot_var),
+                                                y = !!object$terms[[2]])),
+                                 plot_fit
+    ))
+}
+
+
+
