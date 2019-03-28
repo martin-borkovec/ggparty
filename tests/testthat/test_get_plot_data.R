@@ -53,7 +53,7 @@ test_split_variable(ct)
 test_split_variable(ct2)
 test_split_variable(tr_tree)
 
-test_valid_indexes <- function(party_object) {
+test_valid_breaks <- function(party_object) {
   test_that("valid indexes", {
     expect_success(expect_output(get_plot_data(party_object)[1, ]$breaks_label, NA))
     for (i in 1:length(get_plot_data(party_object)$id)) {
@@ -80,11 +80,11 @@ test_valid_indexes <- function(party_object) {
   })
 }
 
-test_valid_indexes(py)
-test_valid_indexes(t2)
-test_valid_indexes(ct)
-test_valid_indexes(ct2)
-test_valid_indexes(tr_tree)
+test_valid_breaks(py)
+test_valid_breaks(t2)
+test_valid_breaks(ct)
+test_valid_breaks(ct2)
+test_valid_breaks(tr_tree)
 
 
 test_add_info <- function(party_object) {
