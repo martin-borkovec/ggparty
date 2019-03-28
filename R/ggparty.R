@@ -1,23 +1,60 @@
-#' ggplot an object of the party class
+#' `ggplot2` extension for objects of class `party`
 #'
-#' @param party partyobject to plot
-#' @param horizontal horizontal plot?
-#' @param terminal_space proportion of the plot that should be reserved for
-#' the terminal nodeplots
-#' @param layout optional layout adjustment. Must be data.frame containing the
-#'  columns "id", "x" and "y".
-#' @param add_vars named list containing either strings specifying locations
-#'  of element to be extracted from
-#'  each node or functions of plot_data and node. In either case returned object
+#' Converts an object of class `party` and calls ggplot
+#'
+#'  `ggparty` can be callled directly with an object of class `party`, which will
+#' convert it to a suitbale data.frame and create a call to `ggplot` with it as
+#' the `data` argument. As usual additional components can then be added with
+#' `+`.
+#' The nodes will be spaced equally in the unit square. Specifying
+#' `terminal_size` allows to increase or decrease the area for plots of the
+#' terminal nodes.
+#'
+#'
+#' @param party Object of class `party`. The elements necessary for the plot will
+#' be extracted and converted to a `data.frame`.
+#' @param horizontal If `TRUE` plot will be horizontal.
+#' @param terminal_space Proportion of the plot that should be reserved for
+#' the terminal nodeplots.
+#' @param layout Optional layout adjustment. Overrides the coordinates of the
+#' specified nodes. Must be `data.frame` containing the
+#'  columns "id", "x" and "y". With `x` and `y` values between 0 and 1.
+#' @param add_vars Named list containing either strings specifying the locations
+#'  of elements to be extracted from
+#'  each node of `party`  or functions of `plot_data()` and node. In either case
+#'   returned object
 #'  has to be of length 1.
-#' @seealso [geom_edge()], [geom_edge_label()], [geom_node_splitvar()],
-#'  [geom_node_info()], [geom_node_plot()]
+#' @seealso [geom_edge()], [geom_edge_label()], [geom_node_label()],
+#'  [autoplot.party()], [geom_node_plot()]
 #' @export
 #' @import partykit
 #' @import ggplot2
 #' @import gtable
 #' @import grid
 #' @import checkmate
+#' @examples
+#' library(ggparty)
+#' data("WeatherPlay", package = "partykit")
+#' sp_o <- partysplit(1L, index = 1:3)
+#' sp_h <- partysplit(3L, breaks = 75)
+#' sp_w <- partysplit(4L, index = 1:2)
+#' pn <- partynode(1L, split = sp_o, kids = list(
+#'   partynode(2L, split = sp_h, kids = list(
+#'     partynode(3L, info = "yes"),
+#'     partynode(4L, info = "no"))),
+#'   partynode(5L, info = "yes"),
+#'   partynode(6L, split = sp_w, kids = list(
+#'     partynode(7L, info = "yes"),
+#'     partynode(8L, info = "no")))))
+#' py <- party(pn, WeatherPlay)
+#'
+#' ggparty(py) +
+#'   geom_edge() +
+#'   geom_edge_label() +
+#'   geom_node_label(aes(label = splitvar),
+#'                   ids = "inner") +
+#'   geom_node_label(aes(label = info),
+#'                   ids = "terminal")
 
 
 # ggparty() ---------------------------------------------------------------
@@ -26,7 +63,17 @@
 ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
                     add_vars = NULL) {
 
-  if(missing(terminal_space)) terminal_space <- 2 / (depth(party) + 2)
+  if (missing(terminal_space)) terminal_space <- 2 / (depth(party) + 2)
+
+  checkmate::assert_class(party, "party")
+  checkmate::assert_logical(horizontal)
+  checkmate::assert_numeric(terminal_space, lower = 0, upper = 1)
+  checkmate::assert_list(add_vars, names = "named", null.ok = TRUE)
+  for (i in seq_along(add_vars))
+    checkmate::assert(check_character(add_vars[[i]]),
+                      check_function(add_vars[[i]], nargs = 2),
+                      combine = "or")
+
   if (!is.null(layout)) {
     checkmate::assert_data_frame(layout, any.missing = FALSE)
     checkmate::assert_names(colnames(layout), permutation.of = c("id", "x", "y"))
@@ -40,7 +87,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
                              terminal_space = terminal_space,
                              add_vars = add_vars)
 
-  if(!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
+  if (!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   data_columns <- substring(names(plot_data), first = 1, last = 9) == "nodedata_"
   node_data <-  plot_data[, data_columns]
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
@@ -80,7 +127,30 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 #' @param ids choose which edges to draw by their children's ids
 #' @export
 #' @md
+#' @examples
+#' library(ggparty)
+#' data("WeatherPlay", package = "partykit")
+#' sp_o <- partysplit(1L, index = 1:3)
+#' sp_h <- partysplit(3L, breaks = 75)
+#' sp_w <- partysplit(4L, index = 1:2)
+#' pn <- partynode(1L, split = sp_o, kids = list(
+#'   partynode(2L, split = sp_h, kids = list(
+#'     partynode(3L, info = "yes"),
+#'     partynode(4L, info = "no"))),
+#'   partynode(5L, info = "yes"),
+#'   partynode(6L, split = sp_w, kids = list(
+#'     partynode(7L, info = "yes"),
+#'     partynode(8L, info = "no")))))
+#' py <- party(pn, WeatherPlay)
 #'
+#' ggparty(py) +
+#'   geom_edge() +
+#'   geom_edge_label() +
+#'   geom_node_label(aes(label = splitvar),
+#'                   ids = "inner") +
+#'   geom_node_label(aes(label = info),
+#'                   ids = "terminal")
+
 geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...){
 
   default_mapping <- aes_string(x = "x",
@@ -119,7 +189,31 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...)
 #'
 #' @export
 #' @md
+#' @examples
+#' library(ggparty)
+#' data("WeatherPlay", package = "partykit")
+#' sp_o <- partysplit(1L, index = 1:3)
+#' sp_h <- partysplit(3L, breaks = 75)
+#' sp_w <- partysplit(4L, index = 1:2)
+#' pn <- partynode(1L, split = sp_o, kids = list(
+#'   partynode(2L, split = sp_h, kids = list(
+#'     partynode(3L, info = "yes"),
+#'     partynode(4L, info = "no"))),
+#'   partynode(5L, info = "yes"),
+#'   partynode(6L, split = sp_w, kids = list(
+#'     partynode(7L, info = "yes"),
+#'     partynode(8L, info = "no")))))
+#' py <- party(pn, WeatherPlay)
 #'
+#' ggparty(py) +
+#'   geom_edge() +
+#'   geom_edge_label() +
+#'   geom_node_label(aes(label = splitvar),
+#'                   ids = "inner") +
+#'   geom_node_label(aes(label = info),
+#'                   ids = "terminal")
+
+
 geom_edge_label <- function(mapping = NULL,
                             nudge_x = 0,
                             nudge_y = 0,
@@ -149,67 +243,6 @@ geom_edge_label <- function(mapping = NULL,
   )
 }
 
-
-# geom_node ------------------------------------------------
-
-#' Draw labels containing node's info
-#'
-#' @param mapping not recommended to change
-#' @param ids choose which nodes to label by their ids
-#' @param nudge_x,nudge_y nudge label
-#' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
-#' @param ... additional arguments for [geom_label()]
-#' @export
-#' @md
-#'
-geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
-                           label.padding = unit(0.5, "lines"), ...) {
-  default_mapping <- aes_string(label = "info")
-  mapping <- adjust_mapping(default_mapping, mapping)
-  layer(
-    data = NULL,
-    mapping = mapping,
-    stat = StatParty,
-    geom = "label",
-    position = position_nudge(x = nudge_x, y = nudge_y),
-    inherit.aes = TRUE,
-    params = list(ids = ids,
-                  label.padding = label.padding,
-                  na.rm = TRUE,
-                  ...)
-  )
-}
-
-#' Draw labels containing node's split variable
-#'
-#' @param mapping not recommended to change
-#' @param ids choose which terminal nodes to label by their ids
-#' @param nudge_x,nudge_y nudge label
-#' @param label.padding Amount of padding around label. Defaults to 0.5 lines.
-#' @param ... additional arguments for [geom_label()]
-#' @param extract_info work in progress
-#' @export
-#' @md
-#'
-geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
-                               label.padding = unit(0.5, "lines"), ids = NULL,
-                               extract_info = NULL,...) {
-  default_mapping <- aes_string(label = "splitvar")
-  mapping <- adjust_mapping(default_mapping, mapping)
-  layer(
-    data = NULL,
-    mapping = mapping,
-    stat = StatParty,
-    geom = "label",
-    position = position_nudge(x = nudge_x, y = nudge_y),
-    inherit.aes = TRUE,
-    params = list(ids = ids,
-                  label.padding = label.padding,
-                  na.rm = TRUE,
-                  extract_info = extract_info,
-                  ...)
-  )
-}
 
 
 # StatParty ---------------------------------------------------------------

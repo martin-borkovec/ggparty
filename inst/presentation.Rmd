@@ -114,7 +114,7 @@ ggparty(t2,
 
 To visualize the distribution of the variable play we will use the geom_node_plot function. It allows us to show the *data* of each node in its separate plot. For this to work, we have to specify the argument gglist. Basically we have to provide a list of all the ggplot components we would add to a ggplot call on the data element of a node.  
 
-```{r, fig.width = 3}
+```{r, fig.width = 2, fig.asp=0.8}
 ggplot(t2[2]$data) +
   geom_bar(aes(x = "", fill = play),
            position = position_fill()) +
@@ -287,7 +287,8 @@ generate_newdata <- function(data){
 
 ggparty(gbsg2_tree, terminal_space = 0.8, horizontal = TRUE) +
   geom_edge() +
-  geom_node_splitvar() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
   geom_edge_label() +
   geom_node_plot(
     gglist = list(geom_point(aes(y = `Surv(time, cens).time`,
@@ -336,18 +337,18 @@ tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
 ```
 ```{r, fig.width= 7, fig.asp= 1}
 ggparty(tr_tree,
-        terminal_space = 0.5)+
+        terminal_space = 0.5) +
   geom_edge(size = 1.5) +
   geom_edge_label(colour = "grey", size = 4) +
   geom_node_plot(gglist = list(geom_point(aes(x = fitted_values,
-                                             y = residuals,
-                                             col = tenure,
-                                             shape = minority),
-                                         alpha = 0.8),
+                                              y = residuals,
+                                              col = tenure,
+                                              shape = minority),
+                                          alpha = 0.8),
                                geom_hline(yintercept = 0),
                                theme_bw(base_size = 10)),
                  scales = "free_x",
-                 id = "terminal",
+                 ids = "terminal",
                  shared_axis_labels = T
   ) +
   geom_node_label(aes(col = splitvar),
@@ -385,13 +386,13 @@ ggteal <- gg_color_hue(2)[2]
 
 # create dataframe with densities
 df <- data.frame(x_dens = numeric(), y_dens = numeric(), id = numeric(), breaks = character())
-for (id in c(2, 5)){
-  x_dens <- density(tr_tree[id]$data$age)$x
-  y_dens <- density(tr_tree[id]$data$age)$y
-  breaks <- rep("left", nrow(tr_tree[id]$data))
-  if (id == 2) breaks[x_dens > 50] <- "right"
-  if (id == 5) breaks[x_dens > 40] <- "right"
-  df <- rbind(df, data.frame(x_dens, y_dens, id, breaks))
+for (ids in c(2, 5)) {
+  x_dens <- density(tr_tree[ids]$data$age)$x
+  y_dens <- density(tr_tree[ids]$data$age)$y
+  breaks <- rep("left", length(x_dens))
+  if (ids == 2) breaks[x_dens > 50] <- "right"
+  if (ids == 5) breaks[x_dens > 40] <- "right"
+  df <- rbind(df, data.frame(x_dens, y_dens, id = ids, breaks))
   }
 
 # get the party started
@@ -452,13 +453,12 @@ ggparty(tr_tree, terminal_space = 0.4,
                                  geom_line(data = predict_data,
                                            aes(x = beauty,
                                                y = prediction),
-                                           col = "blue",
-                                           size = 1.1)),
+                                           col = "blue")),
                                theme_bw(base_size = 10),
                                scale_color_manual(values = c(gg_color_hue(4)[2],
                                                              gg_color_hue(4)[4]))),
                  scales = "fixed",
-                 id = "terminal",
+                 ids = "terminal",
                  shared_axis_labels = T,
                  predict_arg = list(newdata = function(x) {
                    data.frame(beauty = seq(min(x$beauty),
@@ -476,7 +476,7 @@ autoplot(py)
 autoplot(t2)
 ```
 
-```{r}
+```{r, fig.asp = 1}
 autoplot(bh_tree, plot_var = "log(lstat)", show_fit = FALSE)
 autoplot(bh_tree, plot_var = "I(rm^2)", show_fit = TRUE)
 ```
@@ -485,7 +485,7 @@ autoplot(bh_tree, plot_var = "I(rm^2)", show_fit = TRUE)
 autoplot(gbsg2_tree, plot_var = "pnodes")
 ```
 
-```{r}
+```{r, fig.asp = 1}
 autoplot(tr_tree)
 ```
 

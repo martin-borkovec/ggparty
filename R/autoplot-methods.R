@@ -1,5 +1,27 @@
+#' autoplot methods for party objects
 #' @export
+#' @param object object of class party.
+#' @param ... additional parameters
 #' @importFrom methods is
+#' @examples
+#' library(ggparty)
+#'
+#' data("WeatherPlay", package = "partykit")
+#' sp_o <- partysplit(1L, index = 1:3)
+#' sp_h <- partysplit(3L, breaks = 75)
+#' sp_w <- partysplit(4L, index = 1:2)
+#' pn <- partynode(1L, split = sp_o, kids = list(
+#'   partynode(2L, split = sp_h, kids = list(
+#'     partynode(3L, info = "yes"),
+#'     partynode(4L, info = "no"))),
+#'   partynode(5L, info = "yes"),
+#'   partynode(6L, split = sp_w, kids = list(
+#'     partynode(7L, info = "yes"),
+#'     partynode(8L, info = "no")))))
+#' py <- party(pn, WeatherPlay)
+#'
+#' autoplot(py)
+
 autoplot.party <- function(object, ...) {
   ggparty(object) +
     geom_edge() +
@@ -10,6 +32,7 @@ autoplot.party <- function(object, ...) {
                     ids = "terminal")
 }
 
+#' @rdname autoplot.party
 #' @export
 autoplot.constparty <- function(object, ...) {
   ggparty(object) +
@@ -23,7 +46,9 @@ autoplot.constparty <- function(object, ...) {
                                 theme(axis.title   = element_blank()))
                   )
 }
-
+#' @rdname autoplot.party
+#' @param plot_var Which covariable to plot against response. Defaults to second
+#' column in `data` of tree.
 #' @export
 autoplot.modelparty <- function(object, plot_var = NULL, ...) {
 
@@ -31,7 +56,7 @@ autoplot.modelparty <- function(object, plot_var = NULL, ...) {
   if (is.null(plot_var)) plot_var <- names(object$data)[2]
 
   y_var <- object$terms[[2]]
-  if(all(is(object$data[[1]]) == "Surv"))
+  if (all(is(object$data[[1]]) == "Surv"))
     y_var <- paste0(names(object$data)[1], ".time")
 
   ggparty(object) +
@@ -45,6 +70,8 @@ autoplot.modelparty <- function(object, plot_var = NULL, ...) {
                                 )))
 }
 
+#' @rdname autoplot.party
+#' @param show_fit If TRUE `fitted_values` are drawn.
 #' @export
 autoplot.lmtree <- function(object, plot_var = NULL, show_fit = TRUE, ...) {
 

@@ -1,21 +1,119 @@
-#' Draw labels containing node's info
+#' Draw multi-line labels at nodes
 #'
-#' @inheritParams geom_edge
+#' geom_node_splitvar and geom_node_info are simplified versions of
+#' geom_node_label with the respective defaults to either draw  the splitvariables
+#' for all inner nodes or the info for all terminal nodes.
+#'
+#' geom_node_label is an modified version of ggplot2::geom_label(). This
+#' modification allows for labels with multiple lines to override the mapping
+#' for each individual line.
+#'
 #' @inheritParams ggplot2::layer
-#' @param line_list List of labels per line.
-#' @param line_gpar List of graphical parameters per line.
+#' @param mapping x and y are mapped per default to the node's coordinates. If
+#' you don't want to set line specific graphical parameters, you can also map
+#' label here. Otherwise set labels in line_list.
+#' @param line_list Use this only if you want a multiline label with the
+#' possibility to override the aesthetics mapping for each line specifically
+#' with fixed graphical
+#' parameters. In this case, dont's supply any mapping for label via the mapping
+#' argument, but instead pass here a list of aes() with the **only** mapped variable
+#'  in each
+#' being label. Other mappings still can be passed to mapping and will apply to
+#' all lines and the label, unless overwritten by line_gpar or the label
+#' arguments.
+#' The order of the list represents the order of the plotted lines.
+#' @param line_gpar List of lists containing line-specific graphical parameters.
+#'  Only use in
+#' conjunction with line_list. Has to contain the same number of lists as are
+#' aes() in line_list. First list applies to first line, and so on.
 #' @param parse If `TRUE`, the labels will be parsed into expressions.
 #' @param label.col Border colour.
 #' @param label.fill Background colour.
 #' @param na.rm If `FALSE`, the default, missing values are removed with
 #'   a warning. If `TRUE`, missing values are silently removed.
-#' @param ids choose which nodes to label by their ids
-#' @param ... additional arguments for [geom_label()]#'
+#' @param ids Select for which nodes to draw a label. Can be "inner", "terminal",
+#'  "all" or numeric vector of ids.
 #' @param label.padding Amount of padding around label. Defaults to 0.25 lines.
 #' @param label.r Radius of rounded corners. Defaults to 0.15 lines.
 #' @param label.size Size of label border, in mm.
+#' @param nudge_x,nudge_y Adjust position of label.
+#' @param ... Additional arguments to layer.
 #' @export
 #' @md
+#' @examples
+#' library(ggparty)
+#' data("WeatherPlay", package = "partykit")
+#' sp_o <- partysplit(1L, index = 1:3)
+#' sp_h <- partysplit(3L, breaks = 75)
+#' sp_w <- partysplit(4L, index = 1:2)
+#' pn <- partynode(1L, split = sp_o, kids = list(
+#'   partynode(2L, split = sp_h, kids = list(
+#'     partynode(3L, info = "yes"),
+#'     partynode(4L, info = "no"))),
+#'   partynode(5L, info = "yes"),
+#'   partynode(6L, split = sp_w, kids = list(
+#'     partynode(7L, info = "yes"),
+#'     partynode(8L, info = "no")))))
+#' py <- party(pn, WeatherPlay)
+#'
+#' ggparty(py) +
+#'   geom_edge() +
+#'   geom_edge_label() +
+#'   geom_node_label(aes(label = splitvar),
+#'                   ids = "inner") +
+#'   geom_node_label(aes(label = info),
+#'                   ids = "terminal")
+#'
+#'######################################
+#'
+#'data("TeachingRatings", package = "AER")
+#'tr <- subset(TeachingRatings, credits == "more")
+#'
+#'tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+#'                    tenure, data = tr, weights = students, caseweights = FALSE)
+#'
+#'ggparty(tr_tree,
+#'        terminal_space = 0.5,
+#'        add_vars = list(p.value = "$node$info$p.value")) +
+#'  geom_edge(size = 1.5) +
+#'  geom_edge_label(colour = "grey", size = 6) +
+#'  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
+#'                                              y = eval,
+#'                                              col = tenure,
+#'                                              shape = minority),
+#'                                          alpha = 0.8),
+#'                               expression(
+#'                                 geom_line(data = predict_data,
+#'                                           aes(x = beauty,
+#'                                               y = prediction),
+#'                                           col = "blue",
+#'                                           size = 1.2)),
+#'                               theme_bw(base_size = 15)),
+#'                 scales = "fixed",
+#'                 id = "terminal",
+#'                 shared_axis_labels = TRUE,
+#'                 legend_separator = TRUE,
+#'                 predict_arg = list(newdata = function(x) {
+#'                   data.frame(beauty = seq(min(x$beauty),
+#'                                           max(x$beauty),
+#'                                           length.out = 100))
+#'                 })) +
+#'  geom_node_label(aes(col = splitvar),
+#'                  line_list = list(aes(label = paste("Node", id)),
+#'                                   aes(label = splitvar),
+#'                                   aes(label = paste("p =",
+#'                                    formatC(p.value, format = "e", digits = 2)))),
+#'                  line_gpar = list(list(size = 12, col = "black", fontface = "bold"),
+#'                                   list(size = 20),
+#'                                   list(size = 12)),
+#'                  ids = "inner") +
+#'  geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
+#'                  fontface = "bold",
+#'                  ids = "terminal",
+#'                  size = 5,
+#'                  nudge_y = 0.01) +
+#'  theme(legend.position = "none")
+
 geom_node_label <- function(mapping = NULL,
                             data = NULL,
                             line_list = NULL,
@@ -38,7 +136,7 @@ geom_node_label <- function(mapping = NULL,
 
   # input checks ------------------------------------------------------------
 
-  if(is.null(mapping$lab)) {
+  if (is.null(mapping$lab)) {
     assert_list(line_gpar)
     assert_list(line_list, len = length(line_gpar), any.missing = FALSE)
     for (i in seq_along(line_gpar)) {
@@ -255,9 +353,8 @@ makeContent.nodelabelgrob <- function(x) {
                             "point"),
                           default.units = "native",
                           width = max(widths) + 2 * x$padding,
-                          # height = grobHeight(text_list[[1]]),
                           height =
-                          {if(length(x$label) == 1) grobHeight(text_list[[1]])
+                          {if (length(x$label) == 1) grobHeight(text_list[[1]])
                             else unit(sum(sapply(x$text.gp, line_size)),"point")}
                           +  2 * x$padding,
                           r = x$r,
@@ -277,7 +374,7 @@ get_y_shift <- function(label) {
   y_shift_list <- list()
   for (i in seq_along(label)) {
     y_shift <- rep(0, length(label))
-    if(length(label) %% 2 == 0)
+    if (length(label) %% 2 == 0)
       for (j in seq_along(y_shift)) {
         if (j <= length(y_shift) / 2) {
           if (j == i) y_shift[j] <- 0.5
@@ -295,7 +392,7 @@ get_y_shift <- function(label) {
           if (j == i) y_shift[j] <- 0.5
           if (j > i)  y_shift[j] <- 1
         }
-        if (j == length(y_shift) / 2 + 0.5){
+        if (j == length(y_shift) / 2 + 0.5) {
           if (j > i) y_shift[j] <- 0.5
           if (j == i) y_shift[j] <- 0
           if (j < i) y_shift[j] <- -0.5
@@ -314,3 +411,56 @@ get_y_shift <- function(label) {
 # caluclates size of unit "lines" based on fontsize and lineheight ------------
 
 line_size <- function(x) x$fontsize * x$lineheight
+
+
+# geom_node_info ----------------------------------------------------------
+
+#' @rdname geom_node_label
+#' @export
+#'
+geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
+                           label.padding = unit(0.5, "lines"), ...) {
+  default_mapping <- aes_string(label = "info")
+  mapping <- adjust_mapping(default_mapping, mapping)
+  layer(
+    data = NULL,
+    mapping = mapping,
+    stat = StatParty,
+    geom = "label",
+    position = position_nudge(x = nudge_x, y = nudge_y),
+    inherit.aes = TRUE,
+    params = list(ids = ids,
+                  label.padding = label.padding,
+                  na.rm = TRUE,
+                  ...)
+  )
+}
+
+
+
+# geom_node_splitvar ------------------------------------------------------
+
+#' @rdname geom_node_label
+#' @export
+#'
+geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
+                               label.padding = unit(0.5, "lines"), ids = NULL,
+                               ...) {
+  default_mapping <- aes_string(label = "splitvar")
+  mapping <- adjust_mapping(default_mapping, mapping)
+  layer(
+    data = NULL,
+    mapping = mapping,
+    stat = StatParty,
+    geom = "label",
+    position = position_nudge(x = nudge_x, y = nudge_y),
+    inherit.aes = TRUE,
+    params = list(ids = ids,
+                  label.padding = label.padding,
+                  na.rm = TRUE,
+                  ...)
+  )
+}
+
+
+

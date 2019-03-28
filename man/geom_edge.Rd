@@ -19,3 +19,27 @@ geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 \description{
 Draw edges between children and parents. wrapper of geom_segment
 }
+\examples{
+library(ggparty)
+data("WeatherPlay", package = "partykit")
+sp_o <- partysplit(1L, index = 1:3)
+sp_h <- partysplit(3L, breaks = 75)
+sp_w <- partysplit(4L, index = 1:2)
+pn <- partynode(1L, split = sp_o, kids = list(
+  partynode(2L, split = sp_h, kids = list(
+    partynode(3L, info = "yes"),
+    partynode(4L, info = "no"))),
+  partynode(5L, info = "yes"),
+  partynode(6L, split = sp_w, kids = list(
+    partynode(7L, info = "yes"),
+    partynode(8L, info = "no")))))
+py <- party(pn, WeatherPlay)
+
+ggparty(py) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
+  geom_node_label(aes(label = info),
+                  ids = "terminal")
+}
