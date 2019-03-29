@@ -1,0 +1,178 @@
+---
+title: "problem statement - ggparty"
+author: "Niyaz Madin"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, dpi=300)
+```
+
+## Project background
+
+There are many different R packages that have implemented tree plotting, however there is no common language for software implementations due to the fragmentation of the communities. Thus, different implementations are provided by different packages. To adress this, the partykit package provides a common unified infrastructure for representing trees. Therefore it is one of the most popular packages for trees including algorithms like `ctree`, `mob`, `lmtree`, `glmtree`. Furthermore, it provides a unified tree class called `party`that provides general and extensible methods for plotting. Another well known graphical package is ggplot2, which does not provide the infrastructure for tree plotting. Therefore, a tree plotting implementation built on the ggplot2 infrastructure has big value.
+
+
+### Partykit 
+```{r}
+library(partykit)
+```
+
+So first, to illustrate how partykit can be used for representing trees, let's have a look at a simple example shown in the partykit vignette:
+
+```{r}
+data("WeatherPlay", package = "partykit")
+WeatherPlay
+
+```
+
+There are two basic building blocks that are used for representing the decision tree, namely splits of class `partysplit` and nodes of class `partynode`. For that, the corresponding functions `partysplit()` and `partynode()` are applied. Subsequently, the structure of the resulting tree can be associated with the data set.  
+
+#### Splits
+The function takes following arguments:  
+`partysplit(varid, breaks= NULL, index = NULL, ...)`  
+where varid is an integer id of the variable used for splitting. Further, breaks or index can be set to determine which observations are categorised to a certain branch. 
+In this example, the decision to play is determined by the features "outlook", "temperature" and "windy". Therefore, the three splits can be created with
+
+```{r }
+sp_o <- partysplit(1L, index = 1:3)
+sp_h <- partysplit(3L, breaks = 75)
+sp_w <- partysplit(4L, index = 1:2)
+```
+
+#### Nodes
+A tree in the partykit package is represented by a recursive ´partynode´ object. Subsequently a partynode object's children are also `partynode` objects. The corresponding function takes following arguments:  
+`partynode(id, split = NULL, kids = NULL, ..., info = NULL)`  
+where `id` is an integer representing the node id, split is a `partysplit` object and `kids` is the list of `partynode` objects. `info` contains arbitrary information. The decision tree can finally be created with
+
+```{r }
+pn <- partynode(1L, split = sp_o, kids = list(
+  partynode(2L, split = sp_h, kids = list(
+    partynode(3L, info = "yes"),
+    partynode(4L, info = "no"))),
+  partynode(5L, info = "yes"),
+  partynode(6L, split = sp_w, kids = list(
+    partynode(7L, info = "yes"),
+    partynode(8L, info = "no")))))
+``` 
+
+resulting in a `partynode` object which contains a lists of further `partynode` objects and the previously built partysplit objects are used as splits and nodes are numbered via depth first approach. However, the tree has yet to be associated with the given dataset, since printing the `partynode` object only reflects the recursive structure. 
+
+```{r }
+pn
+``` 
+
+Therefore, the tree structure in pn and the given dataset are coupled in a `partykit` object
+
+```{r}
+py <- party(pn, WeatherPlay)
+print(py)
+```
+
+Finally, the tree can be plotted by
+
+```{r}
+plot(py)
+```
+
+Additionally to the basic infrastructure, further tree algorithms were implemented as well. Namely `ctree()` for conditional inference trees and `mob()` for model-based trees. In the following, those algorithms will be briefly presented using examples from the partykit vignette.
+
+#### mob
+The `mob()` function of class `modelparty` is an implementation of the general model-based recursive partitioning algorithm which provides the  convenience interfaces `lmtree()` and `glmtree()` for fitting linear model trees and generalised linear model trees.
+
+The `mob()` function has the following arguments:  
+`mob(formula, data, subset, na.action, weights, offset, fit, control = mob_control(), ...)`  
+
+The resulting object is of class ‘modelparty’ which inherits from ‘party’. The `info` element of
+the overall ‘party’ and the individual node’s contain various information about the models.
+A wide range of methods are available for working with
+‘modelparty’ objects, e.g., for extracting information about the models, for visualization and computing predictions. However,
+as will be discussed there, it may take some effort by the user to efficiently compute
+certain pieces of information. Hence, convenience interfaces `lmtree()` and `glmtree()`.
+The `mob()` function will be demonstrated using the `GBSG2` dataset in the TH.data package which contains information about female breast cancer patients.
+```{r}
+data("GBSG2", package = "TH.data")
+GBSG2$time <- GBSG2$time/365
+
+library("survival")
+wbreg <- function(y, x, start = NULL, weights = NULL, offset = NULL, ...) {
+  survreg(y ~ 0 + x, weights = weights, dist = "weibull", ...)
+}
+
+logLik.survreg <- function(object, ...)
+  structure(object$loglik[2], df = sum(object$df), class = "logLik")
+
+gbsg2_tree <- mob(Surv(time, cens) ~ horTh + pnodes | age + tsize +
+                    tgrade + progrec + estrec + menostat, data = GBSG2,
+                  fit = wbreg, control = mob_control(minsize = 80))
+gbsg2_tree
+```
+
+```{r}
+plot(gbsg2_tree)
+```
+
+<center>
+
+![A better graphical display using scatterplots and fitted regression curves. However, a custom panel function was used for this visualisation which involves considerable effort.](images/gbsg2_tree.png)
+
+</center>
+
+
+For demonstration purposes, the `lmtree()` function will be presented using the Boston housing data from the mlbench package. 
+It is available in the package mlbench and can be obtained and transformed via:
+```{r}
+data("BostonHousing", package = "mlbench")
+BostonHousing <- transform(BostonHousing,
+                           chas = factor(chas, levels = 0:1, labels = c("no", "yes")),
+                           rad = factor(rad, ordered = TRUE))
+
+bh_tree <- lmtree(medv ~ log(lstat) + I(rm^2) | zn +
+                    indus + chas + nox + age + dis + rad + tax + crim + b + ptratio,
+                  data = BostonHousing, minsize = 40)
+bh_tree
+
+plot(bh_tree)
+```
+
+At last, the `glmtree()` function will be presented using the `PimaIndiansDiabetes` dataset in the mlbench package.
+
+```{r}
+data("PimaIndiansDiabetes", package = "mlbench")
+ct <- glmtree(diabetes ~ glucose | pregnant +
+                pressure + triceps + insulin + mass + pedigree + age,
+              data = PimaIndiansDiabetes, family = binomial)
+
+ct
+
+plot(ct)
+```
+
+
+#### ctree
+In the following, the `ctree` function will be illustrated using generated data as in the `ctree` vignette.
+```{r}
+ls <- data.frame(y = gl(3, 50, labels = c("A", "B", "C")),
+ x1 = rnorm(150) + rep(c(1, 0, 0), c(50, 50, 50)),
+ x2 = runif(150))
+
+ct <- ctree(y ~ x1 + x2, data = ls)
+
+ct
+
+plot(ct)
+```
+
+#### ggplot
+R has several systems for creating graphs, but ggplot2 is one of the most elegant and versatile packages to do so.In general, a plot is created with the `ggplot()` function which is supplied with a dataset and aesthetic mapping with `aes()`. Afterwards, different layers can be added, e.g. `geom_point()` or `geom_histogram()`. A simple example is shown here:
+
+```{r}
+library(ggplot2)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
