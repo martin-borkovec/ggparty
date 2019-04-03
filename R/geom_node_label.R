@@ -233,6 +233,8 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                            grobs <- lapply(1:nrow(data), function(i) {
                              row <- data[i, , drop = FALSE]
                              text_gp <- list()
+                             alignment <- rep.int(list("center"),
+                                                  max(1, length(line_gpar)))
                              if (is.null(line_gpar))
                                text_gp <- list(
                                  gpar(
@@ -265,7 +267,12 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                                  row$fill,
                                                  line_gpar[[j]]$fill)
                                  )))
+
+                                 if (!is.null(line_gpar[[j]]$alignment))
+                                   alignment[[j]] <- line_gpar[[j]]$alignment
                                }
+
+
 
                              nodelabelGrob(lab[[i]],
                                            x = unit(row$x, "native"),
@@ -283,6 +290,7 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                              lwd = label.size * .pt
                                            ),
                                            y_shift = y_shift,
+                                           alignment = alignment,
                                            box_up = box_up,
                                            box_down = box_down
                              )
@@ -303,9 +311,10 @@ nodelabelGrob <- function(label,
                           text.gp = gpar(),
                           rect.gp = gpar(fill = "white"),
                           vp = NULL,
-                          y_shift = y_shift,
-                          box_up = box_up,
-                          box_down = box_down) {
+                          y_shift = 1,
+                          alignment = "center",
+                          box_up = 0,
+                          box_down = 0) {
 
   if (!is.unit(x))
     x <- unit(x, default.units)
@@ -315,6 +324,7 @@ nodelabelGrob <- function(label,
   gTree(label = label, x = x, y = y, padding = padding, r = r,
         name = name, text.gp = text.gp, rect.gp = rect.gp, vp = vp, y_shift = y_shift,
         box_up = box_up,
+        alignment = alignment,
         box_down = box_down,
         cl = "nodelabelgrob")
 }
@@ -343,6 +353,29 @@ makeContent.nodelabelgrob <- function(x) {
     if (i == 1) heights <- grobHeight(text_list[[i]])
     else        heights <- unit.c(heights, grobHeight(text_list[[i]]))
   }
+
+  for (i in seq_along(x$label)) {
+    if (x$alignment[[i]] == "left")
+      text_list[[i]] <- textGrob(
+        label = x$label[i],
+        x = x$x - max(widths) * 0.5,
+        y = x$y + unit(sum(x$y_shift[[i]] * sapply(x$text.gp, line_size)),
+                       "point"),
+        gp = x$text.gp[[i]],
+        just = "left",
+        name = paste0("text", i))
+    if (x$alignment[[i]] == "right")
+      text_list[[i]] <- textGrob(
+        label = x$label[i],
+        x = x$x + max(widths) * 0.5,
+        y = x$y + unit(sum(x$y_shift[[i]] * sapply(x$text.gp, line_size)),
+                       "point"),
+        gp = x$text.gp[[i]],
+        just = "right",
+        name = paste0("text", i))
+}
+
+
 
 
   # draw border ---------------------------------------------------------------
