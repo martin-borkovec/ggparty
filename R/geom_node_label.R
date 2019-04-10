@@ -90,7 +90,7 @@
 #'                                           size = 1.2)),
 #'                               theme_bw(base_size = 15)),
 #'                 scales = "fixed",
-#'                 id = "terminal",
+#'                 ids = "terminal",
 #'                 shared_axis_labels = TRUE,
 #'                 legend_separator = TRUE,
 #'                 predict_arg = list(newdata = function(x) {
@@ -198,19 +198,8 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                                line_gpar
                          ) {
 
-                           on.exit(detach(data))
-                           attach(data)
-                           if (is.null(line_list)) lab <- data$label
-                           else {
-                             lab <- list()
-                             for (j in seq_along(data$id)) {
-                               labs <- character()
-                               for (i in seq_along(line_list)) {
-                                 labs[i] <- rlang::eval_tidy(line_list[[i]]$label)[j]
-                                 if (i %in% parse) labs[i] <- ggplot2:::parse_safe(as.character(labs[i]))
-                               }
-                               lab[[j]] <- labs
-                             }}
+                           #get labels for each line
+                           lab <- get_labs(data, line_list, parse)
 
                            data <- coord$transform(data, panel_params)
 
@@ -495,5 +484,22 @@ geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
   )
 }
 
+
+get_labs <- function(data, line_list, parse) {
+  on.exit(detach(data))
+  attach(data, warn.conflicts = FALSE)
+  if (is.null(line_list)) lab <- data$label
+  else {
+    lab <- list()
+    for (j in seq_along(data$id)) {
+      labs <- character()
+      for (i in seq_along(line_list)) {
+        labs[i] <- rlang::eval_tidy(line_list[[i]]$label)[j]
+        if (parse) labs[i] <- ggplot2:::parse_safe(as.character(labs[i]))
+      }
+      lab[[j]] <- labs
+    }}
+  lab
+}
 
 

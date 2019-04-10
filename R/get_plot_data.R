@@ -7,6 +7,7 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
                           x = NA,
                           y = NA,
                           parent = NA,
+                          birth_order = NA,
                           breaks_label = I(rep(list(NA), length(party_object))),
                           #index = I(rep(list(NA), length(party_object))),
                           info = NA,
@@ -49,6 +50,8 @@ add_kids_parents <- function(party_object, plot_data){
                                      NA,
                                      max(which(done_data$kids >
                                                  table(done_data$parent))))
+    plot_data[i, "birth_order"] <- sum(plot_data$parent == plot_data$parent[i],
+          na.rm = TRUE)
   }
   return(plot_data)
 }
@@ -268,7 +271,7 @@ add_data <- function(party_object, plot_data) {
 
     for (column in data_columns) {
       data_column <- paste0("nodedata_", column)
-      plot_data[i, data_column][[1]] <- list(node_data[column])
+      plot_data[i, data_column][[1]] <- list(node_data[[column]])
     }
   }
   return(plot_data)
@@ -292,6 +295,10 @@ expand_surv <- function(data) {
   data
 }
 
+
+# add_vars() --------------------------------------------------------------
+
+
 add_vars <- function(party_object, data, add_vars) {
 
   for (i in seq_along(add_vars)) {
@@ -301,7 +308,14 @@ add_vars <- function(party_object, data, add_vars) {
         data[j, names(add_vars)[i]] <- ifelse(is.null(new), NA, new)
       }
     if (is.function(add_vars[[i]])) {
-      data[j, names(add_vars)[i]] <- add_vars[[i]](data, party_object[j])
+      # browser()
+      if (substring(names(add_vars)[i], 1, 5) == "data_" & i == 1) {
+        plot_data[[names(add_vars)[i]]] <- rep(list(NA), nrow(data))
+        # col <- data.frame(I(rep(list(NA), length(party_object))))
+        # names(col) <- names(add_vars)[i]
+        # data <- cbind(data, col)
+      }
+      data[j, names(add_vars)[i]][[1]] <- add_vars[[i]](data[i, ], party_object[j])
     }
   }}
   data

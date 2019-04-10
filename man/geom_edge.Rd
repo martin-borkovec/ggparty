@@ -5,7 +5,7 @@
 \title{Draw edges between children and parents. wrapper of geom_segment}
 \usage{
 geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
-  ...)
+  show.legend = NA, ...)
 }
 \arguments{
 \item{mapping}{not recommended to change}
@@ -15,6 +15,8 @@ geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 \item{ids}{choose which edges to draw by their children's ids}
 
 \item{...}{additional arguments for \code{\link[=geom_segment]{geom_segment()}}}
+
+\item{schow.legend}{see \code{\link[=layer]{layer()}}}
 }
 \description{
 Draw edges between children and parents. wrapper of geom_segment

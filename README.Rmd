@@ -48,6 +48,7 @@ ggparty(tr_tree,
                 scales = "fixed",
                 id = "terminal",
                 shared_axis_labels = T,
+                shared_legend = T,
                 legend_separator = T,
                 predict_arg = list(newdata = function(x) {
                   data.frame(beauty = seq(min(x$beauty),

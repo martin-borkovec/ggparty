@@ -384,14 +384,6 @@ tr <- subset(TeachingRatings, credits == "more")
 tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
                     tenure, data = tr, weights = students, caseweights = FALSE)
 
-# generate colors
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-ggred <- gg_color_hue(2)[1]
-ggteal <- gg_color_hue(2)[2]
-
 # create dataframe with densities
 df <- data.frame(x_dens = numeric(), y_dens = numeric(), id = numeric(), breaks = character())
 for (id in c(2, 5)){
@@ -405,13 +397,13 @@ for (id in c(2, 5)){
 
 # get the party started
 ggparty(tr_tree, terminal_space = 0.4,
-        add_vars = list(breaks = "$node$split$breaks"),
         layout = data.frame(id = c(1, 2, 5, 7),
                             x = c(0.35, 0.15, 0.7, 0.8),
                             y = c(0.95, 0.6, 0.8, 0.55))) +
-  geom_edge(size = 1.2,
-            col = c(NA, ggred, ggred, ggteal, ggteal, ggred, ggteal, ggred, ggteal),
-            alpha = 1) +
+  geom_edge(aes(col = factor(birth_order)),
+            size = 1.2,
+            alpha = 1,
+            ids = -1)+
   geom_node_plot(ids = c(2,5),
                  add_data = df,
                  gglist = list(
@@ -464,8 +456,7 @@ ggparty(tr_tree, terminal_space = 0.4,
                                            col = "blue",
                                            size = 1.1)),
                                theme_bw(base_size = 10),
-                               scale_color_manual(values = c(gg_color_hue(4)[2],
-                                                             gg_color_hue(4)[4]))),
+                               scale_color_discrete(h.start = 100)),
                  scales = "fixed",
                  id = "terminal",
                  shared_axis_labels = T,

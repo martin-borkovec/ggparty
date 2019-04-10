@@ -150,7 +150,7 @@ ggparty(tr_tree,
                                           size = 1.2)),
                               theme_bw(base_size = 15)),
                 scales = "fixed",
-                id = "terminal",
+                ids = "terminal",
                 shared_axis_labels = TRUE,
                 legend_separator = TRUE,
                 predict_arg = list(newdata = function(x) {

@@ -91,6 +91,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
   data_columns <- substring(names(plot_data), first = 1, last = 9) == "nodedata_"
   node_data <-  plot_data[, data_columns]
   mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
+                        birth_order = "birth_order",
                  y_parent = "y_parent", id = "id", kids = "kids", info = "info",
                  info_list = "info_list", p.value = "p.value",
                  splitvar = "splitvar", horizontal = "horizontal",
@@ -125,6 +126,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 #' @param ... additional arguments for [geom_segment()]
 #' @param nudge_x,nudge_y nudge label
 #' @param ids choose which edges to draw by their children's ids
+#' @param schow.legend see [layer()]
 #' @export
 #' @md
 #' @examples
@@ -151,7 +153,8 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 #'   geom_node_label(aes(label = info),
 #'                   ids = "terminal")
 
-geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...){
+geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
+                      show.legend = NA, ...){
 
   default_mapping <- aes_string(x = "x",
                                 y = "y",
@@ -163,11 +166,13 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL, ...)
   layer(
     data = NULL,
     mapping = mapping,
-    stat = "identity",
+    stat = StatParty,
     geom = GeomSegment,
     position = position_nudge(x = nudge_x, y = nudge_y),
     inherit.aes = TRUE,
+    show.legend = show.legend,
     params = list(na.rm = TRUE,
+                  ids = ids,
                   ...)
   )
 }
@@ -248,9 +253,10 @@ geom_edge_label <- function(mapping = NULL,
 # StatParty ---------------------------------------------------------------
 
 StatParty <- ggproto(
-  "StatParty", Stat,
-  compute_group = function(data, ids = NULL, shift = NULL, scales = scales, splitlevels = NULL,
-                           extract_info = NULL) {
+  "StatParty",
+  Stat,
+  compute_panel = function(data, ids = NULL, shift = NULL, scales = scales,
+                        splitlevels = NULL, extract_info = NULL) {
     #browser()
     if (is.numeric(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
@@ -295,7 +301,6 @@ adjust_layout <- function(plot_data, layout) {
     plot_data$x_parent[plot_data$parent == id] <- layout$x[layout$id == id]
   }
   plot_data
-
 }
 
 

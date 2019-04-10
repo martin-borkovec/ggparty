@@ -19,6 +19,8 @@
 #' Predictions and newdata will be stored in `predict_data` and
 #' can be accessed via geoms within gglist. These geoms need to be expressions to ensure
 #' correct evaluation. See examples.
+#' @param shared_legend If 'TRUE' one shared legend is plotted at the bottom of
+#' the tree
 #' @param legend_separator If 'TRUE' line between legend and tree is drawn.
 #' @param add_data add optional dataframe for geom_nodeplot to use. If you want
 #' node-specific data a column called "id" needs to be included.
@@ -81,18 +83,19 @@
 
 
 geom_node_plot <- function(plot_call = "ggplot",
-                          gglist = NULL,
-                          width = 1,
-                          height = 1,
-                          size = 1,
-                          ids = "terminal",
-                          scales = "fixed",
-                          nudge_x = 0,
-                          nudge_y = 0,
-                          shared_axis_labels = FALSE,
-                          predict_arg = NULL,
-                          legend_separator = FALSE,
-                          add_data = NULL) {
+                           gglist = NULL,
+                           width = 1,
+                           height = 1,
+                           size = 1,
+                           ids = "terminal",
+                           scales = "fixed",
+                           nudge_x = 0,
+                           nudge_y = 0,
+                           shared_axis_labels = FALSE,
+                           shared_legend = FALSE,
+                           predict_arg = NULL,
+                           legend_separator = FALSE,
+                           add_data = NULL) {
 
   #input_checks
   assert_list(gglist)
@@ -120,6 +123,7 @@ geom_node_plot <- function(plot_call = "ggplot",
       ids = ids,
       scales = scales,
       shared_axis_labels = shared_axis_labels,
+      shared_legend = shared_legend,
       predict_arg = predict_arg,
       nudge_x = nudge_x,
       nudge_y = nudge_y,
@@ -161,6 +165,7 @@ GeomNodeplot <- ggproto(
                         size,
                         ids,
                         shared_axis_labels,
+                        shared_legend,
                         scales,
                         predict_arg,
                         nudge_x,
@@ -207,24 +212,28 @@ GeomNodeplot <- ggproto(
     if (all(ids == "inner")) ids <- unique(data$id[data$kids != 0])
 
 
-    #  transform data_* columns from lists to full dataframe -------------------
-
+    #  transform nodedata_* columns from lists to full dataframe -------------------
     data_columns <- substring(names(data), first = 1, last = 9) == "nodedata_"
     nodeplot_data_lists <-  data[, data_columns]
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 10)
-    lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
+    lengths <- sapply(nodeplot_data_lists[[2]], length)
+    # lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
     # initialize dataframe with right number of rows per id
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
     # fill dataframe
     for (column in names(nodeplot_data_lists)) {
-      content <- numeric(0)
+      # browser()
+      content <- vector()
       for (i in seq_along(data$id)) {
         rows <- nodeplot_data_lists[[column]][[i]]
-        content <- rbind(content, rows)
+        if (is.factor(rows)) rows <- as.character(rows)
+        content <- c(content, rows)
       }
-      nodeplot_data[column] <- content
+      if (is.factor(nodeplot_data_lists[[column]][[1]]))
+        content <- factor(content,
+                          levels = levels(nodeplot_data_lists[[column]][[1]]))
+      nodeplot_data[[column]] <- content
     }
-
 
     # draw plots --------------------------------------------------------------
 
@@ -279,33 +288,33 @@ GeomNodeplot <- ggproto(
                                 lapply(gglist, eval.parent, n = 1) +
                                 ggxlab +
                                 ggylab +
-                                theme(legend.position = "none")
+                                if (shared_legend) theme(legend.position = "none")
                               )
     base_layout <- base_gtable$layout
 
 
     # legend ------------------------------------------------------------------
+    if(shared_legend) {
+      if (any(facet_gtable$layout$name == "guide-box")) {
+        # extract gtable containing legend
+        legend_gtable <- reduce_gtable(facet_gtable, "guide-box")
+        legend_gtable$layout$t <- 1
+        legend_gtable$layout$b <- 1
+        legend_gtable$heights <- unit(1,"pt")
 
-    if (any(facet_gtable$layout$name == "guide-box")) {
-      # extract gtable containing legend
-      legend_gtable <- reduce_gtable(facet_gtable, "guide-box")
-      legend_gtable$layout$t <- 1
-      legend_gtable$layout$b <- 1
-      legend_gtable$heights <- unit(1,"pt")
-
-      #call nodeplotGrob on legend_gtable
-      legend_gtable <- nodeplotGrob(
-        x = legend_x,
-        y = legend_y,
-        width = 1,
-        height = abs(legend_y - y_0),
-        just = ifelse(shared_axis_labels, "top", "bottom"),
-        node_gtable = legend_gtable
-      )
-      # add to groblist
-      grob_list <- c(grob_list, list(legend_gtable))
+        #call nodeplotGrob on legend_gtable
+        legend_gtable <- nodeplotGrob(
+          x = legend_x,
+          y = legend_y,
+          width = 1,
+          height = abs(legend_y - y_0),
+          just = ifelse(shared_axis_labels, "top", "bottom"),
+          node_gtable = legend_gtable
+        )
+        # add to groblist
+        grob_list <- c(grob_list, list(legend_gtable))
+      }
     }
-
 
     # shared axis labels ------------------------------------------------------
 
