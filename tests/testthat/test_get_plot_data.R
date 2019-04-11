@@ -206,7 +206,7 @@ test_add_data <- function(party_object) {
       }
       for (column in data_columns) {
         data_column <- paste0("nodedata_", column)
-        expect_equal(get_plot_data(party_object)[i, data_column][[1]], node_data[column])
+        expect_equal(get_plot_data(party_object)[i, data_column][[1]], node_data[[column]])
       }
     }
   })

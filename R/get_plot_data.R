@@ -315,7 +315,7 @@ add_vars <- function(party_object, data, add_vars) {
         # names(col) <- names(add_vars)[i]
         # data <- cbind(data, col)
       }
-      data[j, names(add_vars)[i]][[1]] <- add_vars[[i]](data[i, ], party_object[j])
+      data[j, names(add_vars)[i]][[1]] <- add_vars[[i]](data[j, ], party_object[j])
     }
   }}
   data

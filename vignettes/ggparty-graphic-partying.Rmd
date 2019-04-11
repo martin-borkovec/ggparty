@@ -3,7 +3,13 @@ title: "ggparty: graphic partying"
 author: "Martin Borkovec"
 date: "`r Sys.Date()`"
 #output: pdf_document
-output: rmarkdown::html_vignette
+# output: html_document:
+# toc: true
+#     toc_float: true
+output:
+   html_document:
+     toc: true
+     toc_float: true
 vignette: >
  %\VignetteIndexEntry{Vignette Title}
  %\VignetteEngine{knitr::rmarkdown}
@@ -467,7 +473,7 @@ ggparty(tr_tree, terminal_space = 0.4,
                  })) +
   theme(legend.position = "none")
 ```
-
+## autoplot
 ```{r}
 autoplot(py)
 ```

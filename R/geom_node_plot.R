@@ -211,7 +211,6 @@ GeomNodeplot <- ggproto(
     if (all(ids == "terminal")) ids <- unique(data$id[data$kids == 0])
     if (all(ids == "inner")) ids <- unique(data$id[data$kids != 0])
 
-
     #  transform nodedata_* columns from lists to full dataframe -------------------
     data_columns <- substring(names(data), first = 1, last = 9) == "nodedata_"
     nodeplot_data_lists <-  data[, data_columns]

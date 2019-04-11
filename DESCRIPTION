@@ -15,6 +15,7 @@ Imports:
   checkmate,
   methods,
   survival,
+  rlang,
   TH.data
 Suggests:
     testthat,

@@ -126,7 +126,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 #' @param ... additional arguments for [geom_segment()]
 #' @param nudge_x,nudge_y nudge label
 #' @param ids choose which edges to draw by their children's ids
-#' @param schow.legend see [layer()]
+#' @param show.legend see [layer()]
 #' @export
 #' @md
 #' @examples
