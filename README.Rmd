@@ -38,23 +38,16 @@ ggparty(tr_tree,
                                              col = tenure,
                                              shape = minority),
                                          alpha = 0.8),
-                              expression(
-                                geom_line(data = predict_data,
-                                          aes(x = beauty,
-                                              y = prediction),
-                                          col = "blue",
-                                          size = 1.2)),
                               theme_bw(base_size = 15)),
                 scales = "fixed",
                 id = "terminal",
                 shared_axis_labels = T,
                 shared_legend = T,
                 legend_separator = T,
-                predict_arg = list(newdata = function(x) {
-                  data.frame(beauty = seq(min(x$beauty),
-                                          max(x$beauty),
-                                          length.out = 100))
-                })) +
+                predict = "beauty",
+                predict_arg = list(col = "blue",
+                                   size = 1.2)
+                ) +
   geom_node_label(aes(col = splitvar),
                   line_list = list(aes(label = paste("Node", id)),
                                    aes(label = splitvar),

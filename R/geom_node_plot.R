@@ -1,29 +1,27 @@
-#' Generate geom of node plot
+#' Draw plots at nodes
 #'
-#' @param plot_call Any function that generates a ggplot2 object.
-#' @param gglist List of additional ggplot components. Data of nodes can be
-#'  mapped. Fitted values of modelparty objects can be mapped with "fitted_values".
-#' @param width Expansion factor for viewport's width
-#' @param height Expansion factor for viewport's height
-#' @param size Expansion factor for viewport's size
+#' Additional component for a [ggparty()] that allows to create in each node a
+#' ggplot with its data. #'
+#'
+#' @param plot_call Any function that generates a `ggplot2` object.
+#' @param gglist List of additional `gg` components. Columns of `data` of nodes can be
+#'  mapped. Additionally `fitted_values` and `residuals` can be mapped if present in
+#'  `party` of `ggparty()`
+#' @param width Expansion factor for viewport's width.
+#' @param height Expansion factor for viewport's height.
+#' @param size Expansion factor for viewport's size.
 #' @param ids Id's to plot. Numeric, "terminal", "inner" or "all". Defaults
-#' to "terminal"
-#' @param scales see [facet_wrap()]
-#' @param nudge_x,nudge_y Nudges node plot
+#' to "terminal".
+#' @param scales See [facet_wrap()]
+#' @param nudge_x,nudge_y Nudges node plot.
 #' @param shared_axis_labels If TRUE only one pair of axes labels is plotted in
-#'  the terminal space. Only recommended if `ids`  "terminal" or "all".
-#' @param predict_arg Named list containing arguments to be passed to call of
-#' predict on node$info$object. Caution: newdata has to be a function with
-#' a single argument, i.e. the ggplot data whose result will be used for the predict call as
-#' the newdata argument.
-#' Predictions and newdata will be stored in `predict_data` and
-#' can be accessed via geoms within gglist. These geoms need to be expressions to ensure
-#' correct evaluation. See examples.
-#' @param shared_legend If 'TRUE' one shared legend is plotted at the bottom of
-#' the tree
-#' @param legend_separator If 'TRUE' line between legend and tree is drawn.
-#' @param add_data add optional dataframe for geom_nodeplot to use. If you want
-#' node-specific data a column called "id" needs to be included.
+#' the terminal space. Only recommended if `ids`  "terminal" or "all".
+#' @param predict Character string specifying variable for which predictions should be plotted.
+#' @param predict_gpar Named list containing arguments to be passed to the
+#' `geom_line()` call of predicted values.
+#' @param shared_legend If `TRUE` one shared legend is plotted at the bottom of
+#' the tree.
+#' @param legend_separator If `TRUE` line between legend and tree is drawn.
 #' @import checkmate
 #'
 #' @export
@@ -45,6 +43,9 @@
 #'
 #' #############################################################
 #'
+#' ## Plot with ggparty
+#'
+#'
 #' ## Demand for economics journals data
 #' data("Journals", package = "AER")
 #' Journals <- transform(Journals,
@@ -55,28 +56,26 @@
 #' j_tree <- lmtree(log(subs) ~ log(price/citations) | price + citations +
 #'                    age + chars + society, data = Journals, minsize = 10, verbose = TRUE)
 #'
-#' ## Plot with ggparty
+#' pred_df <- get_predictions(j_tree, ids = "terminal", newdata =  function(x) {
+#'   data.frame(
+#'     citations = 1,
+#'     price = exp(seq(from = min(x$`log(price/citations)`),
+#'                     to = max(x$`log(price/citations)`),
+#'                     length.out = 100)))
+#' })
 #'
 #' ggparty(j_tree, terminal_space = 0.8) +
 #'   geom_edge() +
 #'   geom_edge_label() +
 #'   geom_node_splitvar() +
 #'   geom_node_plot(gglist =
-#'                   list(aes(x = `log(price/citations)`, y = `log(subs)`),
-#'                        geom_point(),
-#'                        expression(geom_line(data = predict_data,
-#'                                             aes(x = log(price/citations),
-#'                                                 y = prediction),
-#'                                             col = "red"))),
-#'                 predict_arg = list(newdata = function(x) {
-#'                   data.frame(
-#'                     citations = 1,
-#'                     price = exp(seq(from = min(x$`log(price/citations)`),
-#'                                     to = max(x$`log(price/citations)`),
-#'                                     length.out = 100)))
-#'                 })
-#'   )
-#'
+#'                    list(aes(x = `log(price/citations)`, y = `log(subs)`),
+#'                         geom_point(),
+#'                         geom_line(data = pred_df,
+#'                                   aes(x = log(price/citations),
+#'                                       y = prediction),
+#'                                   col = "red")))
+
 
 
 # geom_node_plot () --------------------------------------------------------
@@ -92,20 +91,20 @@ geom_node_plot <- function(plot_call = "ggplot",
                            nudge_x = 0,
                            nudge_y = 0,
                            shared_axis_labels = FALSE,
-                           shared_legend = FALSE,
-                           predict_arg = NULL,
-                           legend_separator = FALSE,
-                           add_data = NULL) {
+                           shared_legend = TRUE,
+                           predict = NULL,
+                           predict_gpar = NULL,
+                           legend_separator = FALSE) {
 
   #input_checks
   assert_list(gglist)
   assert_numeric(width, lower = 0, finite = TRUE, any.missing = FALSE, max.len = 1)
-  assert_numeric(height, lower =0, finite = TRUE, any.missing = FALSE, max.len = 1)
+  assert_numeric(height, lower = 0, finite = TRUE, any.missing = FALSE, max.len = 1)
   assert_subset(scales, c("fixed", "free", "free_x", "free_y"))
   assert_numeric(nudge_x, lower = -1, upper = 1, finite = TRUE, any.missing = FALSE,
                  max.len = 1)
   assert_logical(shared_axis_labels)
-  assert_list(predict_arg, null.ok = TRUE, names = "unique")
+  # assert_list(predict_gpar, null.ok = TRUE, names = "unique")
   assert_logical(legend_separator)
 
   nodeplot_layer <- ggplot2::layer(
@@ -124,10 +123,10 @@ geom_node_plot <- function(plot_call = "ggplot",
       scales = scales,
       shared_axis_labels = shared_axis_labels,
       shared_legend = shared_legend,
-      predict_arg = predict_arg,
+      predict = predict,
+      predict_gpar = predict_gpar,
       nudge_x = nudge_x,
-      nudge_y = nudge_y,
-      add_data = add_data))
+      nudge_y = nudge_y))
 
   # set correct plot specs and draw legend separator
   if (shared_axis_labels) {
@@ -167,10 +166,10 @@ GeomNodeplot <- ggproto(
                         shared_axis_labels,
                         shared_legend,
                         scales,
-                        predict_arg,
+                        predict,
+                        predict_gpar,
                         nudge_x,
-                        nudge_y,
-                        add_data) {
+                        nudge_y) {
 
     data <- coord$transform(data, panel_params)
 
@@ -234,7 +233,7 @@ GeomNodeplot <- ggproto(
       nodeplot_data[[column]] <- content
     }
 
-    # draw plots --------------------------------------------------------------
+    # prepare data -------------------------------------------------------------
 
     base_data <- nodeplot_data
     facet_data <- base_data[nodeplot_data$id %in% ids, ]
@@ -243,10 +242,10 @@ GeomNodeplot <- ggproto(
     # nodesize ----------------------------------------------------------------
 
     nodesize <- data$nodesize[data$id %in% ids]
-    if(length(width) == 1) width <-rep(width, length(ids))
+    if (length(width) == 1) width <- rep(width, length(ids))
     else assert_subset(length(width), choices = c(1, length(ids)))
 
-    if(length(height) == 1) height <-rep(height, length(ids))
+    if (length(height) == 1) height <- rep(height, length(ids))
     else assert_subset(length(height), choices = c(1, length(ids)))
 
     if (size[1] == "nodesize") size <-
@@ -259,18 +258,23 @@ GeomNodeplot <- ggproto(
 
 
     # calculate newdata and resulting predictions -----------------------------
-    if (!is.null(predict_arg))
-      predict_data <- predict_data(data$info_list, facet_data, predict_arg)
-
+    if (!is.null(predict))
+      predicted_data <- predict_data(data$info_list, facet_data, predict)
 
     # generate faceted base_plot ----------------------------------------------
-# browser()
     # facet_wrap for indiviual panels
     facet_gtable <- ggplotGrob(do.call(plot_call,
                                        args = list(data = facet_data)) +
                                  lapply(gglist, eval.parent, n = 1) +
                                  theme(legend.position = "bottom") +
-                                 facet_wrap( ~ id, scales = scales, nrow = 1)
+                                 facet_wrap( ~ id, scales = scales, nrow = 1) +
+                                 if (!is.null(predict)) {
+                                   do.call(geom_line, c(list(
+                                     data = predicted_data,
+                                     mapping = aes(x = !!sym(predict),
+                                                   y = prediction)),
+                                     predict_gpar))
+                                 }
                                )
 
     # lab specifications for base table
@@ -289,11 +293,10 @@ GeomNodeplot <- ggproto(
                                 ggylab +
                                 if (shared_legend) theme(legend.position = "none")
                               )
-    base_layout <- base_gtable$layout
 
 
     # legend ------------------------------------------------------------------
-    if(shared_legend) {
+    if (shared_legend) {
       if (any(facet_gtable$layout$name == "guide-box")) {
         # extract gtable containing legend
         legend_gtable <- reduce_gtable(facet_gtable, "guide-box")
@@ -414,7 +417,7 @@ GeomNodeplot <- ggproto(
       x <- unique(data[data$id == ids[i], "x"])
       y <- unique(data[data$id == ids[i], "y"])
       #vertical tree
-      if(vertical) {
+      if (vertical) {
         nodeplotGrob(
           x = x,
           y = y,
@@ -427,7 +430,7 @@ GeomNodeplot <- ggproto(
                         "center"),
           node_gtable = node_gtable
         )
-      } else { #horizontal tree
+      } else {#horizontal tree
         nodeplotGrob(
           x = x,
           y = y,
@@ -484,36 +487,76 @@ find_grob <- function(x, name) {
 }
 
 # function to remove selected elements from gtables, keeping widths
-remove_grob <- function (g, what = "guide-box") {
+remove_grob <- function(g, what = "guide-box") {
   matches <- c(grepl(pattern = what, g$layout$name))
   g$layout <- g$layout[!matches, , drop = FALSE]
   g$grobs <- g$grobs[!matches]
   return(g)
 }
 
-reduce_gtable <- function (g, what = "guide-box") {
+reduce_gtable <- function(g, what = "guide-box") {
   matches <- c(grepl(pattern = what, g$layout$name))
   g$layout <- g$layout[matches, , drop = FALSE]
   g$grobs <- g$grobs[matches]
   return(g)
 }
 
-ggname <- function (prefix, grob) {
+ggname <- function(prefix, grob) {
   grob$name <- grobName(grob, prefix)
   grob
 }
 
-predict_data <- function(info_list, data, predict_arg) {
+
+
+predict_data <- function(info_list, data, predict) {
   ids <- unique(data$id)
-  newdata_function <- predict_arg$newdata
-  for (i in 1:length(ids)) {
-    predict_arg$newdata <- do.call(newdata_function, list(data))
-    predict_arg$object <- info_list[[i]]$object
-    predict_data <- predict_arg$newdata
+  for (i in seq_along(ids)) {
+    pred_data <- data[[predict]]
+    newdata <- data.frame(predict = seq(min(pred_data),
+                                        max(pred_data),
+                                       length.out = 100))
+    names(newdata) <- predict
+    predict_data <- newdata
     predict_data$id <- ids[i]
-    predict_data$prediction <- do.call(stats::predict, predict_arg)
+    predict_data$prediction <- stats::predict(info_list[[i]]$object,
+                                              newdata = newdata)
 
     if (i == 1) resulting_data <- predict_data
+    else resulting_data <- rbind(resulting_data, predict_data)
+  }
+  resulting_data
+}
+
+#' Create data.frame with predictions for each node
+#'
+#' @param party_object object of class `party`
+#' @param ids Id's to plot. Numeric, "terminal", "inner" or "all". MUST be identical
+#' to `ids` of [geom_node_plot()] used to plot this data.
+#' @param newdata_fun function which takes `data` of node and returns `newdata`
+#' for `predict()`
+#' @param predict_arg list of additional arguments passed to [predict()]
+#'
+#' @export
+
+get_predictions <- function(party_object, ids, newdata_fun, predict_arg = NULL) {
+
+  if (all(ids == "all")) ids <- seq_along(party_object)
+  if (all(ids == "terminal")) ids <- unique(fitted_node(party_object$node,
+                                                        party_object$data))
+  if (all(ids == "inner"))
+    ids <-
+      seq_along(party_object)[-intersect(seq_along(party_object),
+                                         unique(fitted_node(party_object$node,
+                                                            party_object$data)))]
+
+  for (i in ids) {
+    predict_arg$newdata <- do.call(newdata_fun, list(party_object$data))
+    predict_arg$object <- party_object[i]$node$info$object
+    predict_data <- predict_arg$newdata
+    predict_data$id <- i
+    predict_data$prediction <- do.call(stats::predict, predict_arg)
+
+    if (i == ids[1]) resulting_data <- predict_data
     else resulting_data <- rbind(resulting_data, predict_data)
   }
   resulting_data

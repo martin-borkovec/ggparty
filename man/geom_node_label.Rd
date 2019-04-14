@@ -4,7 +4,7 @@
 \alias{geom_node_label}
 \alias{geom_node_info}
 \alias{geom_node_splitvar}
-\title{Draw multi-line labels at nodes}
+\title{Draw (multi-line) labels at nodes}
 \usage{
 geom_node_label(mapping = NULL, data = NULL, line_list = NULL,
   line_gpar = NULL, ids = NULL, position = "identity", ...,
@@ -20,9 +20,9 @@ geom_node_splitvar(mapping = NULL, nudge_x = 0, nudge_y = 0,
   label.padding = unit(0.5, "lines"), ids = NULL, ...)
 }
 \arguments{
-\item{mapping}{x and y are mapped per default to the node's coordinates. If
+\item{mapping}{\code{x} and \code{y} are mapped per default to the node's coordinates. If
 you don't want to set line specific graphical parameters, you can also map
-label here. Otherwise set labels in line_list.}
+\code{label} here. Otherwise set \code{labels} in \code{line_list}.}
 
 \item{data}{The data to be displayed in this layer. There are three
 options:
@@ -38,31 +38,32 @@ A \code{function} will be called with a single argument,
 the plot data. The return value must be a \code{data.frame}, and
 will be used as the layer data.}
 
-\item{line_list}{Use this only if you want a multiline label with the
+\item{line_list}{Use this only if you want a multi-line label with the
 possibility to override the aesthetics mapping for each line specifically
-with fixed graphical
-parameters. In this case, dont's supply any mapping for label via the mapping
-argument, but instead pass here a list of aes() with the \strong{only} mapped variable
+with fixed graphical parameters. In this case, don't map anything to
+\code{label} in the \code{aes()} supplied to \code{mapping}
+, but instead pass here a list of \code{aes()} with the \strong{only} mapped variable
 in each
-being label. Other mappings still can be passed to mapping and will apply to
-all lines and the label, unless overwritten by line_gpar or the label
-arguments.
+being \code{label}.
+Other aesthetic mappings still can be passed to \code{mapping} and will apply to
+all lines and the border, unless overwritten by \code{line_gpar}.
 The order of the list represents the order of the plotted lines.}
 
 \item{line_gpar}{List of lists containing line-specific graphical parameters.
 Only use in
-conjunction with line_list. Has to contain the same number of lists as are
-aes() in line_list. First list applies to first line, and so on.}
+conjunction with \code{line_list}. Has to contain the same number of lists as are
+\code{aes()} in \code{line_list}. First list applies to first line, and so on.}
 
-\item{ids}{Select for which nodes to draw a label. Can be "inner", "terminal",
-"all" or numeric vector of ids.}
+\item{ids}{Select for which nodes to draw a label. Can be \code{"inner"}, \code{"terminal"},
+\code{"all"} or \code{numeric} vector of ids.}
 
 \item{position}{Position adjustment, either as a string, or the result of
 a call to a position adjustment function.}
 
 \item{...}{Additional arguments to layer.}
 
-\item{parse}{If \code{TRUE}, the labels will be parsed into expressions.}
+\item{parse}{If \code{TRUE}, the labels will be parsed into expressions. Can also
+be specified per line via \code{line_gpar}.}
 
 \item{nudge_x, nudge_y}{Adjust position of label.}
 
@@ -91,14 +92,14 @@ that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 }
 \description{
-geom_node_splitvar and geom_node_info are simplified versions of
-geom_node_label with the respective defaults to either draw  the splitvariables
+\code{geom_node_splitvar()} and \code{geom_node_info()} are simplified versions of
+\code{geom_node_label()} with the respective defaults to either label the split variables
 for all inner nodes or the info for all terminal nodes.
 }
 \details{
-geom_node_label is an modified version of ggplot2::geom_label(). This
-modification allows for labels with multiple lines to override the mapping
-for each individual line.
+\code{geom_node_label()} is a modified version of \code{\link[ggplot2:geom_label]{ggplot2::geom_label()}}. This
+modification allows for labels with multiple lines and line specific graphical
+parameters.
 }
 \examples{
 library(ggparty)
@@ -132,45 +133,48 @@ tr <- subset(TeachingRatings, credits == "more")
 tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
                    tenure, data = tr, weights = students, caseweights = FALSE)
 
+data("TeachingRatings", package = "AER")
+tr <- subset(TeachingRatings, credits == "more")
+
+tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+                    tenure, data = tr, weights = students, caseweights = FALSE)
+
 ggparty(tr_tree,
-       terminal_space = 0.5,
-       add_vars = list(p.value = "$node$info$p.value")) +
- geom_edge(size = 1.5) +
- geom_edge_label(colour = "grey", size = 6) +
- geom_node_plot(gglist = list(geom_point(aes(x = beauty,
-                                             y = eval,
-                                             col = tenure,
-                                             shape = minority),
-                                         alpha = 0.8),
-                              expression(
-                                geom_line(data = predict_data,
-                                          aes(x = beauty,
-                                              y = prediction),
-                                          col = "blue",
-                                          size = 1.2)),
-                              theme_bw(base_size = 15)),
-                scales = "fixed",
-                ids = "terminal",
-                shared_axis_labels = TRUE,
-                legend_separator = TRUE,
-                predict_arg = list(newdata = function(x) {
-                  data.frame(beauty = seq(min(x$beauty),
-                                          max(x$beauty),
-                                          length.out = 100))
-                })) +
- geom_node_label(aes(col = splitvar),
-                 line_list = list(aes(label = paste("Node", id)),
-                                  aes(label = splitvar),
-                                  aes(label = paste("p =",
-                                   formatC(p.value, format = "e", digits = 2)))),
-                 line_gpar = list(list(size = 12, col = "black", fontface = "bold"),
-                                  list(size = 20),
-                                  list(size = 12)),
-                 ids = "inner") +
- geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
-                 fontface = "bold",
-                 ids = "terminal",
-                 size = 5,
-                 nudge_y = 0.01) +
- theme(legend.position = "none")
+        terminal_space = 0.5,
+        add_vars = list(p.value = "$node$info$p.value")) +
+  geom_edge(size = 1.5) +
+  geom_edge_label(colour = "grey", size = 6) +
+  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
+                                              y = eval,
+                                              col = tenure,
+                                              shape = minority),
+                                          alpha = 0.8),
+                               theme_bw(base_size = 15)),
+                 scales = "fixed",
+                 id = "terminal",
+                 shared_axis_labels = TRUE,
+                 shared_legend = TRUE,
+                 legend_separator = TRUE,
+                 predict = "beauty",
+                 predict_gpar = list(col = "blue",
+                                    size = 1.2)
+  ) +
+  geom_node_label(aes(col = splitvar),
+                  line_list = list(aes(label = paste("Node", id)),
+                                   aes(label = splitvar),
+                                   aes(label = paste("p =", formatC(p.value,
+                                    format = "e", digits = 2)))),
+                  line_gpar = list(list(size = 12, col = "black", fontface = "bold"),
+                                   list(size = 20),
+                                   list(size = 12)),
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
+                  fontface = "bold",
+                  ids = "terminal",
+                  size = 5,
+                  nudge_y = 0.01) +
+  theme(legend.position = "none")
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}
 }

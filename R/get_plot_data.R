@@ -308,14 +308,14 @@ add_vars <- function(party_object, data, add_vars) {
         data[j, names(add_vars)[i]] <- ifelse(is.null(new), NA, new)
       }
     if (is.function(add_vars[[i]])) {
-      # browser()
-      if (substring(names(add_vars)[i], 1, 5) == "data_" & i == 1) {
-        plot_data[[names(add_vars)[i]]] <- rep(list(NA), nrow(data))
-        # col <- data.frame(I(rep(list(NA), length(party_object))))
-        # names(col) <- names(add_vars)[i]
-        # data <- cbind(data, col)
+      new <- add_vars[[i]](data[j, ], party_object[j])
+      if (is.null(new)) {
+      if (substring(names(add_vars)[i], 1, 5) == "nodedata_")
+        new <- list(rep(NA, data$nodesize))
+      else
+        new <- NA
       }
-      data[j, names(add_vars)[i]][[1]] <- add_vars[[i]](data[j, ], party_object[j])
+      data[j, names(add_vars)[i]][[1]] <- new
     }
   }}
   data

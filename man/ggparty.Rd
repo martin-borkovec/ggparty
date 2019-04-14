@@ -2,37 +2,39 @@
 % Please edit documentation in R/ggparty.R
 \name{ggparty}
 \alias{ggparty}
-\title{\code{ggplot2} extension for objects of class \code{party}}
+\title{Create a new ggparty plot}
 \usage{
 ggparty(party, horizontal = FALSE, terminal_space, layout = NULL,
   add_vars = NULL)
 }
 \arguments{
-\item{party}{Object of class \code{party}. The elements necessary for the plot will
-be extracted and converted to a \code{data.frame}.}
+\item{party}{Object of class \code{party}.}
 
 \item{horizontal}{If \code{TRUE} plot will be horizontal.}
 
 \item{terminal_space}{Proportion of the plot that should be reserved for
-the terminal nodeplots.}
+the terminal nodeplots. Defaults to \code{2 / (depth(party) + 2)}.}
 
-\item{layout}{Optional layout adjustment. Overrides the coordinates of the
+\item{layout}{Optional layout adjustment. Overwrites the coordinates of the
 specified nodes. Must be \code{data.frame} containing the
-columns "id", "x" and "y". With \code{x} and \code{y} values between 0 and 1.}
+columns \code{id}, \code{x} and \code{y}. With \code{x} and \code{y} values between 0 and 1.}
 
-\item{add_vars}{Named list containing either strings specifying the locations
+\item{add_vars}{Named list containing either string(s) specifying the locations
 of elements to be extracted from
-each node of \code{party}  or functions of \code{plot_data()} and node. In either case
-returned object
-has to be of length 1.}
+each node of \code{party}  or function(s) of corresponding row of plot data and node.
+In either case returned object  has to be of length 1.
+If the data is supposed to be accessible by \code{\link[=geom_node_plot]{geom_node_plot()}} list entry has
+to be named with prefix \code{"nodedata_"} and be a function returning a list
+of same length as \code{nodesize}.}
 }
 \description{
-Converts an object of class \code{party} and calls ggplot
+\code{ggplot2} extension for objects of class \code{party}. Creates a \code{data.frame} from
+an object of class \code{party} and calls \code{\link[=ggplot]{ggplot()}}
 }
 \details{
 \code{ggparty} can be callled directly with an object of class \code{party}, which will
-convert it to a suitbale data.frame and create a call to \code{ggplot} with it as
-the \code{data} argument. As usual additional components can then be added with
+convert it to a suitbale \code{data.frame} and pass it to a call to \code{ggplot} with as
+the \code{data} argument. As usual, additional components can then be added with
 \code{+}.
 The nodes will be spaced equally in the unit square. Specifying
 \code{terminal_size} allows to increase or decrease the area for plots of the

@@ -1,43 +1,45 @@
-#' Draw multi-line labels at nodes
+#' Draw (multi-line) labels at nodes
 #'
-#' geom_node_splitvar and geom_node_info are simplified versions of
-#' geom_node_label with the respective defaults to either draw  the splitvariables
+#' `geom_node_splitvar()` and `geom_node_info()` are simplified versions of
+#' `geom_node_label()` with the respective defaults to either label the split variables
 #' for all inner nodes or the info for all terminal nodes.
 #'
-#' geom_node_label is an modified version of ggplot2::geom_label(). This
-#' modification allows for labels with multiple lines to override the mapping
-#' for each individual line.
+#' `geom_node_label()` is a modified version of [ggplot2::geom_label()]. This
+#' modification allows for labels with multiple lines and line specific graphical
+#' parameters.
 #'
 #' @inheritParams ggplot2::layer
-#' @param mapping x and y are mapped per default to the node's coordinates. If
+#' @param mapping `x` and `y` are mapped per default to the node's coordinates. If
 #' you don't want to set line specific graphical parameters, you can also map
-#' label here. Otherwise set labels in line_list.
-#' @param line_list Use this only if you want a multiline label with the
+#' `label` here. Otherwise set `labels` in `line_list`.
+#' @param line_list Use this only if you want a multi-line label with the
 #' possibility to override the aesthetics mapping for each line specifically
-#' with fixed graphical
-#' parameters. In this case, dont's supply any mapping for label via the mapping
-#' argument, but instead pass here a list of aes() with the **only** mapped variable
+#' with fixed graphical parameters. In this case, don't map anything to
+#'  `label` in the `aes()` supplied to `mapping`
+#' , but instead pass here a list of `aes()` with the **only** mapped variable
 #'  in each
-#' being label. Other mappings still can be passed to mapping and will apply to
-#' all lines and the label, unless overwritten by line_gpar or the label
-#' arguments.
+#' being `label`.
+#' Other aesthetic mappings still can be passed to `mapping` and will apply to
+#' all lines and the border, unless overwritten by `line_gpar`.
 #' The order of the list represents the order of the plotted lines.
 #' @param line_gpar List of lists containing line-specific graphical parameters.
 #'  Only use in
-#' conjunction with line_list. Has to contain the same number of lists as are
-#' aes() in line_list. First list applies to first line, and so on.
-#' @param parse If `TRUE`, the labels will be parsed into expressions.
+#' conjunction with `line_list`. Has to contain the same number of lists as are
+#' `aes()` in `line_list`. First list applies to first line, and so on.
+#' @param parse If `TRUE`, the labels will be parsed into expressions. Can also
+#' be specified per line via `line_gpar`.
 #' @param label.col Border colour.
 #' @param label.fill Background colour.
 #' @param na.rm If `FALSE`, the default, missing values are removed with
 #'   a warning. If `TRUE`, missing values are silently removed.
-#' @param ids Select for which nodes to draw a label. Can be "inner", "terminal",
-#'  "all" or numeric vector of ids.
+#' @param ids Select for which nodes to draw a label. Can be `"inner"`, `"terminal"`,
+#'  `"all"` or `numeric` vector of ids.
 #' @param label.padding Amount of padding around label. Defaults to 0.25 lines.
 #' @param label.r Radius of rounded corners. Defaults to 0.15 lines.
 #' @param label.size Size of label border, in mm.
 #' @param nudge_x,nudge_y Adjust position of label.
 #' @param ... Additional arguments to layer.
+#' @seealso [ggparty()]
 #' @export
 #' @md
 #' @examples
@@ -72,47 +74,47 @@
 #'tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
 #'                    tenure, data = tr, weights = students, caseweights = FALSE)
 #'
-#'ggparty(tr_tree,
-#'        terminal_space = 0.5,
-#'        add_vars = list(p.value = "$node$info$p.value")) +
-#'  geom_edge(size = 1.5) +
-#'  geom_edge_label(colour = "grey", size = 6) +
-#'  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
-#'                                              y = eval,
-#'                                              col = tenure,
-#'                                              shape = minority),
-#'                                          alpha = 0.8),
-#'                               expression(
-#'                                 geom_line(data = predict_data,
-#'                                           aes(x = beauty,
-#'                                               y = prediction),
-#'                                           col = "blue",
-#'                                           size = 1.2)),
-#'                               theme_bw(base_size = 15)),
-#'                 scales = "fixed",
-#'                 ids = "terminal",
-#'                 shared_axis_labels = TRUE,
-#'                 legend_separator = TRUE,
-#'                 predict_arg = list(newdata = function(x) {
-#'                   data.frame(beauty = seq(min(x$beauty),
-#'                                           max(x$beauty),
-#'                                           length.out = 100))
-#'                 })) +
-#'  geom_node_label(aes(col = splitvar),
-#'                  line_list = list(aes(label = paste("Node", id)),
-#'                                   aes(label = splitvar),
-#'                                   aes(label = paste("p =",
-#'                                    formatC(p.value, format = "e", digits = 2)))),
-#'                  line_gpar = list(list(size = 12, col = "black", fontface = "bold"),
-#'                                   list(size = 20),
-#'                                   list(size = 12)),
-#'                  ids = "inner") +
-#'  geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
-#'                  fontface = "bold",
-#'                  ids = "terminal",
-#'                  size = 5,
-#'                  nudge_y = 0.01) +
-#'  theme(legend.position = "none")
+#' data("TeachingRatings", package = "AER")
+#' tr <- subset(TeachingRatings, credits == "more")
+#'
+#' tr_tree <- lmtree(eval ~ beauty | minority + age + gender + division + native +
+#'                     tenure, data = tr, weights = students, caseweights = FALSE)
+#'
+#' ggparty(tr_tree,
+#'         terminal_space = 0.5,
+#'         add_vars = list(p.value = "$node$info$p.value")) +
+#'   geom_edge(size = 1.5) +
+#'   geom_edge_label(colour = "grey", size = 6) +
+#'   geom_node_plot(gglist = list(geom_point(aes(x = beauty,
+#'                                               y = eval,
+#'                                               col = tenure,
+#'                                               shape = minority),
+#'                                           alpha = 0.8),
+#'                                theme_bw(base_size = 15)),
+#'                  scales = "fixed",
+#'                  id = "terminal",
+#'                  shared_axis_labels = TRUE,
+#'                  shared_legend = TRUE,
+#'                  legend_separator = TRUE,
+#'                  predict = "beauty",
+#'                  predict_gpar = list(col = "blue",
+#'                                     size = 1.2)
+#'   ) +
+#'   geom_node_label(aes(col = splitvar),
+#'                   line_list = list(aes(label = paste("Node", id)),
+#'                                    aes(label = splitvar),
+#'                                    aes(label = paste("p =", formatC(p.value,
+#'                                     format = "e", digits = 2)))),
+#'                   line_gpar = list(list(size = 12, col = "black", fontface = "bold"),
+#'                                    list(size = 20),
+#'                                    list(size = 12)),
+#'                   ids = "inner") +
+#'   geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
+#'                   fontface = "bold",
+#'                   ids = "terminal",
+#'                   size = 5,
+#'                   nudge_y = 0.01) +
+#'   theme(legend.position = "none")
 
 geom_node_label <- function(mapping = NULL,
                             data = NULL,
@@ -197,6 +199,11 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                                                line_list,
                                                line_gpar
                          ) {
+                           # check if parse line specific
+                           parse <- rep(parse, length(line_list))
+                           for (i in seq_along(line_list))
+                             if (!is.null(line_gpar[[i]]$parse))
+                               parse[i] <- line_gpar[[i]]$parse
 
                            #get labels for each line
                            lab <- get_labs(data, line_list, parse)
@@ -207,7 +214,7 @@ GeomNodeLabel <- ggproto("GeomNodeLabel", Geom,
                            box_up <- NULL
                            box_down <- NULL
                            if (!is.null(line_list)) {
-                             # get vector telling textgrob how many lines to move y --------------------
+                             # get vector telling textgrob how many lines to move
                              y_shift <- get_y_shift(line_list)
                              # and how to move label border
                              box_up <- y_shift[[1]]
@@ -324,10 +331,9 @@ makeContent.nodelabelgrob <- function(x) {
   text_list <- list()
 
   # draw text grobs ---------------------------------------------------------
-
   for (i in seq_along(x$label)) {
     text_list <- c(text_list, list(textGrob(
-      label = x$label[i],
+      label = x$label[[i]],
       x = x$x,
       y = x$y + unit(sum(x$y_shift[[i]] * sapply(x$text.gp, line_size)),
                      "point"),
@@ -486,16 +492,19 @@ geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
 
 
 get_labs <- function(data, line_list, parse) {
-  on.exit(detach(data))
-  attach(data, warn.conflicts = FALSE)
   if (is.null(line_list)) lab <- data$label
   else {
     lab <- list()
     for (j in seq_along(data$id)) {
-      labs <- character()
+      labs <- list()
+      on.exit(detach(data[j, ]))
+      attach(data[j, ], warn.conflicts = FALSE)
       for (i in seq_along(line_list)) {
-        labs[i] <- rlang::eval_tidy(line_list[[i]]$label)[j]
-        if (parse) labs[i] <- ggplot2:::parse_safe(as.character(labs[i]))
+        evaluated <- rlang::eval_tidy(line_list[[i]]$label)
+        # in case mapped to string
+        if (length(evaluated) == 1) labs[i] <- evaluated
+        else labs[[i]] <- evaluated[j]
+        if (parse[i]) labs[[i]] <- ggplot2:::parse_safe(as.character(labs[i]))
       }
       lab[[j]] <- labs
     }}

@@ -2,54 +2,50 @@
 % Please edit documentation in R/geom_node_plot.R
 \name{geom_node_plot}
 \alias{geom_node_plot}
-\title{Generate geom of node plot}
+\title{Draw plots at nodes}
 \usage{
 geom_node_plot(plot_call = "ggplot", gglist = NULL, width = 1,
   height = 1, size = 1, ids = "terminal", scales = "fixed",
   nudge_x = 0, nudge_y = 0, shared_axis_labels = FALSE,
-  shared_legend = FALSE, predict_arg = NULL,
-  legend_separator = FALSE, add_data = NULL)
+  shared_legend = TRUE, predict = NULL, predict_gpar = NULL,
+  legend_separator = FALSE)
 }
 \arguments{
-\item{plot_call}{Any function that generates a ggplot2 object.}
+\item{plot_call}{Any function that generates a \code{ggplot2} object.}
 
-\item{gglist}{List of additional ggplot components. Data of nodes can be
-mapped. Fitted values of modelparty objects can be mapped with "fitted_values".}
+\item{gglist}{List of additional \code{gg} components. Columns of \code{data} of nodes can be
+mapped. Additionally \code{fitted_values} and \code{residuals} can be mapped if present in
+\code{party} of \code{ggparty()}}
 
-\item{width}{Expansion factor for viewport's width}
+\item{width}{Expansion factor for viewport's width.}
 
-\item{height}{Expansion factor for viewport's height}
+\item{height}{Expansion factor for viewport's height.}
 
-\item{size}{Expansion factor for viewport's size}
+\item{size}{Expansion factor for viewport's size.}
 
 \item{ids}{Id's to plot. Numeric, "terminal", "inner" or "all". Defaults
-to "terminal"}
+to "terminal".}
 
-\item{scales}{see \code{\link[=facet_wrap]{facet_wrap()}}}
+\item{scales}{See \code{\link[=facet_wrap]{facet_wrap()}}}
 
-\item{nudge_x, nudge_y}{Nudges node plot}
+\item{nudge_x, nudge_y}{Nudges node plot.}
 
 \item{shared_axis_labels}{If TRUE only one pair of axes labels is plotted in
 the terminal space. Only recommended if \code{ids}  "terminal" or "all".}
 
-\item{shared_legend}{If 'TRUE' one shared legend is plotted at the bottom of
-the tree}
+\item{shared_legend}{If \code{TRUE} one shared legend is plotted at the bottom of
+the tree.}
 
-\item{predict_arg}{Named list containing arguments to be passed to call of
-predict on node$info$object. Caution: newdata has to be a function with
-a single argument, i.e. the ggplot data whose result will be used for the predict call as
-the newdata argument.
-Predictions and newdata will be stored in \code{predict_data} and
-can be accessed via geoms within gglist. These geoms need to be expressions to ensure
-correct evaluation. See examples.}
+\item{predict}{Character string specifying variable for which predictions should be plotted.}
 
-\item{legend_separator}{If 'TRUE' line between legend and tree is drawn.}
+\item{predict_gpar}{Named list containing arguments to be passed to the
+\code{geom_line()} call of predicted values.}
 
-\item{add_data}{add optional dataframe for geom_nodeplot to use. If you want
-node-specific data a column called "id" needs to be included.}
+\item{legend_separator}{If \code{TRUE} line between legend and tree is drawn.}
 }
 \description{
-Generate geom of node plot
+Additional component for a \code{\link[=ggparty]{ggparty()}} that allows to create in each node a
+ggplot with its data. #'
 }
 \examples{
 
@@ -68,6 +64,9 @@ ggparty(airct, horizontal = TRUE, terminal_space = 0.6) +
 
 #############################################################
 
+## Plot with ggparty
+
+
 ## Demand for economics journals data
 data("Journals", package = "AER")
 Journals <- transform(Journals,
@@ -78,28 +77,25 @@ Journals <- transform(Journals,
 j_tree <- lmtree(log(subs) ~ log(price/citations) | price + citations +
                    age + chars + society, data = Journals, minsize = 10, verbose = TRUE)
 
-## Plot with ggparty
+pred_df <- get_predictions(j_tree, ids = "terminal", newdata =  function(x) {
+  data.frame(
+    citations = 1,
+    price = exp(seq(from = min(x$`log(price/citations)`),
+                    to = max(x$`log(price/citations)`),
+                    length.out = 100)))
+})
 
 ggparty(j_tree, terminal_space = 0.8) +
   geom_edge() +
   geom_edge_label() +
   geom_node_splitvar() +
   geom_node_plot(gglist =
-                  list(aes(x = `log(price/citations)`, y = `log(subs)`),
-                       geom_point(),
-                       expression(geom_line(data = predict_data,
-                                            aes(x = log(price/citations),
-                                                y = prediction),
-                                            col = "red"))),
-                predict_arg = list(newdata = function(x) {
-                  data.frame(
-                    citations = 1,
-                    price = exp(seq(from = min(x$`log(price/citations)`),
-                                    to = max(x$`log(price/citations)`),
-                                    length.out = 100)))
-                })
-  )
-
+                   list(aes(x = `log(price/citations)`, y = `log(subs)`),
+                        geom_point(),
+                        geom_line(data = pred_df,
+                                  aes(x = log(price/citations),
+                                      y = prediction),
+                                  col = "red")))
 }
 \seealso{
 \code{\link[=ggparty]{ggparty()}}

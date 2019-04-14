@@ -2,29 +2,30 @@
 % Please edit documentation in R/ggparty.R
 \name{geom_edge_label}
 \alias{geom_edge_label}
-\title{Label edge with corresponding splitbreak}
+\title{Draw edge labels}
 \usage{
 geom_edge_label(mapping = NULL, nudge_x = 0, nudge_y = 0,
   ids = NULL, shift = 0.5, label.size = 0,
   splitlevels = seq_len(100), ...)
 }
 \arguments{
-\item{mapping}{not recommended to change}
+\item{mapping}{Mapping of \code{label} label defaults to \code{breaks_label}. Other
+mappings can be added here as \code{aes()}.}
 
-\item{nudge_x, nudge_y}{nudge label}
+\item{nudge_x, nudge_y}{Nudge label.}
 
-\item{ids}{choose which splitbreaks to label by their children's ids}
+\item{ids}{Choose which splitbreaks to label by their children's ids.}
 
-\item{shift}{value in (0,1). Move label along corresponding edge.}
+\item{shift}{Value in (0,1). Moves label along corresponding edge.}
 
-\item{label.size}{see \code{\link[=geom_label]{geom_label()}}}
+\item{label.size}{See \code{\link[=geom_label]{geom_label()}}.}
 
-\item{splitlevels}{which levels of split to plot}
+\item{splitlevels}{Which levels of split to plot.}
 
-\item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}}
+\item{...}{Additional arguments for \code{\link[=geom_label]{geom_label()}}.}
 }
 \description{
-Label edge with corresponding splitbreak
+Label edges with corresponding split breaks
 }
 \examples{
 library(ggparty)
@@ -49,4 +50,7 @@ ggparty(py) +
                   ids = "inner") +
   geom_node_label(aes(label = info),
                   ids = "terminal")
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}
 }

@@ -80,11 +80,11 @@ test_valid_breaks <- function(party_object) {
   })
 }
 
-test_valid_breaks(py)
-test_valid_breaks(t2)
-test_valid_breaks(ct)
-test_valid_breaks(ct2)
-test_valid_breaks(tr_tree)
+# test_valid_breaks(py)
+# test_valid_breaks(t2)
+# test_valid_breaks(ct)
+# test_valid_breaks(ct2)
+# test_valid_breaks(tr_tree)
 
 
 test_add_info <- function(party_object) {

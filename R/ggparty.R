@@ -1,29 +1,31 @@
-#' `ggplot2` extension for objects of class `party`
+#' Create a new ggparty plot
 #'
-#' Converts an object of class `party` and calls ggplot
+#' `ggplot2` extension for objects of class `party`. Creates a `data.frame` from
+#' an object of class `party` and calls [ggplot()]
 #'
 #'  `ggparty` can be callled directly with an object of class `party`, which will
-#' convert it to a suitbale data.frame and create a call to `ggplot` with it as
-#' the `data` argument. As usual additional components can then be added with
+#' convert it to a suitbale `data.frame` and pass it to a call to `ggplot` with as
+#' the `data` argument. As usual, additional components can then be added with
 #' `+`.
 #' The nodes will be spaced equally in the unit square. Specifying
 #' `terminal_size` allows to increase or decrease the area for plots of the
 #' terminal nodes.
 #'
 #'
-#' @param party Object of class `party`. The elements necessary for the plot will
-#' be extracted and converted to a `data.frame`.
+#' @param party Object of class `party`.
 #' @param horizontal If `TRUE` plot will be horizontal.
 #' @param terminal_space Proportion of the plot that should be reserved for
-#' the terminal nodeplots.
-#' @param layout Optional layout adjustment. Overrides the coordinates of the
+#' the terminal nodeplots. Defaults to `2 / (depth(party) + 2)`.
+#' @param layout Optional layout adjustment. Overwrites the coordinates of the
 #' specified nodes. Must be `data.frame` containing the
-#'  columns "id", "x" and "y". With `x` and `y` values between 0 and 1.
-#' @param add_vars Named list containing either strings specifying the locations
+#'  columns `id`, `x` and `y`. With `x` and `y` values between 0 and 1.
+#' @param add_vars Named list containing either string(s) specifying the locations
 #'  of elements to be extracted from
-#'  each node of `party`  or functions of `plot_data()` and node. In either case
-#'   returned object
-#'  has to be of length 1.
+#'  each node of `party`  or function(s) of corresponding row of plot data and node.
+#'   In either case returned object  has to be of length 1.
+#'   If the data is supposed to be accessible by [geom_node_plot()] list entry has
+#'   to be named with prefix `"nodedata_"` and be a function returning a list
+#'   of same length as `nodesize`.
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_label()],
 #'  [autoplot.party()], [geom_node_plot()]
 #' @export
@@ -120,13 +122,19 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 
 
 # geom_edge() -------------------------------------------------------------
-#' Draw edges between children and parents. wrapper of geom_segment
+
+#' Draw edges
 #'
-#' @param mapping not recommended to change
-#' @param ... additional arguments for [geom_segment()]
-#' @param nudge_x,nudge_y nudge label
-#' @param ids choose which edges to draw by their children's ids
-#' @param show.legend see [layer()]
+#' Draws edges between children and parent nodes. Wrapper for [ggplot2::geom_segment()]
+#'
+#' @param mapping Mapping of `x`, `y`, `xend` and `yend` defaults to `ids`' and
+#'  their parent's coordinates. Other mappings can be added here as `aes()`.
+#' @param nudge_x,nudge_y Nudge labels.
+#' @param ids Choose which edges to draw by their children's ids.
+#' @param show.legend `logical` See [layer()].
+#' @param ... Additional arguments for [geom_segment()].
+#'
+#' @seealso [ggparty()], [geom_edge()]
 #' @export
 #' @md
 #' @examples
@@ -182,16 +190,19 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 
 # geom_edge_label() -------------------------------------------------------
 
-#' Label edge with corresponding splitbreak
+#'Draw edge labels
 #'
-#' @param mapping not recommended to change
-#' @param shift value in (0,1). Move label along corresponding edge.
-#' @param ids choose which splitbreaks to label by their children's ids
-#' @param nudge_x,nudge_y nudge label
-#' @param splitlevels which levels of split to plot
-#' @param label.size see [geom_label()]
-#' @param ... additional arguments for [geom_label()]
+#' Label edges with corresponding split breaks
 #'
+#' @param mapping Mapping of `label` label defaults to `breaks_label`. Other
+#'  mappings can be added here as `aes()`.
+#' @param shift Value in (0,1). Moves label along corresponding edge.
+#' @param ids Choose which splitbreaks to label by their children's ids.
+#' @param nudge_x,nudge_y Nudge label.
+#' @param splitlevels Which levels of split to plot.
+#' @param label.size See [geom_label()].
+#' @param ... Additional arguments for [geom_label()].
+#' @seealso [ggparty()]
 #' @export
 #' @md
 #' @examples
@@ -262,8 +273,7 @@ StatParty <- ggproto(
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     if (is.character(ids) && ids == "inner") data <- data[data$kids != 0, ]
     # shift of edge_label
-    if (!is.null(shift)){
-
+    if (!is.null(shift)) {
       data$x <- (data$x * shift + data$x_parent * (1 - shift))
       data$y <- (data$y * shift + data$y_parent * (1 - shift))
     }

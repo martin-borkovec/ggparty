@@ -2,24 +2,25 @@
 % Please edit documentation in R/ggparty.R
 \name{geom_edge}
 \alias{geom_edge}
-\title{Draw edges between children and parents. wrapper of geom_segment}
+\title{Draw edges}
 \usage{
 geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
   show.legend = NA, ...)
 }
 \arguments{
-\item{mapping}{not recommended to change}
+\item{mapping}{Mapping of \code{x}, \code{y}, \code{xend} and \code{yend} defaults to \code{ids}' and
+their parent's coordinates. Other mappings can be added here as \code{aes()}.}
 
-\item{nudge_x, nudge_y}{nudge label}
+\item{nudge_x, nudge_y}{Nudge labels.}
 
-\item{ids}{choose which edges to draw by their children's ids}
+\item{ids}{Choose which edges to draw by their children's ids.}
 
-\item{show.legend}{see \code{\link[=layer]{layer()}}}
+\item{show.legend}{\code{logical} See \code{\link[=layer]{layer()}}.}
 
-\item{...}{additional arguments for \code{\link[=geom_segment]{geom_segment()}}}
+\item{...}{Additional arguments for \code{\link[=geom_segment]{geom_segment()}}.}
 }
 \description{
-Draw edges between children and parents. wrapper of geom_segment
+Draws edges between children and parent nodes. Wrapper for \code{\link[ggplot2:geom_segment]{ggplot2::geom_segment()}}
 }
 \examples{
 library(ggparty)
@@ -44,4 +45,7 @@ ggparty(py) +
                   ids = "inner") +
   geom_node_label(aes(label = info),
                   ids = "terminal")
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}, \code{\link[=geom_edge]{geom_edge()}}
 }
