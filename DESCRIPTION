@@ -11,16 +11,21 @@ Depends:
 Imports: 
   grid,
   gtable,
-  utils
+  utils,
+  checkmate,
+  methods,
+  survival,
+  rlang,
+  TH.data
 Suggests:
-    dplyr,
     testthat,
     mlbench,
     AER,
     coin,
     vdiffr,
     knitr,
-    rmarkdown
+    rmarkdown,
+    pander
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true

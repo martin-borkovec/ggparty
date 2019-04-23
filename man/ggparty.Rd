@@ -2,26 +2,69 @@
 % Please edit documentation in R/ggparty.R
 \name{ggparty}
 \alias{ggparty}
-\title{ggplot an object of the party class}
+\title{Create a new ggparty plot}
 \usage{
 ggparty(party, horizontal = FALSE, terminal_space, layout = NULL,
   add_vars = NULL)
 }
 \arguments{
-\item{party}{partyobject to plot}
+\item{party}{Object of class \code{party}.}
 
-\item{horizontal}{horizontal plot?}
+\item{horizontal}{If \code{TRUE} plot will be horizontal.}
 
-\item{terminal_space}{proportion of the plot that should be reserved for
-the terminal nodeplots}
+\item{terminal_space}{Proportion of the plot that should be reserved for
+the terminal nodeplots. Defaults to \code{2 / (depth(party) + 2)}.}
 
-\item{layout}{optional layout adjustment. Must be data.frame containing the
-columns "id", "x" and "y".}
+\item{layout}{Optional layout adjustment. Overwrites the coordinates of the
+specified nodes. Must be \code{data.frame} containing the
+columns \code{id}, \code{x} and \code{y}. With \code{x} and \code{y} values between 0 and 1.}
+
+\item{add_vars}{Named list containing either string(s) specifying the locations
+of elements to be extracted from
+each node of \code{party}  or function(s) of corresponding row of plot data and node.
+In either case returned object  has to be of length 1.
+If the data is supposed to be accessible by \code{\link[=geom_node_plot]{geom_node_plot()}} list entry has
+to be named with prefix \code{"nodedata_"} and be a function returning a list
+of same length as \code{nodesize}.}
 }
 \description{
-ggplot an object of the party class
+\code{ggplot2} extension for objects of class \code{party}. Creates a \code{data.frame} from
+an object of class \code{party} and calls \code{\link[=ggplot]{ggplot()}}
+}
+\details{
+\code{ggparty} can be callled directly with an object of class \code{party}, which will
+convert it to a suitbale \code{data.frame} and pass it to a call to \code{ggplot} with as
+the \code{data} argument. As usual, additional components can then be added with
+\code{+}.
+The nodes will be spaced equally in the unit square. Specifying
+\code{terminal_size} allows to increase or decrease the area for plots of the
+terminal nodes.
+}
+\examples{
+library(ggparty)
+data("WeatherPlay", package = "partykit")
+sp_o <- partysplit(1L, index = 1:3)
+sp_h <- partysplit(3L, breaks = 75)
+sp_w <- partysplit(4L, index = 1:2)
+pn <- partynode(1L, split = sp_o, kids = list(
+  partynode(2L, split = sp_h, kids = list(
+    partynode(3L, info = "yes"),
+    partynode(4L, info = "no"))),
+  partynode(5L, info = "yes"),
+  partynode(6L, split = sp_w, kids = list(
+    partynode(7L, info = "yes"),
+    partynode(8L, info = "no")))))
+py <- party(pn, WeatherPlay)
+
+ggparty(py) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
+  geom_node_label(aes(label = info),
+                  ids = "terminal")
 }
 \seealso{
-\code{\link[=geom_edge]{geom_edge()}}, \code{\link[=geom_edge_label]{geom_edge_label()}}, \code{\link[=geom_node_splitvar]{geom_node_splitvar()}},
-\code{\link[=geom_node_info]{geom_node_info()}}, \code{\link[=geom_nodeplot]{geom_nodeplot()}}
+\code{\link[=geom_edge]{geom_edge()}}, \code{\link[=geom_edge_label]{geom_edge_label()}}, \code{\link[=geom_node_label]{geom_node_label()}},
+\code{\link[=autoplot.party]{autoplot.party()}}, \code{\link[=geom_node_plot]{geom_node_plot()}}
 }

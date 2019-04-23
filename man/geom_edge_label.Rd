@@ -2,27 +2,55 @@
 % Please edit documentation in R/ggparty.R
 \name{geom_edge_label}
 \alias{geom_edge_label}
-\title{Label edge with corresponding splitbreak}
+\title{Draw edge labels}
 \usage{
-geom_edge_label(mapping = NULL, x_nudge = 0, y_nudge = 0,
+geom_edge_label(mapping = NULL, nudge_x = 0, nudge_y = 0,
   ids = NULL, shift = 0.5, label.size = 0,
   splitlevels = seq_len(100), ...)
 }
 \arguments{
-\item{mapping}{not recommended to change}
+\item{mapping}{Mapping of \code{label} label defaults to \code{breaks_label}. Other
+mappings can be added here as \code{aes()}.}
 
-\item{x_nudge, y_nudge}{nudge label}
+\item{nudge_x, nudge_y}{Nudge label.}
 
-\item{ids}{choose which splitbreaks to label by their children's ids}
+\item{ids}{Choose which splitbreaks to label by their children's ids.}
 
-\item{shift}{value in (0,1). Move label along corresponding edge.}
+\item{shift}{Value in (0,1). Moves label along corresponding edge.}
 
-\item{label.size}{see \code{\link[=geom_label]{geom_label()}}}
+\item{label.size}{See \code{\link[=geom_label]{geom_label()}}.}
 
-\item{splitlevels}{which levels of split to plot}
+\item{splitlevels}{Which levels of split to plot.}
 
-\item{...}{additional arguments for \code{\link[=geom_label]{geom_label()}}}
+\item{...}{Additional arguments for \code{\link[=geom_label]{geom_label()}}.}
 }
 \description{
-Label edge with corresponding splitbreak
+Label edges with corresponding split breaks
+}
+\examples{
+library(ggparty)
+data("WeatherPlay", package = "partykit")
+sp_o <- partysplit(1L, index = 1:3)
+sp_h <- partysplit(3L, breaks = 75)
+sp_w <- partysplit(4L, index = 1:2)
+pn <- partynode(1L, split = sp_o, kids = list(
+  partynode(2L, split = sp_h, kids = list(
+    partynode(3L, info = "yes"),
+    partynode(4L, info = "no"))),
+  partynode(5L, info = "yes"),
+  partynode(6L, split = sp_w, kids = list(
+    partynode(7L, info = "yes"),
+    partynode(8L, info = "no")))))
+py <- party(pn, WeatherPlay)
+
+ggparty(py) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
+  geom_node_label(aes(label = info),
+                  ids = "terminal")
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}
 }

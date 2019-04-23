@@ -1,6 +1,3 @@
-#' @export
-
-
 # transforms recursive structure of object of type "party" to dataframe
 get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2,
                           add_vars = NULL) {
@@ -10,7 +7,8 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
                           x = NA,
                           y = NA,
                           parent = NA,
-                          breaks = I(rep(list(NA), length(party_object))),
+                          birth_order = NA,
+                          breaks_label = I(rep(list(NA), length(party_object))),
                           #index = I(rep(list(NA), length(party_object))),
                           info = NA,
                           info_list = I(rep(list(NA), length(party_object))),
@@ -18,6 +16,7 @@ get_plot_data <- function(party_object, horizontal = FALSE, terminal_space = 0.2
                           level = NA,
                           kids = NA,
                           nodesize = NA,
+                          p.value = NA,
                           horizontal = FALSE
                           )
   plot_data <- add_kids_parents(party_object, plot_data)
@@ -51,6 +50,8 @@ add_kids_parents <- function(party_object, plot_data){
                                      NA,
                                      max(which(done_data$kids >
                                                  table(done_data$parent))))
+    plot_data[i, "birth_order"] <- sum(plot_data$parent == plot_data$parent[i],
+          na.rm = TRUE)
   }
   return(plot_data)
 }
@@ -64,6 +65,7 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
     party_node <- party_object[[i]]$node
     split_index <- party_split$index
     split_breaks <- party_split$breaks
+
     # check if node has a splitvar
     if (!is.null(party_split$varid)) {
       kids <- which(plot_data$parent == i)
@@ -81,11 +83,11 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
           # get kid index is pointing to
           kid <- kids[split_index[j]]
           # if first index  for kid, just assign according factor level
-          if (is.na(plot_data$breaks[kid])) {
-            plot_data[kid, "breaks"] <- var_levels[j]
+          if (is.na(plot_data$breaks_label[kid])) {
+            plot_data[kid, "breaks_label"] <- var_levels[j]
             # else add factor level to present level(s)
           } else {
-            plot_data[kid, "breaks"][[1]] <- list(c(plot_data[kid, "breaks"][[1]],
+            plot_data[kid, "breaks_label"][[1]] <- list(c(plot_data[kid, "breaks_label"][[1]],
                                                    var_levels[j]))
           }
         }
@@ -101,17 +103,17 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
           kid <- kids[split_index[j]]
           # for first interval use -inf as lower bound
           if (j == 1) {
-            plot_data[kid, "breaks"] <- paste(ifelse(party_split$right == TRUE,
+            plot_data[kid, "breaks_label"] <- paste(ifelse(party_split$right == TRUE,
                                                     "\u2264","<"),
                                              split_breaks[1])
             # for last interval use inf as upper bound
           } else if (j == length(split_index)) {
-            plot_data[kid, "breaks"] <- paste(ifelse(party_split$right == TRUE,
+            plot_data[kid, "breaks_label"] <- paste(ifelse(party_split$right == TRUE,
                                                     ">","<"),
                                              split_breaks[j - 1])
             # else use break[j-1] for lower interval bound
           } else {
-            plot_data[kid, "breaks"] <- paste0(ifelse(party_split$right == TRUE,
+            plot_data[kid, "breaks_label"] <- paste0(ifelse(party_split$right == TRUE,
                                                      "(","["),
                                               split_breaks[j - 1],", ",
                                               split_breaks[j],
@@ -134,8 +136,12 @@ add_info <- function(party_object, plot_data) {
     if (is.null(party_object[[i]]$node$info)) next
     if (!is.list(party_object[[i]]$node$info))
       plot_data[i, "info"] <- party_object[[i]]$node$info
-    else
+    else {
       plot_data[i, "info_list"][[1]] <- list(party_object[[i]]$node$info)
+      plot_data[i, "p.value"] <- ifelse(is.null(party_object[[i]]$node$info$p.value),
+                                        NA,
+                                        party_object[[i]]$node$info$p.value)
+    }
   }
   return(plot_data)
 }
@@ -212,44 +218,42 @@ add_layout <- function(plot_data, horizontal, terminal_space) {
 
 # add_data() --------------------------------------------------------------
 
-# add_data <- function(party_object, plot_data) {
-#          node_data <- do.call(rbind,
-#                               lapply(plot_data$id,
-#                                      function(i) {
-#                                        cbind(id = i, party_object[[i]]$data)
-#                                        }))
-#          names(node_data)[-1] <- paste0("data_", names(node_data))[-1]
-#          plot_data <- inner_join(plot_data, node_data, by = "id")
-#
-#   return(plot_data)
-# }
-
 add_data <- function(party_object, plot_data) {
 
-  data <- expand_surv(party_object[[1]]$data)
   #check for surv objects
-
-
+  data <- expand_surv(party_object[[1]]$data)
+  # create vector with all variables of tree data
   data_columns <- names(data)
+
+  #check whether elements are present
   fitted_values <- !is.null(party_object$node$info$object$fitted.values)
   residuals <- !is.null(party_object$node$info$object$residuals)
+  fitted_nodes <- !is.null(party_object$fitted$`(fitted)`)
+  #check whether elements are present
   if (fitted_values) {
     data_columns <- c(data_columns, "fitted_values")
   }
   if (residuals) {
     data_columns <- c(data_columns, "residuals")
   }
+  if (fitted_nodes) {
+    data_columns <- c(data_columns, "fitted_nodes")
+  }
+
+
+  # initialize data.frame with columns of lists -----------------------------
 
   for (column in data_columns) {
-    data_column <- paste0("data_", column)
+    data_column <- paste0("nodedata_", column)
     plot_data[[data_column]] <- rep(list(NA), nrow(plot_data))
-    #plot_data[[column]] <- rep(list(NA), nrow(plot_data))
   }
 
   for (i in plot_data$id) {
     node_data <- expand_surv(party_object[[i]]$data)
+    # add nodesize to plot_data
     plot_data[i, "nodesize"] <- nrow(node_data)
 
+    # add fitted_values, residuals and p.vlaue if present ---------------------
     if (fitted_values) {
       node_data <- cbind(node_data,
                          "fitted_values" = party_object[[i]]$node$info$object$fitted.values)
@@ -260,11 +264,14 @@ add_data <- function(party_object, plot_data) {
                          "residuals" = party_object[[i]]$node$info$object$residuals)
     }
 
+    if (fitted_nodes) {
+      node_data <- cbind(node_data,
+                         "fitted_nodes" = party_object[[i]]$fitted$`(fitted)`)
+    }
 
     for (column in data_columns) {
-      data_column <- paste0("data_", column)
-      plot_data[i, data_column][[1]] <- list(node_data[column])
-      #plot_data[i,column][[1]] <- list(party_object[[i]]$data[column])
+      data_column <- paste0("nodedata_", column)
+      plot_data[i, data_column][[1]] <- list(node_data[[column]])
     }
   }
   return(plot_data)
@@ -288,13 +295,29 @@ expand_surv <- function(data) {
   data
 }
 
+
+# add_vars() --------------------------------------------------------------
+
+
 add_vars <- function(party_object, data, add_vars) {
+
   for (i in seq_along(add_vars)) {
     for (j in seq_len(nrow(data))) {
-      new <- eval(parse(text = paste0("party_object[[", j, "]]", add_vars[[i]])))
-      data[j, names(add_vars)[i]] <- ifelse(is.null(new), NA, new)
-
-    }}
+    if (is.character(add_vars[[i]])) {
+        new <- eval(parse(text = paste0("party_object[[", j, "]]", add_vars[[i]])))
+        data[j, names(add_vars)[i]] <- ifelse(is.null(new), NA, new)
+      }
+    if (is.function(add_vars[[i]])) {
+      new <- add_vars[[i]](data[j, ], party_object[j])
+      if (is.null(new)) {
+      if (substring(names(add_vars)[i], 1, 5) == "nodedata_")
+        new <- list(rep(NA, data$nodesize))
+      else
+        new <- NA
+      }
+      data[j, names(add_vars)[i]][[1]] <- new
+    }
+  }}
   data
 }
 

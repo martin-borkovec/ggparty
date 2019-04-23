@@ -2,20 +2,50 @@
 % Please edit documentation in R/ggparty.R
 \name{geom_edge}
 \alias{geom_edge}
-\title{Draw edges between children and parents. wrapper of geom_segment}
+\title{Draw edges}
 \usage{
-geom_edge(mapping = NULL, x_nudge = 0, y_nudge = 0, ids = NULL,
-  ...)
+geom_edge(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
+  show.legend = NA, ...)
 }
 \arguments{
-\item{mapping}{not recommended to change}
+\item{mapping}{Mapping of \code{x}, \code{y}, \code{xend} and \code{yend} defaults to \code{ids}' and
+their parent's coordinates. Other mappings can be added here as \code{aes()}.}
 
-\item{x_nudge, y_nudge}{nudge label}
+\item{nudge_x, nudge_y}{Nudge labels.}
 
-\item{ids}{choose which edges to draw by their children's ids}
+\item{ids}{Choose which edges to draw by their children's ids.}
 
-\item{...}{additional arguments for \code{\link[=geom_segment]{geom_segment()}}}
+\item{show.legend}{\code{logical} See \code{\link[=layer]{layer()}}.}
+
+\item{...}{Additional arguments for \code{\link[=geom_segment]{geom_segment()}}.}
 }
 \description{
-Draw edges between children and parents. wrapper of geom_segment
+Draws edges between children and parent nodes. Wrapper for \code{\link[ggplot2:geom_segment]{ggplot2::geom_segment()}}
+}
+\examples{
+library(ggparty)
+data("WeatherPlay", package = "partykit")
+sp_o <- partysplit(1L, index = 1:3)
+sp_h <- partysplit(3L, breaks = 75)
+sp_w <- partysplit(4L, index = 1:2)
+pn <- partynode(1L, split = sp_o, kids = list(
+  partynode(2L, split = sp_h, kids = list(
+    partynode(3L, info = "yes"),
+    partynode(4L, info = "no"))),
+  partynode(5L, info = "yes"),
+  partynode(6L, split = sp_w, kids = list(
+    partynode(7L, info = "yes"),
+    partynode(8L, info = "no")))))
+py <- party(pn, WeatherPlay)
+
+ggparty(py) +
+  geom_edge() +
+  geom_edge_label() +
+  geom_node_label(aes(label = splitvar),
+                  ids = "inner") +
+  geom_node_label(aes(label = info),
+                  ids = "terminal")
+}
+\seealso{
+\code{\link[=ggparty]{ggparty()}}, \code{\link[=geom_edge]{geom_edge()}}
 }

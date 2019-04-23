@@ -33,27 +33,21 @@ ggparty(tr_tree,
         add_vars = list(p.value = "$node$info$p.value")) +
   geom_edge(size = 1.5) +
   geom_edge_label(colour = "grey", size = 6) +
-  geom_nodeplot(gglist = list(geom_point(aes(x = beauty,
+  geom_node_plot(gglist = list(geom_point(aes(x = beauty,
                                              y = eval,
                                              col = tenure,
                                              shape = minority),
                                          alpha = 0.8),
-                              expression(
-                                geom_line(data = predict_data,
-                                          aes(x = beauty,
-                                              y = prediction),
-                                          col = "blue",
-                                          size = 1.2)),
                               theme_bw(base_size = 15)),
                 scales = "fixed",
                 id = "terminal",
                 shared_axis_labels = T,
+                shared_legend = T,
                 legend_separator = T,
-                predict_arg = list(newdata = function(x) {
-                  data.frame(beauty = seq(min(x$beauty),
-                                          max(x$beauty),
-                                          length.out = 100))
-                })) +
+                predict = "beauty",
+                predict_arg = list(col = "blue",
+                                   size = 1.2)
+                ) +
   geom_node_label(aes(col = splitvar),
                   line_list = list(aes(label = paste("Node", id)),
                                    aes(label = splitvar),
@@ -73,3 +67,4 @@ ggparty(tr_tree,
 
 [![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
 
+[![Coverage Status](https://coveralls.io/repos/github/mmostly-harmless/ggparty/badge.svg?branch=master)](https://coveralls.io/github/mmostly-harmless/ggparty?branch=master)
