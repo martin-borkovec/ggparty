@@ -497,18 +497,36 @@ get_labs <- function(data, line_list, parse) {
     lab <- list()
     for (j in seq_along(data$id)) {
       labs <- list()
-      on.exit(detach(data[j, ]))
-      attach(data[j, ], warn.conflicts = FALSE)
+      # on.exit(detach(data[j, ]))
+      # attach(data[j, ], warn.conflicts = FALSE)
       for (i in seq_along(line_list)) {
-        evaluated <- rlang::eval_tidy(line_list[[i]]$label)
+        # browser()
+        evaluated <- rlang::eval_tidy(line_list[[i]]$label, data = data[j, ])
         # in case mapped to string
         if (length(evaluated) == 1) labs[i] <- evaluated
         else labs[[i]] <- evaluated[j]
-        if (parse[i]) labs[[i]] <- ggplot2:::parse_safe(as.character(labs[i]))
+        if (parse[i]) labs[[i]] <- parse_safe(as.character(labs[i]))
       }
       lab[[j]] <- labs
     }}
   lab
+}
+
+
+# parse safe (from ggplot2) -----------------------------------------------
+
+
+parse_safe <- function(text)
+{
+  stopifnot(is.character(text))
+  out <- vector("expression", length(text))
+  for (i in seq_along(text)) {
+    expr <- parse(text = text[[i]])
+    out[[i]] <- if (length(expr) == 0)
+      NA
+    else expr[[1]]
+  }
+  out
 }
 
 

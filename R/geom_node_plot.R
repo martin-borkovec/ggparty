@@ -195,7 +195,7 @@ GeomNodeplot <- ggproto(
       node_height <- mean(abs(diff(data$y[data$kids != 0])))
       xlab_x <- legend_x
       ylab_y <- (min(data$y) + y_0) * 0.5
-      ylab_x <- scales::rescale(-0.045, from = panel_params$x.range)
+      ylab_x <- scales::rescale(-0.0, from = panel_params$x.range)
     } else {
       # for horizontal trees
       node_width <- mean(abs(diff(data$x[data$kids != 0])))
@@ -215,7 +215,6 @@ GeomNodeplot <- ggproto(
     nodeplot_data_lists <-  data[, data_columns]
     names(nodeplot_data_lists) <- substring(names(nodeplot_data_lists), 10)
     lengths <- sapply(nodeplot_data_lists[[2]], length)
-    # lengths <- sapply(nodeplot_data_lists[[2]], function(x) length(unlist(x)))
     # initialize dataframe with right number of rows per id
     nodeplot_data <- data.frame(id = rep(data$id, times = lengths))
     # fill dataframe
@@ -293,8 +292,6 @@ GeomNodeplot <- ggproto(
                                 ggylab +
                                 if (shared_legend) theme(legend.position = "none")
                               )
-
-
     # legend ------------------------------------------------------------------
     if (shared_legend) {
       if (any(facet_gtable$layout$name == "guide-box")) {
@@ -326,7 +323,6 @@ GeomNodeplot <- ggproto(
       # x axis label -----------------------------------------------------------
 
       if (any(facet_gtable$layout$name == "xlab-b")) {
-        # extract gtable containing bottom x_axis
         xlab_gtable <- reduce_gtable(facet_gtable, "xlab-b")
         xlab_gtable$layout$t <- 1
         xlab_gtable$layout$b <- 1
@@ -336,8 +332,8 @@ GeomNodeplot <- ggproto(
         xlab_gtable <- nodeplotGrob(
           x = xlab_x,
           y = y_0,
-          width = 1,
-          height = (y_0 - xlab_y),
+          width = 0,#1,
+          height = 0.01,#(y_0 - xlab_y),
           just = "top",
           node_gtable = xlab_gtable
           )
@@ -348,7 +344,6 @@ GeomNodeplot <- ggproto(
       # y axis label ------------------------------------------------------------
 
       if (any(facet_gtable$layout$name == "ylab-l")) {
-        # extract gtable containing bottom x_axis
         ylab_gtable <- reduce_gtable(facet_gtable, "ylab-l")
         ylab_gtable$layout$l <- 1
         ylab_gtable$layout$r <- 1
@@ -356,17 +351,17 @@ GeomNodeplot <- ggproto(
         ylab_gtable$layout$b <- 1
         ylab_gtable$widths <- unit(0,"pt")
         ylab_gtable$heights <- unit(0,"pt")
-        ylab_gtable$grobs[[1]]$vp <- NULL
-        ylab_gtable$grobs[[1]]$widths <- unit(0,"pt")
-        ylab_gtable$grobs[[1]]$heights <- unit(0,"pt")
+        # ylab_gtable$grobs[[1]]$vp <- NULL
+        # ylab_gtable$grobs[[1]]$widths <- unit(0,"pt")
+        # ylab_gtable$grobs[[1]]$heights <- unit(0,"pt")
 
         #call nodeplotGrob on ylab_gtable
         ylab_gtable <- nodeplotGrob(
           y = ylab_y,
           x = ylab_x,
-          width = 0.5,
-          height = 1,
-          just = "center",
+          width = unit(1, "lines"),
+          height = 0,
+          just = "right",
           node_gtable = ylab_gtable
         )
         grob_list <- c(grob_list, list(ylab_gtable))

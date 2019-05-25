@@ -2,14 +2,7 @@
 title: "ggparty: Graphic Partying"
 author: "Martin Borkovec"
 date: "`r Sys.Date()`"
-output:
-   html_document:
-    theme: flatly
-    toc: true
-    toc_float:
-      collapsed: false
-      smooth_scroll: false
-    toc_depth: 2
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ggparty}
   %\VignetteEngine{knitr::rmarkdown}

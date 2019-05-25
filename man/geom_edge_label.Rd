@@ -6,10 +6,11 @@
 \usage{
 geom_edge_label(mapping = NULL, nudge_x = 0, nudge_y = 0,
   ids = NULL, shift = 0.5, label.size = 0,
-  splitlevels = seq_len(100), ...)
+  splitlevels = seq_len(100), max_length = NULL, parse_all = FALSE,
+  parse = TRUE, ...)
 }
 \arguments{
-\item{mapping}{Mapping of \code{label} label defaults to \code{breaks_label}. Other
+\item{mapping}{Mapping of \code{label} label defaults to \strong{breaks_label}. Other
 mappings can be added here as \code{aes()}.}
 
 \item{nudge_x, nudge_y}{Nudge label.}
@@ -20,7 +21,15 @@ mappings can be added here as \code{aes()}.}
 
 \item{label.size}{See \code{\link[=geom_label]{geom_label()}}.}
 
-\item{splitlevels}{Which levels of split to plot.}
+\item{splitlevels}{Which levels of split to plot. This may be usefull in the
+presence of many factor levels for one split break.}
+
+\item{max_length}{If provided \strong{breaks_label} levels will be truncated to the specified length.}
+
+\item{parse_all}{Defaults to \code{FALSE}, in which case everything but the inequality
+signs of \strong{breaks_label} are deparsed. If \code{TRUE} complete \strong{breaks_label} are parsed.}
+
+\item{parse}{Needs to be true in order to parse inequality signs of \strong{breaks_label}.}
 
 \item{...}{Additional arguments for \code{\link[=geom_label]{geom_label()}}.}
 }

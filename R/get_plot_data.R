@@ -75,7 +75,7 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
       # index
       # if only index provided, splitvar categorical. assign children according
       # to factor levels
-      if (!is.null(split_index) & is.null(split_breaks)){
+      if (!is.null(split_index) & is.null(split_breaks)) {
         var_levels <- levels(party_object$data[,split_var])
         # iterate through index
         for (j in 1:length(split_index)) {
@@ -97,30 +97,58 @@ add_splitvar_breaks_index <- function(party_object, plot_data) {
       if (!is.null(split_breaks)) {
         # if no index provided, intervals are supposed to be assigned
         # consecutively to kids. assign index accordingly.
-        if(is.null(split_index)) split_index <- 1:(length(split_breaks) + 1)
+        if (is.null(split_index)) split_index <- 1:(length(split_breaks) + 1)
         # iterate through index
         for (j in 1:length(split_index)) {
           kid <- kids[split_index[j]]
           # for first interval use -inf as lower bound
           if (j == 1) {
-            plot_data[kid, "breaks_label"] <- paste(ifelse(party_split$right == TRUE,
-                                                    "\u2264","<"),
-                                             split_breaks[1])
+            # check whether more intervals lead to this kid. If so, don't use inequality signs
+            if (split_index[j] %in% split_index[-j]) {
+              split_interval <- paste0("(-Inf, ",
+                                       split_breaks[j],
+                                       ifelse(party_split$right == TRUE,
+                                              "]",")"))
+            } else {
+              split_interval <- paste(ifelse(party_split$right == TRUE,
+                                             "NA <= NA*","NA <  NA*"),
+                                      #"\u2264","<"),
+                                      split_breaks[1])
+            }
             # for last interval use inf as upper bound
           } else if (j == length(split_index)) {
-            plot_data[kid, "breaks_label"] <- paste(ifelse(party_split$right == TRUE,
-                                                    ">","<"),
-                                             split_breaks[j - 1])
+            # check whether more intervals lead to this kid. If so, don't use inequality signs
+            if (split_index[j] %in% split_index[-j]) {
+              split_interval <- paste0(ifelse(party_split$right == TRUE,
+                                              "(","["),
+                                       split_breaks[j - 1],
+                                       ", Inf)")
+            } else {
+              split_interval <- paste(ifelse(party_split$right == TRUE,
+                                             "NA >  NA*","NA >= NA*"),
+                                      split_breaks[j - 1])
+            }
             # else use break[j-1] for lower interval bound
           } else {
-            plot_data[kid, "breaks_label"] <- paste0(ifelse(party_split$right == TRUE,
-                                                     "(","["),
-                                              split_breaks[j - 1],", ",
-                                              split_breaks[j],
-                                              ifelse(party_split$right == TRUE,
-                                                     "]",")"))
+            split_interval <- paste0(ifelse(party_split$right == TRUE,
+                                            "(","["),
+                                     split_breaks[j - 1],", ",
+                                     split_breaks[j],
+                                     ifelse(party_split$right == TRUE,
+                                            "]",")"))
+          }
+
+          if (is.na(plot_data$breaks_label[kid])) {
+            plot_data[kid, "breaks_label"] <- split_interval
+          }
+          else {
+            # plot_data[kid, "breaks_label"][[1]] <- list(c(plot_data[kid, "breaks_label"][[1]],
+            #                                               split_interval))
+            plot_data[kid, "breaks_label"][[1]] <- paste(plot_data[kid, "breaks_label"][[1]],
+                                                          split_interval, sep = " | ")
           }
         }
+
       }
     }
   }
