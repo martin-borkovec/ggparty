@@ -45,8 +45,8 @@ ggparty(tr_tree,
                 shared_legend = T,
                 legend_separator = T,
                 predict = "beauty",
-                predict_arg = list(col = "blue",
-                                   size = 1.2)
+                predict_gpar = list(col = "blue",
+                                    size = 1.2)
                 ) +
   geom_node_label(aes(col = splitvar),
                   line_list = list(aes(label = paste("Node", id)),

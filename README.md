@@ -3,16 +3,14 @@ ggparty
 
 ggplot2 visualizations for the partykit package.
 
-Install
--------
+## Install
 
 ``` r
 devtools::install_github("mmostly-harmless/ggparty", 
                          dependencies=TRUE)
 ```
 
-Example
--------
+## Example
 
 ``` r
 library(ggparty)
@@ -40,8 +38,8 @@ ggparty(tr_tree,
                 shared_legend = T,
                 legend_separator = T,
                 predict = "beauty",
-                predict_arg = list(col = "blue",
-                                   size = 1.2)
+                predict_gpar = list(col = "blue",
+                                    size = 1.2)
                 ) +
   geom_node_label(aes(col = splitvar),
                   line_list = list(aes(label = paste("Node", id)),
@@ -59,8 +57,10 @@ ggparty(tr_tree,
   theme(legend.position = "none")
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-2-1.png)
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-[![Travis build status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+[![Travis build
+status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
 
-[![Coverage Status](https://coveralls.io/repos/github/mmostly-harmless/ggparty/badge.svg?branch=master)](https://coveralls.io/github/mmostly-harmless/ggparty?branch=master)
+[![Coverage
+Status](https://coveralls.io/repos/github/mmostly-harmless/ggparty/badge.svg?branch=master)](https://coveralls.io/github/mmostly-harmless/ggparty?branch=master)
