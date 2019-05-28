@@ -194,13 +194,18 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 #'
 #' Label edges with corresponding split breaks
 #'
-#' @param mapping Mapping of `label` label defaults to `breaks_label`. Other
+#' @param mapping Mapping of `label` label defaults to **breaks_label**. Other
 #'  mappings can be added here as `aes()`.
 #' @param shift Value in (0,1). Moves label along corresponding edge.
 #' @param ids Choose which splitbreaks to label by their children's ids.
 #' @param nudge_x,nudge_y Nudge label.
-#' @param splitlevels Which levels of split to plot.
+#' @param splitlevels Which levels of split to plot. This may be usefull in the
+#' presence of many factor levels for one split break.
+#' @param max_length If provided **breaks_label** levels will be truncated to the specified length.
 #' @param label.size See [geom_label()].
+#' @param parse Needs to be true in order to parse inequality signs of **breaks_label**.
+#' @param parse_all Defaults to `FALSE`, in which case everything but the inequality
+#'  signs of **breaks_label** are deparsed. If `TRUE` complete **breaks_label** are parsed.
 #' @param ... Additional arguments for [geom_label()].
 #' @seealso [ggparty()]
 #' @export
@@ -237,9 +242,18 @@ geom_edge_label <- function(mapping = NULL,
                             shift = 0.5,
                             label.size = 0,
                             splitlevels = seq_len(100),
+                            max_length = NULL,
+                            parse_all = FALSE,
+                            parse = TRUE,
                             ...) {
 
   default_mapping <- aes_string(label = "breaks_label")
+  # if (!parse)
+  #   default_mapping <- aes(label = paste(breaks_label))
+  if (!parse_all & parse)
+    default_mapping <- aes_string(label = "parse_signs(breaks_label,
+                                           splitlevels = splitlevels,
+                                           max_length = max_length)")
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -255,6 +269,7 @@ geom_edge_label <- function(mapping = NULL,
                   label.size = label.size,
                   na.rm = TRUE,
                   splitlevels = splitlevels,
+                  parse = parse,
                   ...)
   )
 }
@@ -268,7 +283,6 @@ StatParty <- ggproto(
   Stat,
   compute_panel = function(data, ids = NULL, shift = NULL, scales = scales,
                         splitlevels = NULL, extract_info = NULL) {
-    #browser()
     if (is.numeric(ids)) data <- data[ids, ]
     if (is.character(ids) && ids == "terminal") data <- data[data$kids == 0, ]
     if (is.character(ids) && ids == "inner") data <- data[data$kids != 0, ]
@@ -278,13 +292,14 @@ StatParty <- ggproto(
       data$y <- (data$y * shift + data$y_parent * (1 - shift))
     }
 
-    if (!is.null(splitlevels))
-      data$label <- vapply(data$label, function(x) {
-        index <- seq_along(x) %in% splitlevels
-        output <- x[index]
-        paste(output, collapse = " ")
-      },
-      character(1))
+    # if (!is.null(splitlevels))
+    #   browser()
+    #   data$label <- vapply(data$label, function(x) {
+    #     index <- seq_along(x) %in% splitlevels
+    #     output <- x[index]
+    #     paste(output, collapse = " ")
+    #   },
+    #   character(1))
     data
   }
 )
@@ -314,4 +329,29 @@ adjust_layout <- function(plot_data, layout) {
 }
 
 
+
+# parse_signs() -----------------------------------------------------------
+# prevent rest of label from being parsed
+parse_signs <- function(label, splitlevels = NULL, max_length = NULL) {
+  first <- substring(label, 1, 9)
+  last <- substring(label, 10)
+  for (i in seq_along(label)) {
+    if (first[i] %in% c("NA <= NA*", "NA >= NA*", "NA <  NA*", "NA >  NA*"))
+      label[i] <- paste0(first[i], unlist(lapply(last[i], FUN = deparse)))
+    else {
+      if (!is.null(splitlevels)) {
+        label[i] <- vapply(label[i], function(x) {
+          index <- seq_along(x) %in% splitlevels
+          output <- x[index]
+          if (!is.null(max_length))
+            output <- substring(output, 1, max_length)
+          paste(output, collapse = " ")
+        },
+        character(1))
+      }
+      label[i] <- unlist(lapply(label[i], FUN = deparse))
+    }
+  }
+  label
+}
 

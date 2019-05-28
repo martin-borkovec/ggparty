@@ -1,0 +1,14 @@
+---
+title: "Changes"
+output: rmarkdown::github_document
+---
+
+
+### version 0.0.9001
+
+* Check now runs without any notes.
+
+* Changed the way parsing works for geom_edge_labels. Added vignette "On the Edge" outlining this functionality.
+
+* Many minor fixes.
+
