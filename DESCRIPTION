@@ -1,6 +1,6 @@
 Package: ggparty
 Title: ggplot2 visualizations for the partykit package
-Version: 1.0.0
+Version: 0.0.0.9001
 Authors@R: c(person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
   person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"))
 Description: ggplot2 visualizations for the partykit package.
