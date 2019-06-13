@@ -1,9 +1,10 @@
 Package: ggparty
-Title: ggplot2 visualizations for the partykit package
+Title: 'ggplot' Visualizations for the 'partykit' Package
 Version: 0.0.0.9001
 Authors@R: c(person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
   person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"))
 Description: ggplot2 visualizations for the partykit package.
+Maintainer: Martin Borkovec <martin.borkovec@skyforge.at>
 Depends: 
   R (>= 3.5.0),
   ggplot2,

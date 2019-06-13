@@ -124,8 +124,8 @@ ggparty(tr_tree, terminal_space = 0.4,
 
 The code used to create this plot can be found at the end of this document.
 But first things first.    
-Let's recreate a simple example already used in the [partykit vignette](https://cran.r-project.org/web/packages/partykit/vignettes/partykit.pdf). If you
-are not familiar with the [**parykit**](https://cran.r-project.org/web/packages/partykit/index.html) you should definitely check it out before you
+Let's recreate a simple example already used in the [partykit vignette](https://cran.r-project.org/package=partykit/vignettes/partykit.pdf). If you
+are not familiar with the [**parykit**](https://cran.r-project.org/package=partykit) you should definitely check it out before you
 work with this package.
 ```{r}
 data("WeatherPlay", package = "partykit")
