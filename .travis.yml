@@ -6,7 +6,7 @@ r: - oldrel
    - devel
 os: - osx
     - linux
-sudo: false
+#sudo: false
 after_success:
     - Rscript -e 'covr::codecov()'
 #cache: packages
