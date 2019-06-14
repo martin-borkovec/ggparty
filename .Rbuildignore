@@ -6,3 +6,4 @@ project_description.pdf$
 README.Rmd$
 .stuff
 .inst
+^codecov\.yml$
