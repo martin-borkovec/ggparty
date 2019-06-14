@@ -1,11 +1,12 @@
 Package: ggparty
-Title: ggplot2 visualizations for the partykit package
+Title: 'ggplot' Visualizations for the 'partykit' Package
 Version: 0.0.0.9001
 Authors@R: c(person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
   person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"))
 Description: ggplot2 visualizations for the partykit package.
+Maintainer: Martin Borkovec <martin.borkovec@skyforge.at>
 Depends: 
-  R (>= 3.5.0),
+  R (>= 3.4.0),
   ggplot2,
   partykit
 Imports: 
@@ -15,8 +16,7 @@ Imports:
   checkmate,
   methods,
   survival,
-  rlang,
-  TH.data
+  rlang
 Suggests:
     testthat,
     mlbench,
@@ -26,7 +26,8 @@ Suggests:
     knitr,
     rmarkdown,
     pander,
-    MASS
+    MASS,
+    TH.data
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
