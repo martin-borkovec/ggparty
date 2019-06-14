@@ -27,7 +27,8 @@ Suggests:
     rmarkdown,
     pander,
     MASS,
-    TH.data
+    TH.data,
+    covr
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
