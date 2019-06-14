@@ -6,7 +6,7 @@ Authors@R: c(person("Martin", "Borkovec", role = c("aut", "cre"), email = "marti
 Description: ggplot2 visualizations for the partykit package.
 Maintainer: Martin Borkovec <martin.borkovec@skyforge.at>
 Depends: 
-  R (>= 3.5.0),
+  R (>= 3.4.0),
   ggplot2,
   partykit
 Imports: 
@@ -16,8 +16,7 @@ Imports:
   checkmate,
   methods,
   survival,
-  rlang,
-  TH.data
+  rlang
 Suggests:
     testthat,
     mlbench,
@@ -27,7 +26,8 @@ Suggests:
     knitr,
     rmarkdown,
     pander,
-    MASS
+    MASS,
+    TH.data
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true

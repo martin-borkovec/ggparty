@@ -13,8 +13,10 @@ devtools::install_github("mmostly-harmless/ggparty",
 
 ## Example
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, dpi=300)
-options(warn=-1)
+knitr::opts_chunk$set(echo = TRUE,
+                      dpi = 300,
+                      fig.path = "man/figures/README-")
+options(warn = -1)
 ```
 
 
