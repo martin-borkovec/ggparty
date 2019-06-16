@@ -8,6 +8,10 @@ r:
 os:
 - osx
 - linux
+matrix:
+  exclude:
+  - r: devel
+    os: osx
 sudo: false
 r_github_packages:
   - r-lib/covr
