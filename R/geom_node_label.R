@@ -448,7 +448,7 @@ line_size <- function(x) x$fontsize * x$lineheight
 #'
 geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
                            label.padding = unit(0.5, "lines"), ...) {
-  default_mapping <- aes_string(label = "info")
+  default_mapping <- aes(label = !!sym("info"))
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,
@@ -474,7 +474,7 @@ geom_node_info <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 geom_node_splitvar <- function(mapping = NULL, nudge_x = 0, nudge_y = 0,
                                label.padding = unit(0.5, "lines"), ids = NULL,
                                ...) {
-  default_mapping <- aes_string(label = "splitvar")
+  default_mapping <- aes(label = !!sym("splitvar"))
   mapping <- adjust_mapping(default_mapping, mapping)
   layer(
     data = NULL,

@@ -92,18 +92,25 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
   if (!is.null(layout)) plot_data <- adjust_layout(plot_data, layout)
   data_columns <- substring(names(plot_data), first = 1, last = 9) == "nodedata_"
   node_data <-  plot_data[, data_columns]
-  mapping <- aes_string(x = "x", y = "y", x_parent = "x_parent",
-                        birth_order = "birth_order",
-                 y_parent = "y_parent", id = "id", kids = "kids", info = "info",
-                 info_list = "info_list", p.value = "p.value",
-                 splitvar = "splitvar", horizontal = "horizontal",
-                 nodesize = "nodesize")
+  mapping <- aes(x = !!sym("x"),
+                 y = !!sym("y"),
+                 x_parent = !!sym("x_parent"),
+                 birth_order = !!sym("birth_order"),
+                 y_parent = !!sym("y_parent"),
+                 id = !!sym("id"),
+                 kids = !!sym("kids"),
+                 info = !!sym("info"),
+                 info_list = !!sym("info_list"),
+                 p.value = !!sym("p.value"),
+                 splitvar = !!sym("splitvar"),
+                 horizontal = !!sym("horizontal"),
+                 nodesize = !!sym("nodesize"))
 
 
 # add tree data to mapping ------------------------------------------------
 
   for (column_i in names(node_data)) {
-    mapping <- adjust_mapping(mapping, aes_string(var = paste0("`", column_i, "`")))
+    mapping <- adjust_mapping(mapping, aes(var = !!sym(column_i)))
     names(mapping)[length(mapping)] <- column_i
   }
 
@@ -111,7 +118,7 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 # add add_vars to mapping -------------------------------------------------
 
   for (column_i in names(add_vars)) {
-    mapping <- adjust_mapping(mapping, aes_string(var = paste0(column_i)))
+    mapping <- adjust_mapping(mapping, aes(var = !!sym(column_i)))
     names(mapping)[length(mapping)] <- column_i
   }
 
@@ -164,10 +171,10 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
 geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
                       show.legend = NA, ...){
 
-  default_mapping <- aes_string(x = "x",
-                                y = "y",
-                                xend = "x_parent",
-                                yend = "y_parent")
+  default_mapping <- aes(x = !!sym("x"),
+                         y = !!sym("y"),
+                         xend = !!sym("x_parent"),
+                         yend = !!sym("y_parent"))
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -247,13 +254,13 @@ geom_edge_label <- function(mapping = NULL,
                             parse = TRUE,
                             ...) {
 
-  default_mapping <- aes_string(label = "breaks_label")
+  default_mapping <- aes(label = !!sym("breaks_label"))
   # if (!parse)
   #   default_mapping <- aes(label = paste(breaks_label))
   if (!parse_all & parse)
-    default_mapping <- aes_string(label = "parse_signs(breaks_label,
+    default_mapping <- aes(label = !!expr(parse_signs(!!sym("breaks_label"),
                                            splitlevels = splitlevels,
-                                           max_length = max_length)")
+                                           max_length = max_length)))
 
   mapping <- adjust_mapping(default_mapping, mapping)
 

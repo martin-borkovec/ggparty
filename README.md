@@ -1,13 +1,13 @@
 ggparty
 ================
 
-ggplot2 visualizations for the partykit package.
+**ggplot2** visualizations for the **partykit** package.
 
 ## Install
 
 ``` r
-devtools::install_github("mmostly-harmless/ggparty", 
-                         dependencies=TRUE)
+devtools::install_github("martin_borkovec/ggparty", 
+                         dependencies = TRUE)
 ```
 
 ## Example
@@ -58,6 +58,32 @@ ggparty(tr_tree,
 ```
 
 ![](man/figures/README-unnamed-chunk-2-1.png)<!-- -->
+
+## How to Use
+
+**ggparty** tries to stick as closely as possible to **ggplot2**’s
+grammar of graphics. The basic building blocks to a **ggparty** plot
+are:
+
+  - **ggparty()** replaces the usual `ggplot()`. Takes a object of class
+    `'party'` instead of a `'data.frame'`.
+
+  - **geom\_edge()** draws the edges between the nodes
+
+  - **geom\_edge\_label()** labels the edges with the corresponding
+    split breaks
+
+  - **geom\_node\_label()** labels the nodes with the split variable,
+    node info or anything else. The shorthand versions of this geom
+    **geom\_node\_splitvar()** and **geom\_node\_info()** have the
+    correct defaults to write the split variables in the inner nodes
+    resp. the info in the terminal nodes.
+
+  - **geom\_node\_plot()** creates a custom ggplot at the location of
+    the node
+
+Make sure to check out the vignettes for detailed information on the
+usage of **ggparty**.
 
 [![Build
 Status](https://travis-ci.org/martin-borkovec/ggparty.svg?branch=master)](https://travis-ci.org/martin-borkovec/ggparty)
