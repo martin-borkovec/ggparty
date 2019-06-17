@@ -59,9 +59,5 @@ ggparty(tr_tree,
 
 ![](man/figures/README-unnamed-chunk-2-1.png)<!-- -->
 
-<!-- badges: start --> [![Build
+[![Build
 Status](https://travis-ci.org/martin-borkovec/ggparty.svg?branch=master)](https://travis-ci.org/martin-borkovec/ggparty)
-
-[![Codecov test
-coverage](https://codecov.io/gh/martin-borkovec/ggparty/branch/master/graph/badge.svg)](https://codecov.io/gh/martin-borkovec/ggparty?branch=master)
-<!-- badges: end -->
