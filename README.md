@@ -59,8 +59,9 @@ ggparty(tr_tree,
 
 ![](man/figures/README-unnamed-chunk-2-1.png)<!-- -->
 
-[![Travis build
-status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+<!-- badges: start --> [![Build
+Status](https://travis-ci.org/martin-borkovec/ggparty.svg?branch=master)](https://travis-ci.org/martin-borkovec/ggparty)
 
-[![Coverage
-Status](https://coveralls.io/repos/github/mmostly-harmless/ggparty/badge.svg?branch=master)](https://coveralls.io/github/mmostly-harmless/ggparty?branch=master)
+[![Codecov test
+coverage](https://codecov.io/gh/martin-borkovec/ggparty/branch/master/graph/badge.svg)](https://codecov.io/gh/martin-borkovec/ggparty?branch=master)
+<!-- badges: end -->
