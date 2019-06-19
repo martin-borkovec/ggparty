@@ -6,7 +6,7 @@ ggparty
 ## Install
 
 ``` r
-devtools::install_github("martin_borkovec/ggparty", 
+devtools::install_github("martin-borkovec/ggparty", 
                          dependencies = TRUE)
 ```
 

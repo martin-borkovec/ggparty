@@ -7,7 +7,7 @@ output: rmarkdown::github_document
 
 ## Install 
 ```{r, eval=FALSE}
-devtools::install_github("martin_borkovec/ggparty", 
+devtools::install_github("martin-borkovec/ggparty", 
                          dependencies = TRUE)
 ```
 
