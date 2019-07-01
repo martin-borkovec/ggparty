@@ -1,6 +1,13 @@
 Changes
 ================
 
+### version 0.0.9003
+
+  - changed add\_vars to require function with correctly named
+    arguments.
+
+  - Added GitHub Wiki.
+
 ### version 0.0.9002
 
   - Changed all instances of `aes_string()` to `aes()` with

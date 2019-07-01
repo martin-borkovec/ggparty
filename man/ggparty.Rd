@@ -23,8 +23,9 @@ columns \code{id}, \code{x} and \code{y}. With \code{x} and \code{y} values betw
 of elements to be extracted from
 each node of \code{party}  or function(s) of corresponding row of plot data and node.
 In either case returned object  has to be of length 1.
-If the data is supposed to be accessible by \code{\link[=geom_node_plot]{geom_node_plot()}} list entry has
-to be named with prefix \code{"nodedata_"} and be a function returning a list
+If the data is supposed to be accessible by \code{\link[=geom_node_plot]{geom_node_plot()}} the resprective
+list entry has
+to be named with the prefix \code{"nodedata_"} and be a function returning a list
 of same length as \code{nodesize}.}
 }
 \description{
@@ -36,9 +37,15 @@ an object of class \code{party} and calls \code{\link[=ggplot]{ggplot()}}
 convert it to a suitbale \code{data.frame} and pass it to a call to \code{ggplot} with as
 the \code{data} argument. As usual, additional components can then be added with
 \code{+}.
+
 The nodes will be spaced equally in the unit square. Specifying
 \code{terminal_size} allows to increase or decrease the area for plots of the
 terminal nodes.
+
+If one of the list entries supplied to \code{add_vars} is a function, it has to take
+exactly two arguments,
+namely \code{data} (the corresponding row of the plot_data data frame) and \code{node}
+(the corresponding node, i.e. \code{party_object[i]})
 }
 \examples{
 library(ggparty)

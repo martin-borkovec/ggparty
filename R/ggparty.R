@@ -7,10 +7,15 @@
 #' convert it to a suitbale `data.frame` and pass it to a call to `ggplot` with as
 #' the `data` argument. As usual, additional components can then be added with
 #' `+`.
+#'
 #' The nodes will be spaced equally in the unit square. Specifying
 #' `terminal_size` allows to increase or decrease the area for plots of the
 #' terminal nodes.
 #'
+#' If one of the list entries supplied to `add_vars` is a function, it has to take
+#'  exactly two arguments,
+#'  namely `data` (the corresponding row of the plot_data data frame) and `node`
+#'   (the corresponding node, i.e. `party_object[i]`)
 #'
 #' @param party Object of class `party`.
 #' @param horizontal If `TRUE` plot will be horizontal.
@@ -23,9 +28,13 @@
 #'  of elements to be extracted from
 #'  each node of `party`  or function(s) of corresponding row of plot data and node.
 #'   In either case returned object  has to be of length 1.
-#'   If the data is supposed to be accessible by [geom_node_plot()] list entry has
-#'   to be named with prefix `"nodedata_"` and be a function returning a list
+#'   If the data is supposed to be accessible by [geom_node_plot()] the resprective
+#'   list entry has
+#'   to be named with the prefix `"nodedata_"` and be a function returning a list
 #'   of same length as `nodesize`.
+#'
+#'
+#'
 #' @seealso [geom_edge()], [geom_edge_label()], [geom_node_label()],
 #'  [autoplot.party()], [geom_node_plot()]
 #' @export
@@ -71,10 +80,15 @@ ggparty <- function(party, horizontal = FALSE, terminal_space, layout = NULL,
   checkmate::assert_logical(horizontal)
   checkmate::assert_numeric(terminal_space, lower = 0, upper = 1)
   checkmate::assert_list(add_vars, names = "named", null.ok = TRUE)
-  for (i in seq_along(add_vars))
+  for (i in seq_along(add_vars)) {
     checkmate::assert(check_character(add_vars[[i]]),
                       check_function(add_vars[[i]], nargs = 2),
                       combine = "or")
+    if (is.function(add_vars[[i]])) assert_set_equal(names(formals(add_vars[[i]])),
+                                                     c("data", "node"),
+                                                     .var.name = "function-arguments of add_vars")
+  }
+
 
   if (!is.null(layout)) {
     checkmate::assert_data_frame(layout, any.missing = FALSE)

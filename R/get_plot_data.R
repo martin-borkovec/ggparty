@@ -336,7 +336,7 @@ add_vars <- function(party_object, data, add_vars) {
         data[j, names(add_vars)[i]] <- ifelse(is.null(new), NA, new)
       }
     if (is.function(add_vars[[i]])) {
-      new <- add_vars[[i]](data[j, ], party_object[j])
+      new <- add_vars[[i]](data = data[j, ], node = party_object[j])
       if (is.null(new)) {
       if (substring(names(add_vars)[i], 1, 5) == "nodedata_")
         new <- list(rep(NA, data$nodesize))

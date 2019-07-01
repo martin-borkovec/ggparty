@@ -2,6 +2,12 @@
 title: "Changes"
 output: rmarkdown::github_document
 ---
+### version 0.0.9003
+
+* changed add_vars to require function with correctly named arguments.
+
+* Added GitHub Wiki.
+
 
 ### version 0.0.9002
 

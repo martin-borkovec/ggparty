@@ -82,8 +82,12 @@ are:
   - **geom\_node\_plot()** creates a custom ggplot at the location of
     the node
 
-Make sure to check out the vignettes for detailed information on the
-usage of **ggparty**.
+Make sure to check out the
+[**wiki**](https://github.com/martin-borkovec/ggparty/wiki) or the
+vignettes for detailed information on the usage of **ggparty**.
+
+If you find any bugs or have any suggestions or questions feel free to
+contact me or post an issue\! Thanks for your support\!
 
 [![Build
 Status](https://travis-ci.org/martin-borkovec/ggparty.svg?branch=master)](https://travis-ci.org/martin-borkovec/ggparty)
