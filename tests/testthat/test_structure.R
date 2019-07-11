@@ -8,11 +8,6 @@ test_dataframe <- function(party_object){
   })
 }
 test_dataframe(py)
-test_dataframe(t2)
-test_dataframe(ct)
-test_dataframe(ct2)
-test_dataframe(tr_tree)
-
 
 test_structure <- function(party_object){
   test_that("valid structure", {
@@ -22,7 +17,3 @@ test_structure <- function(party_object){
   })
 }
 test_structure(py)
-test_structure(t2)
-test_structure(ct)
-test_structure(ct2)
-test_structure(tr_tree)
