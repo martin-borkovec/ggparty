@@ -1,6 +1,10 @@
 Changes
 ================
 
+### version 1.0.0.
+
+  - finalized DESCRIPTION etc. for CRAN submission
+
 ### version 0.0.9003
 
   - changed add\_vars to require function with correctly named

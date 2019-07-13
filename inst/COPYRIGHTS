@@ -1,2 +1,2 @@
 Copyright is held by Martin Borkovec.
-Additionally geom_node_label.R uses code from 'ggplot2's' geom_label with RStudio as the copyright holder.
+Additionally geom_node_label.R uses code from ggplot2's geom_label() function with RStudio as the copyright holder.
