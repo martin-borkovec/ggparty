@@ -1,9 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.travis\.yml$
-useful_links.txt$
-project_description.pdf$
-README.Rmd$
-.stuff
-.inst
-^codecov\.yml$
+README.Rmd
+NEWS.Rmd
+inst/stuff
+inst/cran-comments.md
+inst/cran-comments.Rmd
