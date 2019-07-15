@@ -23,7 +23,7 @@ columns \code{id}, \code{x} and \code{y}. With \code{x} and \code{y} values betw
 of elements to be extracted from
 each node of \code{party}  or function(s) of corresponding row of plot data and node.
 In either case returned object  has to be of length 1.
-If the data is supposed to be accessible by \code{\link[=geom_node_plot]{geom_node_plot()}} the resprective
+If the data is supposed to be accessible by \code{\link[=geom_node_plot]{geom_node_plot()}} the respective
 list entry has
 to be named with the prefix \code{"nodedata_"} and be a function returning a list
 of same length as \code{nodesize}.}
@@ -33,8 +33,8 @@ of same length as \code{nodesize}.}
 an object of class \code{party} and calls \code{\link[=ggplot]{ggplot()}}
 }
 \details{
-\code{ggparty} can be callled directly with an object of class \code{party}, which will
-convert it to a suitbale \code{data.frame} and pass it to a call to \code{ggplot} with as
+\code{ggparty} can be called directly with an object of class \code{party}, which will
+convert it to a suitable \code{data.frame} and pass it to a call to \code{ggplot} with as
 the \code{data} argument. As usual, additional components can then be added with
 \code{+}.
 

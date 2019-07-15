@@ -460,7 +460,7 @@ nodeplotGrob <- function(x, y, node_gtable, width, height, just) {
 
 }
 
-#' appearantly needs to be exported
+#' apparantly needs to be exported
 #' @param x nodeplotgrob
 #' @export
 #' @md

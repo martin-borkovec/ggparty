@@ -47,7 +47,7 @@ autoplot.constparty <- function(object, ...) {
                   )
 }
 #' @rdname autoplot.party
-#' @param plot_var Which covariable to plot against response. Defaults to second
+#' @param plot_var Which covariate to plot against response. Defaults to second
 #' column in `data` of tree.
 #' @export
 autoplot.modelparty <- function(object, plot_var = NULL, ...) {

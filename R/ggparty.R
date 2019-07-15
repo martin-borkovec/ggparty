@@ -3,8 +3,8 @@
 #' `ggplot2` extension for objects of class `party`. Creates a `data.frame` from
 #' an object of class `party` and calls [ggplot()]
 #'
-#'  `ggparty` can be callled directly with an object of class `party`, which will
-#' convert it to a suitbale `data.frame` and pass it to a call to `ggplot` with as
+#'  `ggparty` can be called directly with an object of class `party`, which will
+#' convert it to a suitable `data.frame` and pass it to a call to `ggplot` with as
 #' the `data` argument. As usual, additional components can then be added with
 #' `+`.
 #'
@@ -28,7 +28,7 @@
 #'  of elements to be extracted from
 #'  each node of `party`  or function(s) of corresponding row of plot data and node.
 #'   In either case returned object  has to be of length 1.
-#'   If the data is supposed to be accessible by [geom_node_plot()] the resprective
+#'   If the data is supposed to be accessible by [geom_node_plot()] the respective
 #'   list entry has
 #'   to be named with the prefix `"nodedata_"` and be a function returning a list
 #'   of same length as `nodesize`.
@@ -220,7 +220,7 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 #' @param shift Value in (0,1). Moves label along corresponding edge.
 #' @param ids Choose which splitbreaks to label by their children's ids.
 #' @param nudge_x,nudge_y Nudge label.
-#' @param splitlevels Which levels of split to plot. This may be usefull in the
+#' @param splitlevels Which levels of split to plot. This may be useful in the
 #' presence of many factor levels for one split break.
 #' @param max_length If provided **breaks_label** levels will be truncated to the specified length.
 #' @param label.size See [geom_label()].

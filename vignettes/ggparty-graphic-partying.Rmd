@@ -125,7 +125,7 @@ ggparty(tr_tree, terminal_space = 0.4,
 The code used to create this plot can be found at the end of this document.
 But first things first.    
 Let's recreate a simple example already used in the [partykit vignette](https://cran.r-project.org/package=partykit/vignettes/partykit.pdf). If you
-are not familiar with the [**parykit**](https://cran.r-project.org/package=partykit) you should definitely check it out before you
+are not familiar with the [**partykit**](https://cran.r-project.org/package=partykit) you should definitely check it out before you
 work with this package.
 ```{r}
 data("WeatherPlay", package = "partykit")
@@ -191,7 +191,7 @@ Every **ggparty plot starts with a call to the eponymous `ggparty()` function wh
 * **geom_node_label()** labels the nodes with the split variable, node info or anything
 else. The shorthand versions of this geom **geom_node_splitvar()** and
 **geom_node_info()** have the correct defaults to write the split variables in
-the inner nodes resp. the info in the terminal nodes.
+the inner nodes or the info in the terminal nodes.
 * **geom_node_plot()** creates a custom ggplot at the location of the node
 
 In most cases we will probably want to draw at least edges, edge labels and node labels, so we will have to call the respective functions. The default mappings of `geom_edge()` and and `geom_edge_label()` ensure that lines between the related nodes are drawn and the corresponding split breaks are plotted at their centers.  
@@ -209,7 +209,7 @@ ggparty(py) +
 ```
 Instead of adding `geom_node_label()` we can also add the convenience versions `geom_node_splitvar()` and `geom_node_info()` which contain the correct defaults
 to plot the split variables in the inner nodes and the info in the terminal nodes.  
-Thanks to the ggplot2 mechanics we can now map different aspects of our plot to properties of the nodes. Whether that's the best choide in this case is a different question.  
+Thanks to the ggplot2 mechanics we can now map different aspects of our plot to properties of the nodes. Whether that's the best choice in this case is a different question.  
 
 ```{r, fig.width = 7}
 ggparty(py) +
@@ -290,7 +290,7 @@ gg <- ggparty(py, add_vars = list(nodedata_x_dens =
               )
 gg$data$nodedata_x_dens
 ```
-The obvious limitation of this method is, that the number of
+The obvious limitation of this method is that the number of
 observations has to be identical to the `nodesize`. In this case we achieved
 this by setting `n` of `density()` to the `nodesize`.  
  
@@ -309,7 +309,7 @@ necessary let's reiterate what `ggparty()` does and how it uses the `ggplot()`
 function. Every `ggplot()` call needs a `'data.frame'`, so as we've seen above
 `ggparty()` creates one from the `'party'` object. In this `'data.frame'` every row
 corresponds to a node of the tree.  
-Each column of this node's `data` is stored as a `'list'`in its own
+Each column of this node's `data` is stored as a `'list'` in its own
 column. This way it is not usable by `ggplot()`, since
 `ggplot()` can't handle lists inside its data. This is where `geom_node_plot()` comes
 into play and
@@ -386,7 +386,7 @@ ggparty(t2) +
 ```
 
 Setting `shared_legend` to `FALSE` draws an individual legend at each plot instead
-of one common at the bottom of the plot. This might be necessary if we use
+of one common one at the bottom of the plot. This might be necessary if we use
 multiple different `geom_node_plots()` which lead to various legends. In case we want
 to remove the legend all together (i.e. `theme(legend.position = "none")`) 
 `shared_legend` has to be set to `FALSE`.
@@ -425,11 +425,11 @@ ggparty(t2) +
 ```
 
 
-##Predictions
+## Predictions
 
 If the party object contains a model with only one predictor we can use the
 argument `predict` to choose to show a prediction line. Additional arguments for
-the `geom_line()` drawing this line can be passed via `perdict_gpar`.
+the `geom_line()` drawing this line can be passed via `predict_gpar`.
 
 So let's take a look at this `'lmtree'` containing linear models explaining `eval` with
 `beauty`.
@@ -557,7 +557,7 @@ combine the components of a `geom_node_plot()` but instead `","`.
 As we now know, each `geom_node_plot()` is basically a completely separate plot with
 its own arguments and specifications which are independent from the base plot of
 the tree (i.e. the ggparty call with edges, labels, etc.). For that reason, if
-for example, we want ro remove the legend of a `geom_node_plot()` we must not pass it
+for example, we want to remove the legend of a `geom_node_plot()` we must not pass it
 at the base level (as a component of the tree) but inside the `gglist` of the
 `geom_node_plot()`.
 
@@ -585,14 +585,14 @@ but instead pass a `'list'` of `aes()` to the argument `line_list`. The order of
 is the same as the order in which the lines will be printed. Additionally we
 have to pass a `'list'` to `line_gpar`. This list must be the same `length` as `line_list`
 and contain separately named `'lists'` of graphical parameters. If we don't want to
-change anything for a specific line, the respective '`list'` hast to be an empty
+change anything for a specific line, the respective '`list'` has to be an empty
 `'list'`.  
 
 Mapping with the `mapping` argument of `geom_node_label()` still works and
 affects all lines and the border together. The line specific graphical arguments 
 in `line_gpar` can be
 used to overwrite these `mappings`.  
-Additionally to the usual aethetic 
+Additionally to the usual aesthetic 
 parameters we would use for `ggplot`'s `geom_label()` we can pass `parse` and `alignment`
 through `line_gpar`. Parse is equivalent to the behaviour of `geom_label()` and `alignment` enables us to position the text at the left or right label border.
 
@@ -733,7 +733,7 @@ we know that the first plot now spans from 0.5 to 0.25. So we want to move the l
 second plot to 0.25, i.e. nudge it from 0.5 by -0.25.  
  
 Changing the theme from the default `theme_void` to one for which gridlines are drawn
-allows us to see the above described layout structure.
+allows us to see the layout structure described above.
 
 
 ```{r, fig.width=7, fig.asp = 1, eval = T}
