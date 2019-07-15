@@ -4,5 +4,6 @@
 README.Rmd
 NEWS.Rmd
 inst/stuff
-inst/cran-comments.md
-inst/cran-comments.Rmd
+^cran-comments.md$
+^cran-comments.Rmd$
+^CRAN-RELEASE$
