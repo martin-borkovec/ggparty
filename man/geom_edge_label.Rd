@@ -21,7 +21,7 @@ mappings can be added here as \code{aes()}.}
 
 \item{label.size}{See \code{\link[=geom_label]{geom_label()}}.}
 
-\item{splitlevels}{Which levels of split to plot. This may be usefull in the
+\item{splitlevels}{Which levels of split to plot. This may be useful in the
 presence of many factor levels for one split break.}
 
 \item{max_length}{If provided \strong{breaks_label} levels will be truncated to the specified length.}

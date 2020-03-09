@@ -21,7 +21,7 @@
 
 \item{...}{additional parameters}
 
-\item{plot_var}{Which covariable to plot against response. Defaults to second
+\item{plot_var}{Which covariate to plot against response. Defaults to second
 column in \code{data} of tree.}
 
 \item{show_fit}{If TRUE \code{fitted_values} are drawn.}

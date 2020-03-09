@@ -2,7 +2,7 @@
 % Please edit documentation in R/geom_node_plot.R
 \name{makeContent.nodeplotgrob}
 \alias{makeContent.nodeplotgrob}
-\title{appearantly needs to be exported}
+\title{apparantly needs to be exported}
 \usage{
 \method{makeContent}{nodeplotgrob}(x)
 }
@@ -10,5 +10,5 @@
 \item{x}{nodeplotgrob}
 }
 \description{
-appearantly needs to be exported
+apparantly needs to be exported
 }

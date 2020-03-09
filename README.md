@@ -1,13 +1,13 @@
 ggparty
 ================
 
-ggplot2 visualizations for the partykit package.
+**ggplot2** visualizations for the **partykit** package.
 
 ## Install
 
 ``` r
-devtools::install_github("mmostly-harmless/ggparty", 
-                         dependencies=TRUE)
+devtools::install_github("martin-borkovec/ggparty", 
+                         dependencies = TRUE)
 ```
 
 ## Example
@@ -59,8 +59,35 @@ ggparty(tr_tree,
 
 ![](man/figures/README-unnamed-chunk-2-1.png)<!-- -->
 
-[![Travis build
-status](https://travis-ci.org/mmostly-harmless/ggparty.svg?branch=master)](https://travis-ci.org/mmostly-harmless/ggparty)
+## How to Use
 
-[![Coverage
-Status](https://coveralls.io/repos/github/mmostly-harmless/ggparty/badge.svg?branch=master)](https://coveralls.io/github/mmostly-harmless/ggparty?branch=master)
+**ggparty** tries to stick as closely as possible to **ggplot2**’s
+grammar of graphics. The basic building blocks to a **ggparty** plot
+are:
+
+  - **ggparty()** replaces the usual `ggplot()`. Takes a object of class
+    `'party'` instead of a `'data.frame'`.
+
+  - **geom\_edge()** draws the edges between the nodes
+
+  - **geom\_edge\_label()** labels the edges with the corresponding
+    split breaks
+
+  - **geom\_node\_label()** labels the nodes with the split variable,
+    node info or anything else. The shorthand versions of this geom
+    **geom\_node\_splitvar()** and **geom\_node\_info()** have the
+    correct defaults to write the split variables in the inner nodes
+    resp. the info in the terminal nodes.
+
+  - **geom\_node\_plot()** creates a custom ggplot at the location of
+    the node
+
+Make sure to check out the
+[**wiki**](https://github.com/martin-borkovec/ggparty/wiki) or the
+vignettes for detailed information on the usage of **ggparty**.
+
+If you find any bugs or have any suggestions or questions feel free to
+contact me or post an issue\! Thanks for your support\!
+
+[![Build
+Status](https://travis-ci.org/martin-borkovec/ggparty.svg?branch=master)](https://travis-ci.org/martin-borkovec/ggparty)

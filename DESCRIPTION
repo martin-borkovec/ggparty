@@ -1,9 +1,20 @@
 Package: ggparty
 Title: 'ggplot' Visualizations for the 'partykit' Package
-Version: 0.0.0.9001
-Authors@R: c(person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
-  person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"))
-Description: ggplot2 visualizations for the partykit package.
+Version: 1.0.0
+Authors@R: c(
+  person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
+  person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"),
+  person("Hadley", "Wickham", role = "ctb"),
+  person("Winston", "Chang", role = "ctb"),
+  person("Lionel", "Henry", role = "ctb"),
+  person("Thomas Lin", "Pedersen", role = "ctb"),
+  person("Kohske", "Takahashi", role = "ctb"),
+  person("Claus", "Wilke", role = "ctb"),
+  person("Kara", "Woo", role = "ctb"),
+  person("Hiroaki", "Yutani", role = "ctb")
+  )
+Copyright: file inst/COPYRIGHTS
+Description: Extends 'ggplot2' functionality to the 'partykit' package. 'ggparty' provides the necessary tools to create clearly structured and highly customizable visualizations for tree-objects of the class 'party'.
 Maintainer: Martin Borkovec <martin.borkovec@skyforge.at>
 Depends: 
   R (>= 3.4.0),
@@ -27,9 +38,10 @@ Suggests:
     rmarkdown,
     pander,
     MASS,
-    TH.data,
-    covr
+    TH.data
 License: GPL-2 | GPL-3
+URL: https://github.com/martin-borkovec/ggparty
+BugReports: https://github.com/martin-borkovec/ggparty/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

@@ -1,0 +1,27 @@
+---
+title: "Changes"
+output: rmarkdown::github_document
+---
+### version 1.0.0.
+
+* finalized DESCRIPTION etc. for CRAN submission
+
+### version 0.0.9003
+
+* changed add_vars to require function with correctly named arguments.
+
+* Added GitHub Wiki.
+
+
+### version 0.0.9002
+
+* Changed all instances of `aes_string()` to `aes()` with quasi-quotations.
+
+### version 0.0.9001
+
+* Check now runs without any notes.
+
+* Changed the way parsing works for geom_edge_labels. Added vignette "On the Edge" outlining this functionality.
+
+* Many minor fixes.
+

@@ -26,9 +26,9 @@ autoplot.party <- function(object, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
-    geom_node_label(aes_string(label = "splitvar"),
+    geom_node_label(aes(label = !!sym("splitvar")),
                     ids = "inner") +
-    geom_node_label(aes_string(label = "info"),
+    geom_node_label(aes(label = !!sym("info")),
                     ids = "terminal")
 }
 
@@ -38,7 +38,7 @@ autoplot.constparty <- function(object, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
-    geom_node_label(aes_string(label = "splitvar"),
+    geom_node_label(aes(label = !!sym("splitvar")),
                     ids = "inner") +
     geom_node_plot(gglist = list(geom_bar(aes(x = "",
                                              fill = !!object$terms[[2]]),
@@ -47,7 +47,7 @@ autoplot.constparty <- function(object, ...) {
                   )
 }
 #' @rdname autoplot.party
-#' @param plot_var Which covariable to plot against response. Defaults to second
+#' @param plot_var Which covariate to plot against response. Defaults to second
 #' column in `data` of tree.
 #' @export
 autoplot.modelparty <- function(object, plot_var = NULL, ...) {
@@ -62,7 +62,7 @@ autoplot.modelparty <- function(object, plot_var = NULL, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
-    geom_node_label(aes_string(label = "splitvar"),
+    geom_node_label(aes(label = !!sym("splitvar")),
                     ids = "inner") +
     geom_node_plot(gglist = list(geom_point(aes(x = !!sym(plot_var),
                                                 y = !!sym(y_var)
@@ -89,7 +89,7 @@ autoplot.lmtree <- function(object, plot_var = NULL, show_fit = TRUE, ...) {
   ggparty(object) +
     geom_edge() +
     geom_edge_label() +
-    geom_node_label(aes_string(label = "splitvar"),
+    geom_node_label(aes(label = !!sym("splitvar")),
                     ids = "inner") +
     geom_node_plot(gglist = list(geom_point(aes(x = !!sym(plot_var),
                                                 y = !!object$terms[[2]])),
