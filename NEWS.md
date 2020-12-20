@@ -1,5 +1,10 @@
 Changes
 ================
+### version 1.0.1
+
+ - made use of suggested package vdiffr in tests conditional
+ - added Heidi Seibold and Achim Zeileis as authors
+
 
 ### version 1.0.0.
 
