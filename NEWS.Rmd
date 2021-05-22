@@ -2,6 +2,10 @@
 title: "Changes"
 output: rmarkdown::github_document
 ---
+### version 1.0.1.
+
+* small improvements in the DESCRIPTION etc. for CRAN checks.
+
 ### version 1.0.0.
 
 * finalized DESCRIPTION etc. for CRAN submission
