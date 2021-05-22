@@ -1,6 +1,6 @@
 Package: ggparty
 Title: 'ggplot' Visualizations for the 'partykit' Package
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
   person("Martin", "Borkovec", role = c("aut", "cre"), email = "martin.borkovec@skyforge.at"), 
   person("Niyaz", "Madin", role = c("aut"), email = "niyaz.madin@gmail.com"),
@@ -26,13 +26,13 @@ Imports:
   utils,
   checkmate,
   methods,
-  survival,
   rlang
 Suggests:
     testthat,
     mlbench,
     AER,
     coin,
+    survival,
     vdiffr,
     knitr,
     rmarkdown,
@@ -43,7 +43,6 @@ License: GPL-2 | GPL-3
 URL: https://github.com/martin-borkovec/ggparty
 BugReports: https://github.com/martin-borkovec/ggparty/issues
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
