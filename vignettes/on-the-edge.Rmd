@@ -1,11 +1,12 @@
 ---
-title: "On The Edge"
+title: "On the Edge"
 author: "Martin Borkovec"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{edges}
+  %\VignetteIndexEntry{On the Edge}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteDepends{ggparty,MASS}
   %\VignetteEncoding{UTF-8}   
 ---
 <style>
@@ -30,7 +31,7 @@ First let's once more recreate the **WeatherPlay** tree. But this time we are go
 level of **outlook** to "beta"
 
 ```{r, echo = T, message= FALSE}
-library(ggparty) 
+library("ggparty") 
 data("WeatherPlay", package = "partykit")
 levels(WeatherPlay$outlook)[1] <- c("beta")
 sp_o <- partysplit(1L, index = 1:3)
@@ -137,7 +138,7 @@ In the presence of several levels for some splits we can use the argument `split
 
 
 ```{r}
-library(MASS)
+library("MASS")
 SexTest <- ctree(sex ~ ., data = Aids2)
 ggparty(SexTest) +
   geom_edge() + 
@@ -151,7 +152,7 @@ ggparty(SexTest) +
 
 Alternatively the argument `max_length`provides an option to easily truncate the names of the levels.
 ```{r}
-library(MASS)
+library("MASS")
 SexTest <- ctree(sex ~ ., data = Aids2)
 ggparty(SexTest) +
   geom_edge() + 

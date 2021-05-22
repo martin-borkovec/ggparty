@@ -4,8 +4,9 @@ author: "Martin Borkovec"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ggparty}
+  %\VignetteIndexEntry{ggparty: Graphic Partying}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteDepends{ggparty,survival,pander}
   %\VignetteEncoding{UTF-8}   
 ---
 <style>
@@ -29,7 +30,7 @@ to create clearly structured and highly customizable visualizations for tree-obj
 Loading the **ggparty** package will also load **partykit** and **ggplot2** and thereby provide all necessary functions.  
 
 ```{r}
-library(ggparty)
+library("ggparty")
 ```
 
 ## Motivating Example
