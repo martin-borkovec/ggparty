@@ -4,10 +4,20 @@
 \alias{geom_edge_label}
 \title{Draw edge labels}
 \usage{
-geom_edge_label(mapping = NULL, nudge_x = 0, nudge_y = 0,
-  ids = NULL, shift = 0.5, label.size = 0,
-  splitlevels = seq_len(100), max_length = NULL, parse_all = FALSE,
-  parse = TRUE, ...)
+geom_edge_label(
+  mapping = NULL,
+  nudge_x = 0,
+  nudge_y = 0,
+  ids = NULL,
+  shift = 0.5,
+  label.size = 0,
+  splitlevels = seq_len(100),
+  max_length = NULL,
+  parse_all = FALSE,
+  parse = TRUE,
+  round_digits = NULL,
+  ...
+)
 }
 \arguments{
 \item{mapping}{Mapping of \code{label} label defaults to \strong{breaks_label}. Other
@@ -30,6 +40,8 @@ presence of many factor levels for one split break.}
 signs of \strong{breaks_label} are deparsed. If \code{TRUE} complete \strong{breaks_label} are parsed.}
 
 \item{parse}{Needs to be true in order to parse inequality signs of \strong{breaks_label}.}
+
+\item{round_digits}{if not null, rounds digits for continuous splits.}
 
 \item{...}{Additional arguments for \code{\link[=geom_label]{geom_label()}}.}
 }

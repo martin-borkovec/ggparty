@@ -227,6 +227,7 @@ geom_edge <- function(mapping = NULL, nudge_x = 0, nudge_y = 0, ids = NULL,
 #' @param parse Needs to be true in order to parse inequality signs of **breaks_label**.
 #' @param parse_all Defaults to `FALSE`, in which case everything but the inequality
 #'  signs of **breaks_label** are deparsed. If `TRUE` complete **breaks_label** are parsed.
+#' @param round_digits if not null, rounds digits for continuous splits.
 #' @param ... Additional arguments for [geom_label()].
 #' @seealso [ggparty()]
 #' @export
@@ -266,6 +267,7 @@ geom_edge_label <- function(mapping = NULL,
                             max_length = NULL,
                             parse_all = FALSE,
                             parse = TRUE,
+                            round_digits = NULL,
                             ...) {
 
   default_mapping <- aes(label = !!sym("breaks_label"))
@@ -274,7 +276,8 @@ geom_edge_label <- function(mapping = NULL,
   if (!parse_all & parse)
     default_mapping <- aes(label = !!expr(parse_signs(!!sym("breaks_label"),
                                            splitlevels = splitlevels,
-                                           max_length = max_length)))
+                                           max_length = max_length,
+                                           round_digits = round_digits)))
 
   mapping <- adjust_mapping(default_mapping, mapping)
 
@@ -353,12 +356,15 @@ adjust_layout <- function(plot_data, layout) {
 
 # parse_signs() -----------------------------------------------------------
 # prevent rest of label from being parsed
-parse_signs <- function(label, splitlevels = NULL, max_length = NULL) {
+parse_signs <- function(label, splitlevels = NULL, max_length = NULL, round_digits = NULL) {
   first <- substring(label, 1, 9)
-  last <- substring(label, 10)
+  last <- substring(label, 11)
   for (i in seq_along(label)) {
     if (first[i] %in% c("NA <= NA*", "NA >= NA*", "NA <  NA*", "NA >  NA*"))
-      label[i] <- paste0(first[i], unlist(lapply(last[i], FUN = deparse)))
+      if(!is.null(round_digits))
+        label[i] <- paste(first[i], unlist(lapply(round(as.numeric(last[i]), digits = round_digits), FUN = deparse)))
+      else
+        label[i] <- paste0(first[i], unlist(lapply(last[i], FUN = deparse)))
     else {
       if (!is.null(splitlevels)) {
         label[i] <- vapply(label[i], function(x) {
