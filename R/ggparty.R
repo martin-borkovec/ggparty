@@ -364,7 +364,7 @@ parse_signs <- function(label, splitlevels = NULL, max_length = NULL, round_digi
       if(!is.null(round_digits))
         label[i] <- paste(first[i], unlist(lapply(round(as.numeric(last[i]), digits = round_digits), FUN = deparse)))
       else
-        label[i] <- paste0(first[i], unlist(lapply(last[i], FUN = deparse)))
+        label[i] <- paste(first[i], unlist(lapply(last[i], FUN = deparse)))
     else {
       if (!is.null(splitlevels)) {
         label[i] <- vapply(label[i], function(x) {
